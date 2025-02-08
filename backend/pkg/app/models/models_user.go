@@ -34,3 +34,15 @@ type LoginData struct {
 type LoginReply struct {
 	REplyMssg string
 }
+
+type UserInfo struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Nickname  string `json:"nickname"`
+	Email     string `json:"email"`
+	About     string `json:"about"`
+	Age       string `json:"age"`
+	Gender    string `json:"gender"`
+	Avatar    string `json:"avatar"`
+	IsPublic  string `json:"is_public"`
+}

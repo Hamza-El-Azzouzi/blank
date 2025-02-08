@@ -147,3 +147,36 @@ func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) (
 	}
 	return users, nil
 }
+
+func (r *UserRepository) GetUserInfo(user_id int) (*models.UserInfo, error) {
+	user := &models.UserInfo{}
+	query := `
+		SELECT
+			first_name,
+			last_name,
+			nickname,
+			email,
+			about_me,
+			date_of_birth,
+			is_public,
+			avatar,
+		FROM users 
+		WHERE id != ?`
+
+	row := r.DB.QueryRow(query, user_id)
+	err := row.Scan(&user.FirstName,
+		&user.LastName,
+		&user.Nickname,
+		&user.Email,
+		&user.About,
+		&user.Age,
+		&user.Avatar,
+		&user.IsPublic)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &models.UserInfo{}, nil
+		}
+		return &models.UserInfo{}, err
+	}
+	return user, nil
+}
