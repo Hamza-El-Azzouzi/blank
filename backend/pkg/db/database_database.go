@@ -21,12 +21,20 @@ func InitDB(dataSourceName string) (*sql.DB, error) {
 	migrations := &migrate.FileMigrationSource{
 		Dir: "./pkg/db/migrations",
 	}
-
 	n, err := migrate.Exec(db, "sqlite3", migrations, migrate.Up)
 	if err != nil {
 		log.Fatal(err)
 	}
+	seeders := &migrate.FileMigrationSource{
+		Dir: "./pkg/db/seeders",
+	}
+	ns, err := migrate.Exec(db, "sqlite3", seeders, migrate.Up)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	
+	log.Printf("Applied %d migrations!\n", ns)
 	log.Printf("Applied %d migrations!\n", n)
 	return db, nil
 }

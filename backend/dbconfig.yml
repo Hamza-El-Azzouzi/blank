@@ -1,0 +1,5 @@
+development:
+  dialect: sqlite3
+  datasource: ./pkg/db/blank.db
+  dir: pkg/db/migrations
+  table: migrations

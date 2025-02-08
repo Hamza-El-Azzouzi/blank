@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	database, err := db.InitDB("./pkg/db/server_forum.db")
+	database, err := db.InitDB("./pkg/db/socialnetwork.db")
 	if err != nil {
 		log.Fatalf("error in DB : %v", err)
 		return
