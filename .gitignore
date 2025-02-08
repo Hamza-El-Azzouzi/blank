@@ -1,0 +1,58 @@
+# Frontend (Next.js)
+# dependencies
+/frontend/node_modules/
+/frontend/.pnp
+/frontend/.pnp.js
+
+# testing
+/frontend/coverage
+
+# next.js
+/frontend/.next/
+/frontend/out/
+
+# production
+/frontend/build
+
+# misc
+/frontend/.DS_Store
+/frontend/*.pem
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# debug
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+
+# Backend (Golang)
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+/backend/vendor/
+
+# Environment variables
+.env
+*.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
