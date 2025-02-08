@@ -13,23 +13,11 @@ import (
 )
 
 func main() {
-	database, err := db.InitDB("server_forum.db")
+	database, err := db.InitDB("./pkg/db/server_forum.db")
 	if err != nil {
 		log.Fatalf("error in DB : %v", err)
 		return
 	}
-
-	// err = db.RunMigrations(database)
-	// if err != nil {
-	// 	log.Fatalf("Error running migrations: %v", err)
-	// 	return
-	// }
-
-	// err = db.InsertDefaultCategories(database)
-	// if err != nil {
-	// 	log.Fatalf("error inserting default categories: %v", err)
-	// 	return
-	// }
 
 	defer database.Close()
 

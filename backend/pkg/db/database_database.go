@@ -19,7 +19,7 @@ func InitDB(dataSourceName string) (*sql.DB, error) {
 	}
 
 	migrations := &migrate.FileMigrationSource{
-		Dir: "migrations",
+		Dir: "./pkg/db/migrations",
 	}
 
 	n, err := migrate.Exec(db, "sqlite3", migrations, migrate.Up)

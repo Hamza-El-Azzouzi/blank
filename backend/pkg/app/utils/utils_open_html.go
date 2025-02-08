@@ -7,7 +7,7 @@ import (
 )
 
 func OpenHtml(fileName string, w http.ResponseWriter, data string) {
-	temp, err := template.ParseFiles("../templates/" + fileName)
+	temp, err := template.ParseFiles("./templates/" + fileName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
