@@ -1,0 +1,4 @@
+development:
+  dialect: sqlite3
+  datasource: server_forum.db
+  dir: migrations
