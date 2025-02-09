@@ -38,13 +38,14 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/", utils.RateLimitMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")
 	}))
-
+	middleware.CORS(mux)
 	http.HandleFunc("/", utils.RateLimitMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		handler, pattern := mux.Handler(r)
 		if pattern == "/" && r.URL.Path != "/" {
 			utils.OpenHtml("index.html", w, "404")
 			return
 		}
-		handler.ServeHTTP(w, r)
+		middleware.CORS(handler)
+		// handler.ServeHTTP(w, r)
 	}))
 }
