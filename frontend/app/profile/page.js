@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';
@@ -38,7 +39,21 @@ const MOCK_PROFILE = {
 };
 
 export default function ProfilePage() {
-  const [profile] = useState(MOCK_PROFILE);
+
+  useEffect(() => {
+    axios.get(`http://127.0.0.1:1414/api/user-info`)
+      .then(res => {
+        const data = res.data;
+        // setProfile(data);
+        console.log(data);
+
+      })
+      .catch(err => {
+        console.error('Error fetching user info:', err);
+      })
+  }, [])
+
+  const [profile, setProfile] = useState(MOCK_PROFILE);
   const [activeTab, setActiveTab] = useState('posts');
   useEffect(() => {
     axios.get(`http://127.0.0.1:1414/api/user-info`)
@@ -108,21 +123,19 @@ export default function ProfilePage() {
         <div className="border-b mb-6">
           <div className="flex gap-8">
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === 'posts'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600'
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === 'posts'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-600'
+                }`}
               onClick={() => setActiveTab('posts')}
             >
               Posts
             </button>
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === 'photos'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600'
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === 'photos'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-600'
+                }`}
               onClick={() => setActiveTab('photos')}
             >
               Photos
