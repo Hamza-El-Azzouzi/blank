@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
+import { MapPin, Link as Mail, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';
 import Image from 'next/image';
@@ -38,21 +38,35 @@ const MOCK_PROFILE = {
 };
 
 export default function ProfilePage() {
-
+  const [profile, setProfile] = useState({});
   useEffect(() => {
     axios.get(`http://127.0.0.1:1414/api/user-info`)
       .then(res => {
         const data = res.data;
-        // setProfile(data);
-        console.log(data);
-
+        data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'
+        data.cover = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop'
+        setProfile(data);
       })
       .catch(err => {
         console.error('Error fetching user info:', err);
       })
   }, [])
 
-  const [profile, setProfile] = useState(MOCK_PROFILE);
+  useEffect(() => {
+    // axios.get(`http://127.0.0.1:1414/api/user-info`)
+    //   .then(res => {
+    //     const data = res.data;
+    //     data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'
+    //     data.cover = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop'
+    //     setProfile(data);
+    //     console.log(data);
+
+    //   })
+    //   .catch(err => {
+    //     console.error('Error fetching user info:', err);
+    //   })
+  }, [])
+
   const [activeTab, setActiveTab] = useState('posts');
 
   return (
@@ -67,11 +81,11 @@ export default function ProfilePage() {
         </div>
         <div className="absolute bottom-4 left-4 flex items-end gap-4">
           <Avatar className="h-40 w-40 border-4 border-white">
-            <img src={profile.avatar} alt={profile.name} className="h-full w-full" />
+            <img src={profile.avatar} alt={profile.first_name + " " + profile.last_name} className="h-full w-full" />
           </Avatar>
           <div className="mb-4 text-white">
-            <h1 className="text-3xl font-bold drop-shadow-lg">{profile.name}</h1>
-            <p className="text-lg drop-shadow-lg">{profile.bio}</p>
+            <h1 className="text-3xl font-bold drop-shadow-lg">{profile.first_name + " " + profile.last_name}</h1>
+            <p className="text-lg drop-shadow-lg">{profile.nickname}</p>
           </div>
         </div>
         <Button className="absolute bottom-4 right-4">
@@ -82,32 +96,33 @@ export default function ProfilePage() {
       <div className="px-4">
         <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-6">
           <div className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            {profile.location}
-          </div>
-          <div className="flex items-center gap-1">
-            <LinkIcon className="h-4 w-4" />
-            <a href={`https://${profile.website}`} className="text-blue-600 hover:underline">
-              {profile.website}
+            <Mail className="h-4 w-4" />
+            <a href={`mailto:${profile.email}`} className="text-blue-600 hover:underline">
+              {profile.email}
             </a>
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            {profile.joinedDate}
+            Born on {new Date(profile.date_of_birth).toLocaleDateString()}
           </div>
         </div>
 
         <div className="flex gap-6 mb-4">
           <div>
-            <span className="font-bold">{profile.followers.toLocaleString()}</span>
+            <span className="font-bold">{profile.followers}</span>
             <span className="text-gray-600 ml-1">Followers</span>
           </div>
           <div>
-            <span className="font-bold">{profile.following.toLocaleString()}</span>
+            <span className="font-bold">{profile.following}</span>
             <span className="text-gray-600 ml-1">Following</span>
           </div>
         </div>
-
+        {profile.about &&
+          <div>
+            <h3 className='text-xl font-bold drop-shadow-lg text-gray-600'>About</h3>
+            <p className="text-sm drop-shadow-lg text-gray-600 m-3">{profile.about}</p>
+          </div>
+        }
         <div className="border-b mb-6">
           <div className="flex gap-8">
             <button
@@ -131,12 +146,12 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {profile.posts.map((post) => (
+        {/* <div className="space-y-4">
+          {profile?.posts.map((post) => (
             <Post key={post.id} post={post} />
           ))}
-        </div>
+        </div> */}
       </div>
-    </div>
+    </div >
   );
 }
