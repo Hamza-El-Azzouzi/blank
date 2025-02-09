@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { MapPin, Link as Mail, Calendar } from 'lucide-react';
+import { Mail, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';
-import Image from 'next/image';
 import Post from '../../components/Post';
 
 const MOCK_PROFILE = {
@@ -38,7 +37,12 @@ const MOCK_PROFILE = {
 };
 
 export default function ProfilePage() {
+
   const [profile, setProfile] = useState({});
+  const [posts, setPosts] = useState([]);
+  const [postsPgae, setPostsPage] = useState(0);
+
+
   useEffect(() => {
     axios.get(`http://127.0.0.1:1414/api/user-info`)
       .then(res => {
@@ -53,21 +57,27 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
-    // axios.get(`http://127.0.0.1:1414/api/user-info`)
-    //   .then(res => {
-    //     const data = res.data;
-    //     data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'
-    //     data.cover = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop'
-    //     setProfile(data);
-    //     console.log(data);
+    if (!profile.first_name) return;
 
-    //   })
-    //   .catch(err => {
-    //     console.error('Error fetching user info:', err);
-    //   })
-  }, [])
+    axios.get(`http://127.0.0.1:1414/api/user-posts/${postsPgae}`)
+      .then(res => {
+        const data = res.data;
+        const user = {
+          name: profile.first_name + " " + profile.last_name,
+          avatar: profile.avatar,
+        };
+        const updatedPosts = data.map(post => ({
+          ...post,
+          user: user
+        }));
 
-  const [activeTab, setActiveTab] = useState('posts');
+        setPosts(updatedPosts);
+      })
+      .catch(err => {
+        console.error('Error fetching posts of the user:', err);
+      });
+  }, [profile]);
+
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -123,34 +133,17 @@ export default function ProfilePage() {
             <p className="text-sm drop-shadow-lg text-gray-600 m-3">{profile.about}</p>
           </div>
         }
-        <div className="border-b mb-6">
-          <div className="flex gap-8">
-            <button
-              className={`px-4 py-2 font-medium ${activeTab === 'posts'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600'
-                }`}
-              onClick={() => setActiveTab('posts')}
-            >
-              Posts
-            </button>
-            <button
-              className={`px-4 py-2 font-medium ${activeTab === 'photos'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600'
-                }`}
-              onClick={() => setActiveTab('photos')}
-            >
-              Photos
-            </button>
+        <h3 className='text-xl font-bold drop-shadow-lg text-gray-600 mb-3'>{profile?.first_name}'s posts</h3>
+        {posts ?
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <Post key={post.id} post={post} />
+            ))}
           </div>
-        </div>
-
-        {/* <div className="space-y-4">
-          {profile?.posts.map((post) => (
-            <Post key={post.id} post={post} />
-          ))}
-        </div> */}
+          : <div className="flex items-center gap-1">
+            <p>{profile.first_name} {profile.last_name} didn't post anything yet!</p>
+          </div>
+        }
       </div>
     </div >
   );
