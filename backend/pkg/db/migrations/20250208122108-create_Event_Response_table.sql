@@ -1,9 +1,10 @@
 
 -- +migrate Up
 CREATE TABLE `Event_Response` (
-  `event_id` int,
-  `user_id` int,
+  `event_id` text,
+  `user_id` text,
   `response` varchar(255),
+  PRIMARY KEY (`event_id`,`user_id`)
   FOREIGN KEY (`event_id`) REFERENCES `Event` (`event_id`),
   FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );

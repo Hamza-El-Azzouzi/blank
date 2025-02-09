@@ -1,7 +1,7 @@
 
 -- +migrate Up
 CREATE TABLE `User` (
-  `user_id` int PRIMARY KEY,
+  `user_id` text PRIMARY KEY,
   `email` varchar(255) UNIQUE,
   `password` varchar(255),
   `first_name` varchar(255),

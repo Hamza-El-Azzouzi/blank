@@ -1,10 +1,10 @@
 
 -- +migrate Up
 CREATE TABLE `Notification` (
-  `notification_id` int PRIMARY KEY,
-  `user_id` int,
+  `notification_id` text PRIMARY KEY,
+  `user_id` text,
   `type` varchar(255),
-  `related_id` int,
+  `related_id` text,
   `unread` boolean,
   `created_at` timestamp,
   FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)

@@ -1,7 +1,7 @@
 
 -- +migrate Up
 CREATE TABLE `Comment` (
-  `comment_id` int PRIMARY KEY,
+  `comment_id` text PRIMARY KEY,
   `post_id` int,
   `group_post_id` int,
   `user_id` int,

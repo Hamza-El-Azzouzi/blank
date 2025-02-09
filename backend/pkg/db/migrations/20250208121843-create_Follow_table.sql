@@ -1,10 +1,10 @@
 
 -- +migrate Up
 CREATE TABLE `Follow` (
-  `follower_id` int,
-  `followed_id` int,
+  `follower_id` text,
+  `followed_id` text,
   `status` varchar(255),
-  PRIMARY KEY (`follower_id`, `followed_id`), -- Composite primary key
+  PRIMARY KEY (`follower_id`, `followed_id`),
   FOREIGN KEY (`follower_id`) REFERENCES `User` (`user_id`),
   FOREIGN KEY (`followed_id`) REFERENCES `User` (`user_id`)
 );
