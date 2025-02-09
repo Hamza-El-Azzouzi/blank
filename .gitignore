@@ -47,7 +47,7 @@ go.work
 # Dependency directories
 /backend/vendor/
 /backend/pkg/db/*.db
-
+/backend/storage
 # Environment variables
 .env
 *.env

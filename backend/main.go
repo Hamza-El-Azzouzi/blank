@@ -6,10 +6,9 @@ import (
 	"net/http"
 
 	"blank/pkg/app"
-	"blank/pkg/db"
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/routes"
-	"blank/pkg/app/utils"
+	"blank/pkg/db"
 )
 
 func main() {
@@ -42,9 +41,9 @@ func main() {
 		authMiddleware,
 		messageService)
 
-	cleaner := &utils.Cleaner{SessionService: sessionService}
+	// cleaner := &utils.Cleaner{SessionService: sessionService}
 
-	go cleaner.CleanupExpiredSessions()
+	// go cleaner.CleanupExpiredSessions()
 
 	mux := http.NewServeMux()
 

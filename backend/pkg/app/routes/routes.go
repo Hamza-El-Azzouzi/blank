@@ -13,9 +13,9 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	mux.HandleFunc("/static/", utils.RateLimitMiddleware(utils.SetupStaticFilesHandlers))
 	mux.HandleFunc("/api/online-users", utils.RateLimitMiddleware(messageHnadler.GetOnlineUsers))
-	mux.HandleFunc("/api/logout", utils.RateLimitMiddleware(authHandler.LogoutHandle))
-	mux.HandleFunc("/api/register", utils.RateLimitMiddleware(authHandler.RegisterHandle))
-	mux.HandleFunc("/api/login", utils.RateLimitMiddleware(authHandler.LoginHandle))
+	mux.HandleFunc("/api/logout", utils.RateLimitMiddleware(authHandler.HandleLogout))
+	mux.HandleFunc("/api/register", utils.RateLimitMiddleware(authHandler.HandleRegister))
+	mux.HandleFunc("/api/login", utils.RateLimitMiddleware(authHandler.HandleLogin))
 	mux.HandleFunc("/api/integrity", utils.RateLimitMiddleware(authHandler.UserIntegrity))
 	mux.HandleFunc("/api/users/", utils.RateLimitMiddleware(authHandler.GetUsers))
 	mux.HandleFunc("/api/searchedusers", utils.RateLimitMiddleware(authHandler.SearchUsers))
