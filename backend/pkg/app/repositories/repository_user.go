@@ -30,12 +30,12 @@ func (r *UserRepository) FindUser(identifier string, flag string) (*models.User,
 	query := ""
 	switch true {
 	case flag == "byId":
-		query = `SELECT id, username, email, password FROM users WHERE id= ?`
+		query = `SELECT user_id, email, password FROM User WHERE id= ?`
 	case flag == "byEmail":
-		query = `SELECT id, username, email, password FROM users WHERE email= ?`
+		query = `SELECT user_id, email, password FROM User WHERE email= ?`
 	}
 
-	if err := r.DB.QueryRow(query, identifier).Scan(&user.ID, &user.Nickname, &user.Email, &user.Password); err != nil {
+	if err := r.DB.QueryRow(query, identifier).Scan(&user.ID, &user.Email, &user.Password); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}

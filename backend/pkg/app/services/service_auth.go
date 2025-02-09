@@ -1,9 +1,7 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"blank/pkg/app/models"
@@ -61,25 +59,18 @@ func (a *AuthService) Register(info models.RegisterData) (int, string) {
 	return http.StatusOK, "success"
 }
 
-func (a *AuthService) Login(emailOrUSername, password string) (*models.User, error) {
-	var userByEmail *models.User
-	var err error
-	if strings.Contains(emailOrUSername, "@") {
-		userByEmail, err = a.UserRepo.FindUser(emailOrUSername, "byEmail")
-	} else {
-		userByEmail, err = a.UserRepo.FindUser(emailOrUSername, "byUserName")
-	}
-
+func (a *AuthService) Login(email, password string) (*models.User, string) {
+	userByEmail, err := a.UserRepo.FindUser(email, "byEmail")
 	if userByEmail == nil || err != nil {
-		return nil, fmt.Errorf("in email or username")
+		return nil, "Invalid Email"
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userByEmail.Password), []byte(password))
 	if err != nil {
-		return nil, err
+		return nil, "incorrect password"
 	}
 
-	return userByEmail, nil
+	return userByEmail, ""
 }
 
 func (a *AuthService) GetUserBySessionID(sessionID string) (*models.User, error) {

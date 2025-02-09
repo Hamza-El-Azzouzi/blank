@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
@@ -87,45 +86,44 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		var info models.LoginData
-		err := json.NewDecoder(r.Body).Decode(&info)
-		defer r.Body.Close()
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		user, err := h.AuthService.Login(info.EmailOrUserName, info.Passwd)
-		if err != nil || user == nil {
-			switch true {
-			case err.Error() == "in email or username":
-				// sendResponse(w, "Account Not found")
-				return
-			case strings.Contains(err.Error(), "password"):
-				// sendResponse(w, "passwd")
-				return
-			}
-		}
-		sessionExpires := time.Now().Add(5 * 60 * time.Minute)
-		sessionId := uuid.Must(uuid.NewV4()).String()
-		userSession := h.SessionService.CreateSession(sessionId, sessionExpires, user.ID)
-		if userSession != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		SetCookies(w, "sessionId", sessionId, sessionExpires)
-		// sendResponse(w, "Done")
-	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "method not allowed", nil)
+		return
 	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	var userInfo models.LoginData
+	if err := json.NewDecoder(r.Body).Decode(&userInfo); err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		return
+	}
+
+	user, message := h.AuthService.Login(userInfo.Email, userInfo.Password)
+	if message != "" {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
+		return
+	}
+
+	sessionId := uuid.Must(uuid.NewV4()).String()
+
+	if err := h.SessionService.CreateSession(sessionId, user.ID); err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	SetCookies(w, "sessionId", sessionId)
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
-func SetCookies(w http.ResponseWriter, name, value string, expires time.Time) {
+func SetCookies(w http.ResponseWriter, name, value string) {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
 		Path:     "/",
-		Expires:  expires,
 		HttpOnly: false,
 	}
 
@@ -135,20 +133,21 @@ func SetCookies(w http.ResponseWriter, name, value string, expires time.Time) {
 func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	activeUser, user := h.AuthMidlaware.IsUserLoggedIn(w, r)
 	if !activeUser {
-		w.WriteHeader(http.StatusBadRequest)
+		utils.SendResponses(w, http.StatusBadRequest, "you are not logged in", nil)
 		return
 	}
+
 	sessionId, err := r.Cookie("sessionId")
 	if err == nil || sessionId.Value != "" {
 		err := h.SessionService.DeleteSession(sessionId.Value)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			utils.SendResponses(w, http.StatusInternalServerError, "internal server error", nil)
 			return
 		}
 	}
+
 	h.MessageHandler.DisconnectClient(user.ID.String())
-	SetCookies(w, "sessionId", "", time.Now().Add(-1*time.Hour))
-	// sendResponse(w, "Done")
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {

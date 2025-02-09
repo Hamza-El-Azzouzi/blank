@@ -35,13 +35,10 @@ func (s *SessionsRepositorie) CheckSession(sessionId string) bool {
 	return false
 }
 
-func (s *SessionsRepositorie) Createession(sessionID string, expiration time.Time, userID uuid.UUID) error {
-	preparedQuery, err := s.DB.Prepare(`INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)`)
-	if err != nil {
-		return nil
-	}
-	_, err = preparedQuery.Exec(sessionID, userID, expiration)
+func (s *SessionsRepositorie) CreateSession(sessionID string, userID uuid.UUID) error {
+	_, err := s.DB.Exec(`INSERT INTO sessions (session_id, user_id) VALUES (?, ?)`, sessionID, userID)
 	return err
+
 }
 
 func (s *SessionsRepositorie) UpdateSession(sessionID string, expiration time.Time, userID uuid.UUID) error {
@@ -71,13 +68,13 @@ func (s *SessionsRepositorie) GetUser(sessionID string) (string, error) {
 	return userId, nil
 }
 
-func (s *SessionsRepositorie) CheckUserAlreadyLogged(UserID uuid.UUID) error {
-	var sessionID string
-	query := `SELECT session_id FROM sessions WHERE  user_id = ?`
-	row := s.DB.QueryRow(query, UserID)
-	err := row.Scan(&sessionID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// func (s *SessionsRepositorie) CheckUserAlreadyLogged(UserID uuid.UUID) error {
+// 	var sessionID string
+// 	query := `SELECT session_id FROM sessions WHERE  user_id = ?`
+// 	row := s.DB.QueryRow(query, UserID)
+// 	err := row.Scan(&sessionID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }

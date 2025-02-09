@@ -32,6 +32,6 @@ type RegisterData struct {
 }
 
 type LoginData struct {
-	EmailOrUserName string `json:"emailOrUSername"`
-	Passwd          string `json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
