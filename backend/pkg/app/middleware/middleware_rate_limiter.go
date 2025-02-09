@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 type RateLimiter struct {
 	Limit    int
 	Interval time.Duration
@@ -41,17 +40,14 @@ func (rl *RateLimiter) Allow() bool {
 	return true
 }
 
-func RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	limiter := NewRateLimiter(100, time.Second)
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
-		if limiter.Allow() {
-			next(w, r)
-		} else {
-			w.WriteHeader(http.StatusTooManyRequests)
-		}
-	}
-}
+func RateLimitMiddleware(next http.Handler) http.Handler {
+	limiter := NewRateLimiter(100, time.Second) // 5 requests per second per IP
 
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if limiter.Allow() {
+			next.ServeHTTP(w, r) // Ensure correct request forwarding
+		} else {
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+		}
+	})
+}

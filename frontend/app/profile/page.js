@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';

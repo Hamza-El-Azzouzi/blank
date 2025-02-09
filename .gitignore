@@ -1,4 +1,4 @@
-# Frontend (Next.js)
+### Frontend (Next.js) ###
 # dependencies
 /frontend/node_modules/
 /frontend/.pnp
@@ -6,28 +6,33 @@
 
 # testing
 /frontend/coverage
+/frontend/.nyc_output
 
 # next.js
 /frontend/.next/
 /frontend/out/
+/frontend/.vercel
 
 # production
 /frontend/build
+/frontend/dist
 
 # misc
-/frontend/.DS_Store
-/frontend/*.pem
-/frontend/.env.local
-/frontend/.env.development.local
-/frontend/.env.test.local
-/frontend/.env.production.local
+.DS_Store
+*.pem
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # debug
-/frontend/npm-debug.log*
-/frontend/yarn-debug.log*
-/frontend/yarn-error.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Backend (Golang)
+
+### Backend (Golang) ###
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -40,20 +45,35 @@
 
 # Output of the go coverage tool
 *.out
+*.prof
 
-# Go workspace file
+# Go specific
 go.work
+go.sum
 
 # Dependency directories
 /backend/vendor/
 /backend/pkg/db/*.db
 
+### General ###
 # Environment variables
 .env
 *.env
+.env.*
+!.env.example
 
 # IDE specific files
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

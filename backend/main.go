@@ -53,5 +53,5 @@ func main() {
 
 	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:1414", nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:1414", middleware.RateLimitMiddleware(middleware.CheckCORS(mux))))
 }
