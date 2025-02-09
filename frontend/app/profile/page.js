@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';
+import axios from 'axios'
 import Image from 'next/image';
 import Post from '../../components/Post';
 
@@ -39,7 +40,18 @@ const MOCK_PROFILE = {
 export default function ProfilePage() {
   const [profile] = useState(MOCK_PROFILE);
   const [activeTab, setActiveTab] = useState('posts');
+  useEffect(() => {
+    axios.get(`http://127.0.0.1:1414/api/user-info`)
+      .then(res => {
+        const data = res.data;
+        // setProfile(data);
+        console.log(data);
 
+      })
+      .catch(err => {
+        console.error('Error fetching user info:', err);
+      })
+  }, [])  
   return (
     <div className="max-w-4xl mx-auto">
       <div className="relative mb-6">

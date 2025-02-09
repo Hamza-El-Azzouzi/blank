@@ -1,4 +1,4 @@
-package utils
+package middleware
 
 import (
 	"net/http"
@@ -43,11 +43,14 @@ func (rl *RateLimiter) Allow() bool {
 
 func RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	limiter := NewRateLimiter(100, time.Second)
-	return func(response http.ResponseWriter, request *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
 		if limiter.Allow() {
-			next(response, request)
+			next(w, r)
 		} else {
-			response.WriteHeader(http.StatusTooManyRequests)
+			w.WriteHeader(http.StatusTooManyRequests)
 		}
 	}
 }
