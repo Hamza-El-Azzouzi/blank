@@ -1,8 +1,9 @@
 
 -- +migrate Up
 CREATE TABLE `Post_Privacy` (
-  `post_id` int,
-  `user_id` int,
+  `post_id` text,
+  `user_id` text,
+  PRIMARY KEY (`post_id`,`user_id`),
   FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`),
   FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
