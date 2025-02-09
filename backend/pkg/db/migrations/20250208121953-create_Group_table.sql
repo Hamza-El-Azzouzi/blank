@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE `Group` (
-  `group_id` int PRIMARY KEY,
-  `creator_id` int,
+  `group_id` text PRIMARY KEY,
+  `creator_id` text,
   `title` varchar(255),
   `description` text,
   FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`)

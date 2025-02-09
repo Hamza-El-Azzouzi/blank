@@ -1,9 +1,9 @@
 
 -- +migrate Up
 CREATE TABLE `Event` (
-  `event_id` int PRIMARY KEY,
-  `group_id` int,
-  `creator_id` int,
+  `event_id` text PRIMARY KEY,
+  `group_id` text,
+  `creator_id` text,
   `title` varchar(255),
   `description` text,
   `event_datetime` timestamp,

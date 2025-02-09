@@ -1,9 +1,9 @@
 
 -- +migrate Up
 CREATE TABLE `Group_Post` (
-  `group_post_id` int PRIMARY KEY,
-  `group_id` int,
-  `user_id` int,
+  `group_post_id` text PRIMARY KEY,
+  `group_id` text,
+  `user_id` text,
   `content` text,
   `image` varchar(255),
   `created_at` timestamp,

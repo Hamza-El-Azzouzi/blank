@@ -1,10 +1,10 @@
 
 -- +migrate Up
 CREATE TABLE `Message` (
-  `message_id` int PRIMARY KEY,
-  `sender_id` int,
-  `receiver_id` int,
-  `group_id` int,
+  `message_id` text PRIMARY KEY,
+  `sender_id` text,
+  `receiver_id` text,
+  `group_id` text,
   `content` text,
   `unread` boolean,
   `created_at` timestamp,

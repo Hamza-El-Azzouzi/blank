@@ -1,8 +1,8 @@
 
 -- +migrate Up
 CREATE TABLE `Post` (
-  `post_id` int PRIMARY KEY,
-  `user_id` int,
+  `post_id` text PRIMARY KEY,
+  `user_id` text,
   `content` text,
   `image` varchar(255),
   `privacy_level` varchar(255),
