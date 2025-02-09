@@ -16,11 +16,12 @@ func (s *SessionsRepositorie) DeletSession(sessionID string) error {
 	if err != nil {
 		return nil
 	}
-	
+
 	_, err = preparedQuery.Exec(sessionID)
 	return err
 }
-func (s *SessionsRepositorie) CheckSession(sessionId string) bool{
+
+func (s *SessionsRepositorie) CheckSession(sessionId string) bool {
 	exist := 0
 	query := `SELECT count(*) FROM sessions WHERE session_id = ?`
 	row := s.DB.QueryRow(query, sessionId)
@@ -33,7 +34,6 @@ func (s *SessionsRepositorie) CheckSession(sessionId string) bool{
 	}
 	return false
 }
-
 
 func (s *SessionsRepositorie) Createession(sessionID string, expiration time.Time, userID uuid.UUID) error {
 	preparedQuery, err := s.DB.Prepare(`INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)`)
@@ -64,10 +64,7 @@ func (s *SessionsRepositorie) DeleteSessionByDate(time time.Time) error {
 
 func (s *SessionsRepositorie) GetUser(sessionID string) (string, error) {
 	userId := ""
-	query := `SELECT user_id FROM sessions WHERE session_id = ?`
-	row := s.DB.QueryRow(query, sessionID)
-	err := row.Scan(&userId)
-	if err != nil {
+	if err := s.DB.QueryRow(`SELECT user_id FROM sessions WHERE session_id = ?`, sessionID).Scan(&userId); err != nil {
 		return "", err
 	}
 
