@@ -8,7 +8,7 @@ import (
 	"blank/pkg/app/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler) {
+func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler) {
 	mux.HandleFunc("/ws", utils.RateLimitMiddleware(messageHnadler.MessageReceiver))
 
 	mux.HandleFunc("/static/", utils.RateLimitMiddleware(utils.SetupStaticFilesHandlers))
@@ -18,6 +18,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/login", utils.RateLimitMiddleware(authHandler.LoginHandle))
 	mux.HandleFunc("/api/integrity", utils.RateLimitMiddleware(authHandler.UserIntegrity))
 	mux.HandleFunc("/api/users/", utils.RateLimitMiddleware(authHandler.GetUsers))
+	mux.HandleFunc("/api/user-info", utils.RateLimitMiddleware(userHandler.InfoGetter))
 	mux.HandleFunc("/api/searchedusers", utils.RateLimitMiddleware(authHandler.SearchUsers))
 	mux.HandleFunc("/api/messages", utils.RateLimitMiddleware(authHandler.GetUsers))
 	mux.HandleFunc("/api/checkUnreadMesg", utils.RateLimitMiddleware(messageHnadler.UnReadMessages))

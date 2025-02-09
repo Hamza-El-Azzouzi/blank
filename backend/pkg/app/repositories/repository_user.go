@@ -148,30 +148,36 @@ func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) (
 	return users, nil
 }
 
-func (r *UserRepository) GetUserInfo(user_id int) (*models.UserInfo, error) {
+func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error) {
 	user := &models.UserInfo{}
 	query := `
-		SELECT
-			first_name,
-			last_name,
-			nickname,
-			email,
-			about_me,
-			date_of_birth,
-			is_public,
-			avatar,
-		FROM users 
-		WHERE id != ?`
+	SELECT 
+		u.first_name,
+		u.last_name,
+		u.email,
+		u.date_of_birth,
+		COALESCE(u.nickname, ""),
+		COALESCE(u.about_me, ""),
+		COALESCE(u.avatar, ""),
+		u.is_public,
+		(SELECT COUNT(*) FROM Follow WHERE follower_id = u.user_id AND status = 'accepted') AS following_count,
+		(SELECT COUNT(*) FROM Follow WHERE followed_id = u.user_id AND status = 'accepted') AS followers_count
+	FROM User u
+	LEFT JOIN Follow f ON u.user_id = f.follower_id OR u.user_id = f.followed_id
+	WHERE u.user_id = ?;
+	`
 
 	row := r.DB.QueryRow(query, user_id)
 	err := row.Scan(&user.FirstName,
 		&user.LastName,
-		&user.Nickname,
 		&user.Email,
+		&user.DateOfBirth,
+		&user.Nickname,
 		&user.About,
-		&user.Age,
 		&user.Avatar,
-		&user.IsPublic)
+		&user.IsPublic,
+		&user.Following,
+		&user.Followers)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &models.UserInfo{}, nil
