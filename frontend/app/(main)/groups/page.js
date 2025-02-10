@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { Users, MessageCircle } from 'lucide-react';
-import { Card } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Avatar } from '../../components/ui/avatar';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 
 export default function GroupsPage() {
   const [groups] = useState([
