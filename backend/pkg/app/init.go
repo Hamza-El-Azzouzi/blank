@@ -1,8 +1,10 @@
 package app
-//backend/pkg/app/handlers/handlers_login.go
+
+// backend/pkg/app/handlers/handlers_login.go
 import (
 	"database/sql"
 	"net/http"
+
 	"blank/pkg/app/handlers"
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
@@ -10,7 +12,6 @@ import (
 	"blank/pkg/app/services"
 
 	"github.com/gorilla/websocket"
-
 )
 
 func InitRepositories(db *sql.DB) (*repositories.UserRepository,
@@ -43,14 +44,16 @@ func InitServices(userRepo *repositories.UserRepository,
 	*services.ReactService,
 	*services.SessionService,
 	*services.MessageService,
+	*services.UserService,
 ) {
-	return &services.AuthService{UserRepo: userRepo,MessageRepo:messageRepo},
+	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
 		&services.PostService{PostRepo: postRepo, CategoryRepo: categoryRepo},
 		&services.CategoryService{CategorieRepo: categoryRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
 		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
-		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo}
+		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
+		&services.UserService{UserRepo: userRepo}
 }
 
 func InitHandlers(authService *services.AuthService,
@@ -60,10 +63,12 @@ func InitHandlers(authService *services.AuthService,
 	reactService *services.ReactService,
 	sessionService *services.SessionService,
 	authMiddleware *middleware.AuthMiddleware,
-	messageService *services.MessageService) (*handlers.AuthHandler,
+	messageService *services.MessageService,
+	userService *services.UserService) (*handlers.AuthHandler,
 	*handlers.PostHandler,
 	*handlers.ReactHandler,
 	*handlers.MessageHandler,
+	*handlers.UserHandler,
 ) {
 	MessageHandler := &handlers.MessageHandler{
 		MessageService: messageService,
@@ -91,9 +96,12 @@ func InitHandlers(authService *services.AuthService,
 		AuthHandler:     authHandler,
 	}
 	reactHandler := &handlers.ReactHandler{
-		ReactService:   reactService,
+		ReactService:  reactService,
 		AuthMidlaware: authMiddleware,
 	}
+	userHandler := &handlers.UserHandler{
+		UserService: userService,
+	}
 
-	return authHandler, postHandler, reactHandler, MessageHandler
+	return authHandler, postHandler, reactHandler, MessageHandler, userHandler
 }
