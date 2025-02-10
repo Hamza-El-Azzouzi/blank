@@ -13,7 +13,7 @@ import (
 const imageDir = "./storage/avatars"
 const MaxImageSize = 3 * 1024 * 1024
 
-func SaveAvatar(base64Data string) (string, error) {
+func SaveAvatar(base64Data string, userID uuid.UUID) (string, error) {
 	if base64Data == "" {
 		return "", nil
 	}
@@ -50,7 +50,7 @@ func SaveAvatar(base64Data string) (string, error) {
 	}
 
 	// Generate unique filename
-	filename := fmt.Sprintf("%s.%s", uuid.Must(uuid.NewV4()).String(), imageType)
+	filename := fmt.Sprintf("%s.%s", userID, imageType)
 	filepath := filepath.Join(imageDir, filename)
 
 	// Save the file

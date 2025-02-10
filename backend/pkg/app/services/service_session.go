@@ -1,8 +1,6 @@
 package services
 
 import (
-	"time"
-
 	"blank/pkg/app/repositories"
 
 	"github.com/gofrs/uuid/v5"
@@ -13,7 +11,7 @@ type SessionService struct {
 }
 
 func (s *SessionService) DeleteSession(sessionID string) error {
-	return s.SessionRepo.DeletSession(sessionID)
+	return s.SessionRepo.DeleteSession(sessionID)
 }
 
 func (s *SessionService) CheckSession(sessionID string) bool {
@@ -24,12 +22,8 @@ func (s *SessionService) CreateSession(sessionID string, userID uuid.UUID) error
 	return s.SessionRepo.CreateSession(sessionID, userID)
 }
 
-func (s *SessionService) DeleteSessionByDate(time time.Time) error {
-	return s.SessionRepo.DeleteSessionByDate(time)
-}
-
 func (s *SessionService) GetUserService(sessionId string) (string, error) {
-	userID, err := s.SessionRepo.GetUser(sessionId)
+	userID, err := s.SessionRepo.GetUserBySession(sessionId)
 	if err != nil {
 		return "", err
 	}

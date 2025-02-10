@@ -46,37 +46,37 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	user.DateOfBirth = html.EscapeString(strings.TrimSpace(user.DateOfBirth))
 	user.AboutMe = html.EscapeString(strings.TrimSpace(user.AboutMe))
 
-	if isValid, message := h.AuthMidlaware.ValidateFullName(user.FirstName); !isValid {
+	if isValid, message := utils.ValidateFullName(user.FirstName); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 
-	if isValid, message := h.AuthMidlaware.ValidateFullName(user.LastName); !isValid {
+	if isValid, message := utils.ValidateFullName(user.LastName); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 
-	if isValid, message := h.AuthMidlaware.ValidateDateOfBirth(user.DateOfBirth); !isValid {
+	if isValid, message := utils.ValidateDateOfBirth(user.DateOfBirth); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 
-	if isValid, message := h.AuthMidlaware.ValidateNickname(user.Nickname); !isValid {
+	if isValid, message := utils.ValidateNickname(user.Nickname); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 
-	if isValid, message := h.AuthMidlaware.ValidateAboutMe(user.AboutMe); !isValid {
+	if isValid, message := utils.ValidateAboutMe(user.AboutMe); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 
-	if isValid, message := h.AuthMidlaware.ValidateEmail(user.Email); !isValid {
+	if isValid, message := utils.ValidateEmail(user.Email); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 
-	if isValid, message := h.AuthMidlaware.ValidatePassword(user.Password); !isValid {
+	if isValid, message := utils.ValidatePassword(user.Password); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
@@ -150,23 +150,23 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
-func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	sessionId, err := r.Cookie("sessionId")
-	if err != nil && sessionId.Value == "" {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-	exist := h.SessionService.CheckSession(sessionId.Value)
-	if !exist {
-		// sendResponse(w, "No User Found")
-	} else {
-		// sendResponse(w, "Done")
-	}
-}
+// func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != http.MethodGet {
+// 		w.WriteHeader(http.StatusMethodNotAllowed)
+// 		return
+// 	}
+// 	sessionId, err := r.Cookie("sessionId")
+// 	if err != nil && sessionId.Value == "" {
+// 		w.WriteHeader(http.StatusForbidden)
+// 		return
+// 	}
+// 	exist := h.SessionService.CheckSession(sessionId.Value)
+// 	if !exist {
+// 		// sendResponse(w, "No User Found")
+// 	} else {
+// 		// sendResponse(w, "Done")
+// 	}
+// }
 
 func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

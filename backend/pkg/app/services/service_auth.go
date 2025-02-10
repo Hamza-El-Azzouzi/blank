@@ -17,24 +17,19 @@ type AuthService struct {
 	MessageRepo *repositories.MessageRepository
 }
 
-func HashPassword(psswd string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(psswd), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
 func (a *AuthService) Register(info models.RegisterData) (int, string) {
-	hashed, err := HashPassword(info.Password)
+	hashed, err := utils.HashPassword(info.Password)
 	if err != nil {
 		return http.StatusInternalServerError, "Internal Server Error"
 	}
 
-	avatarFilename, err := utils.SaveAvatar(info.Avatar)
+	user_id := uuid.Must(uuid.NewV4())
+	date, _ := time.Parse("2006-01-02", info.DateOfBirth)
+
+	avatarFilename, err := utils.SaveAvatar(info.Avatar, user_id)
 	if err != nil {
 		return http.StatusBadRequest, "Invalid Image"
 	}
-
-	user_id := uuid.Must(uuid.NewV4())
-	date, _ := time.Parse("2006-01-02", info.DateOfBirth)
 
 	user := &models.User{
 		ID:          user_id,
