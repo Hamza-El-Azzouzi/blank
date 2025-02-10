@@ -75,7 +75,7 @@ func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := uuid.Must(uuid.FromString("3b9d3a3a-f3e6-44bc-a9a2-f3ea812e7aa1"))
+	userID := uuid.Must(uuid.FromString("fdc16121-2efa-49d7-b7e4-b29b7fd7dc17"))
 	posts, err := p.PostService.PostsByUser(userID, nPagination)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
