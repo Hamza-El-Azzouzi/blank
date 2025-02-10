@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
+import { Globe, Heart, Lock, MessageCircle, MoreHorizontal, Users } from 'lucide-react';
 import { Avatar } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -22,13 +22,13 @@ export default function Post({ post }) {
   const handleComment = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-    
+
     const comment = {
       id: comments.length + 1,
       user: 'Current User',
       content: newComment,
     };
-    
+
     setComments([...comments, comment]);
     setNewComment('');
   };
@@ -43,7 +43,16 @@ export default function Post({ post }) {
             </Avatar>
             <div>
               <h3 className="font-semibold">{post.user.name}</h3>
-              <p className="text-sm text-gray-500">{post.timestamp}</p>
+              <div className='flex gap-3'>
+                {post.privacy && (
+                  <>
+                    {post.privacy === 'public' && <Globe className="h-4 w-4 text-sm text-gray-500" />}
+                    {post.privacy === 'friends' && <Users className="h-4 w-4 text-sm text-gray-500" />}
+                    {post.privacy === 'private' && <Lock className="h-4 w-4 text-sm text-gray-500" />}
+                  </>
+                )}
+                <p className="text-sm text-gray-500">{post.timestamp}</p>
+              </div>
             </div>
           </div>
           <Button variant="ghost" size="icon">
@@ -52,7 +61,7 @@ export default function Post({ post }) {
         </div>
 
         <p className="mt-3">{post.content}</p>
-        
+
         {post.image && (
           <div className="mt-3">
             <img
@@ -103,7 +112,7 @@ export default function Post({ post }) {
                 </div>
               </div>
             ))}
-            
+
             <form onSubmit={handleComment} className="flex space-x-2">
               <Input
                 type="text"
