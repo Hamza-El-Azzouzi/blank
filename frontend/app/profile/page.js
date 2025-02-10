@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import axios from 'axios';
 import { Mail, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
@@ -78,7 +79,11 @@ export default function ProfilePage() {
       });
   }, [profile]);
 
-
+      })
+      .catch(err => {
+        console.error('Error fetching user info:', err);
+      })
+  }, [])  
   return (
     <div className="max-w-4xl mx-auto">
       <div className="relative mb-6">
