@@ -1,11 +1,10 @@
-package utils
+package middleware
 
 import (
 	"net/http"
 	"sync"
 	"time"
 )
-
 
 type RateLimiter struct {
 	Limit    int
@@ -41,14 +40,14 @@ func (rl *RateLimiter) Allow() bool {
 	return true
 }
 
-func RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	limiter := NewRateLimiter(100, time.Second)
-	return func(response http.ResponseWriter, request *http.Request) {
-		if limiter.Allow() {
-			next(response, request)
-		} else {
-			response.WriteHeader(http.StatusTooManyRequests)
-		}
-	}
-}
+func RateLimitMiddleware(next http.Handler) http.Handler {
+	limiter := NewRateLimiter(100, time.Second) // 5 requests per second per IP
 
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if limiter.Allow() {
+			next.ServeHTTP(w, r) // Ensure correct request forwarding
+		} else {
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+		}
+	})
+}

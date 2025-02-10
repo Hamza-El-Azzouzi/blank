@@ -8,6 +8,7 @@ import (
 	"blank/pkg/app"
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/routes"
+
 	"blank/pkg/db"
 )
 
@@ -22,7 +23,7 @@ func main() {
 
 	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo := app.InitRepositories(database)
 
-	authService, postService, categoryService, commentService, likeService, sessionService, messageService := app.InitServices(userRepo,
+	authService, postService, categoryService, commentService, likeService, sessionService, messageService, userService := app.InitServices(userRepo,
 		postRepo,
 		categoryRepo,
 		commentRepo,
@@ -32,14 +33,15 @@ func main() {
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler, MessageHandler := app.InitHandlers(authService,
+	authHandler, postHandler, likeHandler, MessageHandler, userHandler := app.InitHandlers(authService,
 		postService,
 		categoryService,
 		commentService,
 		likeService,
 		sessionService,
 		authMiddleware,
-		messageService)
+		messageService,
+		userService)
 
 	// cleaner := &utils.Cleaner{SessionService: sessionService}
 
@@ -47,9 +49,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler)
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:1414", nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:1414", middleware.RateLimitMiddleware(middleware.CheckCORS(mux))))
 }

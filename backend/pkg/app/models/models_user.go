@@ -35,3 +35,16 @@ type LoginData struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type UserInfo struct {
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Nickname    string `json:"nickname"`
+	Email       string `json:"email"`
+	About       string `json:"about"`
+	DateOfBirth string `json:"date_of_birth"`
+	Avatar      string `json:"avatar"`
+	IsPublic    string `json:"is_public"`
+	Following   int    `json:"following"`
+	Followers   int    `json:"followers"`
+}
