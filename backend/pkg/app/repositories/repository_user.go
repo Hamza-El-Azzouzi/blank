@@ -13,12 +13,16 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) Create(user *models.User) error {
-	preparedQuery, err := r.DB.Prepare(`INSERT INTO users (id, username,age,gender,first_name,last_name, email, password_hash) VALUES (?, ?,?,?,?,?, ?, ?)`)
+	query := `INSERT INTO User
+		(user_id, first_name, last_name, email, password, date_of_birth, nickname, about_me, avatar, is_public)
+		VALUES (?,?,?,?,?,?,?,?,?,?)`
+	_, err := r.DB.Exec(query, user.ID, user.FirstName, user.LastName, user.Email,
+		user.Password, user.DateOfBirth, user.Nickname, user.AboutMe, user.Avatar, user.IsPublic)
 	if err != nil {
 		return err
 	}
-	_, err = preparedQuery.Exec(user.ID, user.Username, user.Age, user.Gender, user.FirstName, user.LastName, user.Email, user.PasswordHash)
-	return err
+
+	return nil
 }
 
 func (r *UserRepository) FindUser(identifier string, flag string) (*models.User, error) {
@@ -26,16 +30,12 @@ func (r *UserRepository) FindUser(identifier string, flag string) (*models.User,
 	query := ""
 	switch true {
 	case flag == "byId":
-		query = `SELECT id, username, email, password_hash FROM users WHERE id= ?`
+		query = `SELECT user_id, email, password FROM User WHERE id= ?`
 	case flag == "byEmail":
-		query = `SELECT id, username, email, password_hash FROM users WHERE email= ?`
-	case flag == "byUserName":
-		query = `SELECT id, username, email, password_hash FROM users WHERE username= ?`
+		query = `SELECT user_id, email, password FROM User WHERE email= ?`
 	}
 
-	row := r.DB.QueryRow(query, identifier)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash)
-	if err != nil {
+	if err := r.DB.QueryRow(query, identifier).Scan(&user.ID, &user.Email, &user.Password); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -51,7 +51,7 @@ func (r *UserRepository) GetUserBySessionID(sessionID string) (*models.User, err
 		JOIN sessions ON users.id = sessions.user_id 
 		WHERE sessions.session_id = ?`
 	row := r.DB.QueryRow(query, sessionID)
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash)
+	err := row.Scan(&user.ID, &user.Nickname, &user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -76,7 +76,7 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 		for rows.Next() {
 			user := models.User{}
 
-			err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+			err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
 			if err != nil {
 				return nil, err
 			}
@@ -115,7 +115,7 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 		for rows.Next() {
 			user := models.User{}
 
-			err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+			err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
 			if err != nil {
 				return nil, err
 			}
@@ -139,7 +139,7 @@ func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) (
 	}
 	for rows.Next() {
 		user := models.User{}
-		err := rows.Scan(&user.ID, &user.Username, &user.FirstName, &user.LastName)
+		err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
 		if err != nil {
 			return nil, err
 		}

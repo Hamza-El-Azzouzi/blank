@@ -8,14 +8,13 @@ import (
 	"blank/pkg/app/utils"
 )
 
+
 func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler) {
-
-
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
-	mux.HandleFunc("/api/logout", authHandler.LogoutHandle)
-	mux.HandleFunc("/api/register", authHandler.RegisterHandle)
-	mux.HandleFunc("/api/login", authHandler.LoginHandle)
+	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
+	mux.HandleFunc("/api/register", authHandler.HandleRegister)
+	mux.HandleFunc("/api/login", authHandler.HandleLogin)
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 	mux.HandleFunc("/api/users/", authHandler.GetUsers)
 	mux.HandleFunc("/api/searchedusers", authHandler.SearchUsers)
@@ -34,7 +33,6 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")
 	})
-
 }
 
 

@@ -6,7 +6,7 @@ CREATE TABLE `User` (
   `password` varchar(255),
   `first_name` varchar(255),
   `last_name` varchar(255),
-  `date_of_birth` date,
+  `date_of_birth` date NOT NULL, -- Format: YYYY-MM-DD
   `avatar` varchar(255),
   `nickname` varchar(255),
   `about_me` text,

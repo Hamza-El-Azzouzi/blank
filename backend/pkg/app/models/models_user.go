@@ -7,32 +7,33 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID
-	Age          string
-	Gender       string
-	FirstName    string
-	LastName     string
-	Username     string
-	Email        string
-	PasswordHash string
-	CreatedAt    time.Time
+	ID          uuid.UUID
+	FirstName   string
+	LastName    string
+	Email       string
+	Password    string
+	DateOfBirth time.Time
+	Nickname    string
+	AboutMe     string
+	Avatar      string
+	IsPublic    bool
+	CreatedAt   time.Time
 }
-type SignUpData struct {
-	Username      string `json:"username"`
-	Age           string `json:"age"`
-	Gender        string `json:"gender"`
-	FirstName     string `json:"first_name"`
-	LastName      string `json:"last_name"`
-	Email         string `json:"email"`
-	Passwd        string `json:"password"`
-	ConfirmPasswd string `json:"confirmPassword"`
+
+type RegisterData struct {
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	FirstName   string `json:"firstName"`
+	LastName    string `json:"lastName"`
+	DateOfBirth string `json:"dateOfBirth"`
+	Avatar      string `json:"avatar,omitempty"`
+	Nickname    string `json:"nickname,omitempty"`
+	AboutMe     string `json:"aboutMe,omitempty"`
 }
+
 type LoginData struct {
-	EmailOrUserName string `json:"emailOrUSername"`
-	Passwd          string `json:"password"`
-}
-type LoginReply struct {
-	REplyMssg string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserInfo struct {

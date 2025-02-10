@@ -54,8 +54,10 @@ go.sum
 # Dependency directories
 /backend/vendor/
 /backend/pkg/db/*.db
+/backend/storage
 
 ### General ###
+
 # Environment variables
 .env
 *.env

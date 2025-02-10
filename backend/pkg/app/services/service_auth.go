@@ -1,11 +1,12 @@
 package services
 
 import (
-	"fmt"
-	"strings"
+	"net/http"
+	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -21,49 +22,55 @@ func HashPassword(psswd string) (string, error) {
 	return string(bytes), err
 }
 
-func (a *AuthService) Register(info models.SignUpData) error {
-	checkByEmail, _ := a.UserRepo.FindUser(info.Email, "byEmail")
-	if checkByEmail != nil {
-		return fmt.Errorf("email")
+func (a *AuthService) Register(info models.RegisterData) (int, string) {
+	hashed, err := HashPassword(info.Password)
+	if err != nil {
+		return http.StatusInternalServerError, "Internal Server Error"
 	}
 
-	hash, err := HashPassword(info.Passwd)
+	avatarFilename, err := utils.SaveAvatar(info.Avatar)
 	if err != nil {
-		return err
+		return http.StatusBadRequest, "Invalid Image"
 	}
+
 	user_id := uuid.Must(uuid.NewV4())
+	date, _ := time.Parse("2006-01-02", info.DateOfBirth)
+
 	user := &models.User{
-		ID:           user_id,
-		Age:          info.Age,
-		Gender:       info.Gender,
-		FirstName:    info.FirstName,
-		LastName:     info.LastName,
-		Username:     info.Username,
-		Email:        info.Email,
-		PasswordHash: hash,
+		ID:          user_id,
+		FirstName:   info.FirstName,
+		LastName:    info.LastName,
+		Email:       info.Email,
+		Password:    hashed,
+		DateOfBirth: date,
+		Nickname:    info.Nickname,
+		AboutMe:     info.AboutMe,
+		Avatar:      avatarFilename,
+		IsPublic:    true,
 	}
-	return a.UserRepo.Create(user)
+
+	err = a.UserRepo.Create(user)
+	if err != nil {
+		if err.Error() == "UNIQUE constraint failed: User.email" {
+			return http.StatusNotAcceptable, "email already exists"
+		}
+		return http.StatusInternalServerError, "Internal Server Error"
+	}
+	return http.StatusOK, "success"
 }
 
-func (a *AuthService) Login(emailOrUSername, password string) (*models.User, error) {
-	var userByEmail *models.User
-	var err error
-	if strings.Contains(emailOrUSername, "@") {
-		userByEmail, err = a.UserRepo.FindUser(emailOrUSername, "byEmail")
-	} else {
-		userByEmail, err = a.UserRepo.FindUser(emailOrUSername, "byUserName")
-	}
-
+func (a *AuthService) Login(email, password string) (*models.User, string) {
+	userByEmail, err := a.UserRepo.FindUser(email, "byEmail")
 	if userByEmail == nil || err != nil {
-		return nil, fmt.Errorf("in email or username")
+		return nil, "Invalid Email"
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(userByEmail.PasswordHash), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(userByEmail.Password), []byte(password))
 	if err != nil {
-		return nil, err
+		return nil, "incorrect password"
 	}
 
-	return userByEmail, nil
+	return userByEmail, ""
 }
 
 func (a *AuthService) GetUserBySessionID(sessionID string) (*models.User, error) {
