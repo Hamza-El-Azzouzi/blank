@@ -7,45 +7,19 @@ import { Mail, Calendar } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';
 import Post from '../../components/Post';
-
-const MOCK_PROFILE = {
-  id: 1,
-  name: 'John Doe',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop',
-  cover: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop',
-  bio: 'Software Developer | Photography Enthusiast | Travel Lover',
-  location: 'San Francisco, CA',
-  website: 'johndoe.dev',
-  joinedDate: 'Joined January 2020',
-  followers: 1234,
-  following: 567,
-  posts: [
-    {
-      id: 1,
-      user: {
-        id: 1,
-        name: 'John Doe',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop',
-      },
-      content: 'Working on some exciting new projects! 💻',
-      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-      likes: 52,
-      comments: 12,
-      timestamp: '3d ago',
-      privacy: 'public',
-    }
-  ]
-};
+import UpdateInfoDialog from '../../components/UpdateInfoDialog';
+import { BASE_URL } from '../../config';
 
 export default function ProfilePage() {
 
   const [profile, setProfile] = useState({});
   const [posts, setPosts] = useState([]);
   const [postsPgae, setPostsPage] = useState(0);
+  const [updateInfo, setUpdateInfo] = useState(false);
 
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:1414/api/user-info`)
+    axios.get(`${BASE_URL}/user-info`)
       .then(res => {
         const data = res.data;
         data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'
@@ -60,30 +34,27 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!profile.first_name) return;
 
-    axios.get(`http://127.0.0.1:1414/api/user-posts/${postsPgae}`)
+    axios.get(`${BASE_URL}/user-posts/${postsPgae}`)
       .then(res => {
         const data = res.data;
         const user = {
           name: profile.first_name + " " + profile.last_name,
           avatar: profile.avatar,
         };
-        const updatedPosts = data.map(post => ({
-          ...post,
-          user: user
-        }));
+        if (data && Array.isArray(data)) {
+          const updatedPosts = data.map(post => ({
+            ...post,
+            user: user
+          }));
 
-        setPosts(updatedPosts);
+          setPosts(updatedPosts);
+        }
       })
       .catch(err => {
         console.error('Error fetching posts of the user:', err);
       });
   }, [profile]);
 
-      })
-      .catch(err => {
-        console.error('Error fetching user info:', err);
-      })
-  }, [])  
   return (
     <div className="max-w-4xl mx-auto">
       <div className="relative mb-6">
@@ -103,7 +74,7 @@ export default function ProfilePage() {
             <p className="text-lg drop-shadow-lg">{profile.nickname}</p>
           </div>
         </div>
-        <Button className="absolute bottom-4 right-4">
+        <Button className="absolute bottom-4 right-4" onClick={() => setUpdateInfo(true)}>
           Edit Profile
         </Button>
       </div>
@@ -122,7 +93,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex gap-6 mb-4">
+        <div className="flex gap-6 mb-4 ">
           <div>
             <span className="font-bold">{profile.followers}</span>
             <span className="text-gray-600 ml-1">Followers</span>
@@ -138,18 +109,25 @@ export default function ProfilePage() {
             <p className="text-sm drop-shadow-lg text-gray-600 m-3">{profile.about}</p>
           </div>
         }
-        <h3 className='text-xl font-bold drop-shadow-lg text-gray-600 mb-3'>{profile?.first_name}'s posts</h3>
-        {posts ?
-          <div className="space-y-4">
+        <h3 className='text-xl font-bold drop-shadow-lg text-gray-600 mb-3 border-t border-spacing-2 pt-2'>{profile?.first_name}'s posts</h3>
+        {posts.length > 0 ?
+          <div className="space-y-4 ">
             {posts.map((post) => (
               <Post key={post.id} post={post} />
             ))}
           </div>
           : <div className="flex items-center gap-1">
-            <p>{profile.first_name} {profile.last_name} didn't post anything yet!</p>
+            <p className='text-sm text-gray-400 ml-3'>{profile.first_name} {profile.last_name} didn't post anything yet!</p>
           </div>
         }
       </div>
+
+      {updateInfo && (
+        <UpdateInfoDialog
+          user={profile}
+          onClose={() => setUpdateInfo(false)}
+        />
+      )}
     </div >
   );
 }
