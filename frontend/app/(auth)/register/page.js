@@ -8,9 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Camera, Upload } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
+import { validateForm } from '@/lib/validateUserInfo';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,29 +24,84 @@ export default function RegisterPage() {
     dateOfBirth: '',
     nickname: '',
     aboutMe: '',
-    avatar: null,
-    privacy: 'public' // default to public profile
+    avatar: '',
+    privacy: 'public'
   });
-
   const [previewUrl, setPreviewUrl] = useState(null);
 
+
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({ ...formData, avatar: file });
-      // Create preview URL
+    const image = e.target.files[0];
+    if (image) {
+      if (image.size > 3 * 1024 * 1024) {
+        toast.error('image size should be less than 3MB');
+        return;
+      }
+
+      if (!image.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
+      reader.readAsDataURL(image);
+      reader.onload = () => {
+        const base64 = reader.result
+        setFormData({ ...formData, avatar: base64 });
+        setPreviewUrl(base64);
       };
-      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Registration submitted:', formData);
-    router.push('/login');
+
+    const validation = validateForm(formData);
+    if (!validation.isValid) {
+      toast.error(validation.message);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords don't match");
+      return false;
+    }
+    if (password.length < 6 || password.length > 50) {
+      toast.error("Password must be between 6 and 50 characters long");
+      return false;
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      toast.error("Password must contain at least one uppercase letter");
+      return false;
+    }
+    if (!/[a-z]/.test(formData.password)) {
+      toast.error("Password must contain at least one lowercase letter");
+      return false;
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      toast.error("Password must contain at least one number");
+      return false;
+    }
+
+    setIsLoading(true);
+
+    const { confirmPassword, ...dataToSend } = formData;
+
+    await axios.post('http://127.0.0.1:1414/api/register', dataToSend)
+      .then(() => {
+        toast.success('Registration successful!');
+        setTimeout(() => {
+          router.replace('/login');
+        }, 500);
+      })
+      .catch((error) => {
+        toast.error(error.response?.data?.message || 'Registration failed');
+      })
+      .finally(() => {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 400);
+      });
   };
 
   return (
@@ -78,6 +137,7 @@ export default function RegisterPage() {
                   size="sm"
                   className="absolute bottom-0 right-0 rounded-full"
                   onClick={() => document.getElementById('avatar-upload').click()}
+                  disabled={isLoading}
                 >
                   <Upload className="h-4 w-4" />
                 </Button>
@@ -88,6 +148,7 @@ export default function RegisterPage() {
                 accept="image/*"
                 className="hidden"
                 onChange={handleFileChange}
+                disabled={isLoading}
               />
               <p className="text-sm text-gray-500">Upload your profile picture</p>
             </div>
@@ -102,6 +163,7 @@ export default function RegisterPage() {
                     id="firstName"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -111,6 +173,7 @@ export default function RegisterPage() {
                     id="lastName"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -122,6 +185,7 @@ export default function RegisterPage() {
                   value={formData.nickname}
                   onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                   placeholder="How would you like to be called?"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -137,6 +201,7 @@ export default function RegisterPage() {
                   placeholder="example@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -147,9 +212,10 @@ export default function RegisterPage() {
                   type="date"
                   value={formData.dateOfBirth}
                   onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
-                <p className="text-sm text-gray-500">You must be at least 13 years old</p>
+                <p className="text-sm text-gray-500">You must be at least 15 years old</p>
               </div>
             </div>
 
@@ -163,8 +229,10 @@ export default function RegisterPage() {
                   rows={3}
                   className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   placeholder="Tell us a bit about yourself..."
+                  maxLength={"150"}
                   value={formData.aboutMe}
                   onChange={(e) => setFormData({ ...formData, aboutMe: e.target.value })}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -178,6 +246,7 @@ export default function RegisterPage() {
                       checked={formData.privacy === 'public'}
                       onChange={(e) => setFormData({ ...formData, privacy: e.target.value })}
                       className="rounded-full"
+                      disabled={isLoading}
                     />
                     <span>Public</span>
                   </label>
@@ -211,6 +280,7 @@ export default function RegisterPage() {
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -221,6 +291,7 @@ export default function RegisterPage() {
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -232,7 +303,7 @@ export default function RegisterPage() {
               Create Account
             </Button>
             <div className="text-center text-sm">
-              Already have an account?{' '}
+              Already have an account?{'  '}
               <Link href="/login" className="text-blue-600 hover:underline">
                 Login here
               </Link>
