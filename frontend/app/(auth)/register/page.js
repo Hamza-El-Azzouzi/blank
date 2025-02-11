@@ -152,9 +152,10 @@ export default function RegisterPage() {
               <p className="text-sm text-gray-500">Upload your profile picture</p>
             </div>
 
-            {/* Basic Information */}
+            {/* account Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Basic Information</h3>
+              <h3 className="text-lg font-medium">account Information</h3>
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name *</Label>
@@ -177,50 +178,32 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="nickname">Nickname (Optional)</Label>
-                <Input
-                  id="nickname"
-                  value={formData.nickname}
-                  onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-                  placeholder="How would you like to be called?"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
 
-            {/* Account Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Account Information</h3>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="example@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  disabled={isLoading}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nickname">Nickname (Optional)</Label>
+                  <Input
+                    id="nickname"
+                    value={formData.nickname}
+                    onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+                    placeholder="How would you like to be called?"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                  <p className="text-sm text-gray-500">You must be at least 15 years old</p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                  disabled={isLoading}
-                  required
-                />
-                <p className="text-sm text-gray-500">You must be at least 15 years old</p>
-              </div>
-            </div>
 
-            {/* Profile Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Profile Information</h3>
               <div className="space-y-2">
                 <Label htmlFor="aboutMe">About Me (Optional)</Label>
                 <textarea
@@ -268,9 +251,25 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* login Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Login Information</h3>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="example@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+            </div>
+
             {/* Security */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Security</h3>
               <div className="space-y-2">
                 <Label htmlFor="password">Password *</Label>
                 <Input
