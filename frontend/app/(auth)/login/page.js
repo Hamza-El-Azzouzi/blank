@@ -7,42 +7,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+
 
 export default function LoginPage() {
+    const router = useRouter();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
-
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-
-        try {
-            const response = await fetch('http://127.0.0.1:1414/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
-            toast.success('Login successful!');
-            setTimeout(() => {
-                router.push('/');
-            }, 1000);
-
-        } catch (error) {
-            toast.error(error || 'An error occurred during login');
-        } finally {
-            setIsLoading(false);
-        }
+        await axios.post('http://127.0.0.1:1414/api/login', formData)
+            .then(() => {
+                toast.success('Login successful!');
+                setTimeout(() => {
+                    router.replace('/')
+                }, 500);
+            }).catch((error) => {
+                const errorMessage = error.response?.data?.message || 'login failed. Please try again.';
+                toast.error(errorMessage);
+            }).finally(() => {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, 400);
+            })
     };
 
     return (
@@ -56,7 +49,7 @@ export default function LoginPage() {
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2">
+                        <div className="space-y-2This branch is 21 commits ahead of main.">
                             <Label htmlFor="email">Email</Label>
                             <Input id="email" type="email"
                                 placeholder="example@example.com"
