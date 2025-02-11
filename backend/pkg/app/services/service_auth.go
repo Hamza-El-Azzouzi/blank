@@ -26,7 +26,7 @@ func (a *AuthService) Register(info models.RegisterData) (int, string) {
 	user_id := uuid.Must(uuid.NewV4())
 	date, _ := time.Parse("2006-01-02", info.DateOfBirth)
 
-	avatarFilename, err := utils.SaveAvatar(info.Avatar, user_id)
+	avatarFilename, err := utils.SaveAvatar(info.Avatar)
 	if err != nil {
 		return http.StatusBadRequest, "Invalid Image"
 	}
