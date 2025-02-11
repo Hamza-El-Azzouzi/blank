@@ -9,27 +9,37 @@ import { Avatar } from '../../components/ui/avatar';
 import Post from '../../components/Post';
 import UpdateInfoDialog from '../../components/UpdateInfoDialog';
 import { BASE_URL } from '../../config';
+import { Skeleton } from '../../components/ui/skeleton';
 
 export default function ProfilePage() {
 
-  const [profile, setProfile] = useState({});
+  const [profile, setProfile] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    date_of_birth: "",
+    is_public: true,
+    following: 0,
+    followers: 0
+  });
   const [posts, setPosts] = useState([]);
   const [postsPgae, setPostsPage] = useState(0);
   const [updateInfo, setUpdateInfo] = useState(false);
+  const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
     axios.get(`${BASE_URL}/user-info`)
       .then(res => {
         const data = res.data;
-        data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'
-        data.cover = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop'
+        data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'; // to be removed after implementing avatar import
         setProfile(data);
-      })
-      .catch(err => {
+      }).catch(err => {
         console.error('Error fetching user info:', err);
+      }).finally(() => {
+        setLoading(false);
       })
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (!profile.first_name) return;
@@ -60,14 +70,19 @@ export default function ProfilePage() {
       <div className="relative mb-6">
         <div className="h-80 overflow-hidden rounded-b-lg">
           <img
-            src={profile.cover}
+            src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop'
             alt="Cover"
             className="w-full h-full object-cover"
           />
         </div>
         <div className="absolute bottom-4 left-4 flex items-end gap-4">
           <Avatar className="h-40 w-40 border-4 border-white">
-            <img src={profile.avatar} alt={profile.first_name + " " + profile.last_name} className="h-full w-full" />
+            {loading ?
+              <div className='bg-white w-full h-full flex justify-center align-middle'>
+                <Skeleton className='w-full h-full rounded-full' />
+              </div>
+              : <img src={profile.avatar || 'default-avatar.jpg'} alt={profile.first_name + " " + profile.last_name} className="h-full w-full" />
+            }
           </Avatar>
           <div className="mb-4 text-white">
             <h1 className="text-3xl font-bold drop-shadow-lg">{profile.first_name + " " + profile.last_name}</h1>
@@ -126,6 +141,7 @@ export default function ProfilePage() {
         <UpdateInfoDialog
           user={profile}
           onClose={() => setUpdateInfo(false)}
+          setProfile={setProfile}
         />
       )}
     </div >

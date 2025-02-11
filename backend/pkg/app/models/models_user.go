@@ -44,6 +44,6 @@ type UserInfo struct {
 	DateOfBirth string `json:"date_of_birth"`
 	Avatar      string `json:"avatar"`
 	IsPublic    bool   `json:"is_public"`
-	Following   int    `json:"following,omitempty"`
-	Followers   int    `json:"followers,omitempty"`
+	Following   int    `json:"following"`
+	Followers   int    `json:"followers"`
 }

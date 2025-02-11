@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Avatar } from './ui/avatar';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
 import { BASE_URL } from '../config';
 import axios from 'axios';
+import { toast } from 'sonner';
 
-export default function UpdateInfoDialog({ user, onClose }) {
+export default function UpdateInfoDialog({ user, onClose, setProfile }) {
   const [isChanged, setIsChanged] = useState(false);
   const [formData, setFormData] = useState({
     first_name: user.first_name || '',
@@ -18,11 +20,11 @@ export default function UpdateInfoDialog({ user, onClose }) {
     about: user.about || '',
     date_of_birth: user.date_of_birth || '',
     avatar: user.avatar || '',
-    is_public: user.is_public || true,
+    is_public: user.is_public,
   });
 
   useEffect(() => {
-    const hasChanged = Object.keys(formData).some((key) => formData[key].trim() !== (user[key] || '').trim());
+    const hasChanged = Object.keys(formData).some((key) => formData[key] !== (user[key] || ''));
     setIsChanged(hasChanged);
   }, [formData, user]);
 
@@ -48,66 +50,86 @@ export default function UpdateInfoDialog({ user, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isChanged) return;
-    console.log(formData);
 
-    axios.put(`${BASE_URL}/user-upadte-info`, { formData })
+    axios.put(`${BASE_URL}/user-upadte-info`, formData)
       .then(res => {
         const data = res.data;
-        console.log(data);
-        
+        if (data.message === "success") {
+          setProfile(formData);
+          toast.success(data.message)
+          onClose()
+        } else {
+          toast.error(data.message)
+        }
       })
       .catch(err => {
         console.error('Error updating user info:', err);
+        toast.error(err)
       })
   };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
+      <DialogDescription>Update Profile</DialogDescription>
       <DialogContent className="sm:max-w-[425px] p-6">
         <h3 className="font-semibold text-lg border-b pb-1">Update Profile</h3>
-        <div className="flex flex-col items-center mb-1 ">
+        <div className="flex flex-col items-center  ">
           <label htmlFor="avatar-upload" className="cursor-pointer">
             <Avatar className="h-24 w-24 rounded-full object-cover">
-              <img src={formData.avatar || '/default-avatar.png'} alt="Avatar" />
+              <img src={formData.avatar || '/default-avatar.jpg'} alt="Avatar" />
             </Avatar>
           </label>
           <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleAvatarChange} />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
           <div>
             <label htmlFor="first_name" className="block text-sm text-gray-500 mb-1 ml-2">First Name</label>
-            <Input id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" />
+            <Input id="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" />
           </div>
 
           <div>
             <label htmlFor="last_name" className="block text-sm text-gray-500 mb-1 ml-2">Last Name</label>
-            <Input id="last_name" name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" />
+            <Input id="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" />
           </div>
 
           <div>
             <label htmlFor="nickname" className="block text-sm text-gray-500 mb-1 ml-2">Nickname</label>
-            <Input id="nickname" name="nickname" value={formData.nickname} onChange={handleChange} placeholder="Nickname" />
+            <Input id="nickname" value={formData.nickname} onChange={handleChange} placeholder="Nickname" />
           </div>
 
           <div>
             <label htmlFor="email" className="block text-sm text-gray-500 mb-1 ml-2">Email</label>
-            <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" />
+            <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" />
           </div>
 
           <div>
             <label htmlFor="about" className="block text-sm text-gray-500 mb-1 ml-2">About You</label>
-            <Input id="about" name="about" value={formData.about} onChange={handleChange} placeholder="About You" />
+            <Textarea className="resize-none" id="about" value={formData.about} onChange={handleChange} placeholder="About You" />
           </div>
 
           <div>
             <label htmlFor="date_of_birth" className="block text-sm text-gray-500 mb-1 ml-2">Date of Birth</label>
-            <Input id="date_of_birth" name="date_of_birth" type="date" value={formData.date_of_birth?.split('T')[0]} onChange={handleChange} />
+            <Input id="date_of_birth" type="date" value={formData.date_of_birth?.split('T')[0]} onChange={handleChange} />
           </div>
 
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="is_public" name="is_public" checked={formData.is_public} onChange={handleChange} />
-            <label htmlFor="is_public" className="text-sm">Make profile public</label>
+          <div className="">
+            <label className="block text-sm text-gray-500 mb-1 ml-2">Profile Privacy</label>
+            <div className="flex space-x-4">
+              <label className="flex items-center space-x-2">
+                <Input type="radio" value="true" checked={formData.is_public === true} onChange={() => setFormData({ ...formData, is_public: true })} />
+                <span>Public</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <Input type="radio" value="false" checked={formData.is_public === false} onChange={() => setFormData({ ...formData, is_public: false })} />
+                <span>Private</span>
+              </label>
+            </div>
+            <p className="text-sm text-gray-500">
+              {formData.is_public === true
+                ? 'Your profile will be visible to everyone'
+                : 'Only approved followers can see your profile'}
+            </p>
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
