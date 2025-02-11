@@ -25,10 +25,9 @@ export default function RegisterPage() {
     nickname: '',
     aboutMe: '',
     avatar: '',
-    privacy: 'public'
+    isPublic: true
   });
   const [previewUrl, setPreviewUrl] = useState(null);
-
 
   const handleFileChange = (e) => {
     const image = e.target.files[0];
@@ -92,7 +91,7 @@ export default function RegisterPage() {
         toast.success('Registration successful!');
         setTimeout(() => {
           router.replace('/login');
-        }, 500);
+        }, 1000);
       })
       .catch((error) => {
         toast.error(error.response?.data?.message || 'Registration failed');
@@ -100,7 +99,7 @@ export default function RegisterPage() {
       .finally(() => {
         setTimeout(() => {
           setIsLoading(false);
-        }, 400);
+        }, 1000);
       });
   };
 
@@ -242,9 +241,8 @@ export default function RegisterPage() {
                     <input
                       type="radio"
                       name="privacy"
-                      value="public"
-                      checked={formData.privacy === 'public'}
-                      onChange={(e) => setFormData({ ...formData, privacy: e.target.value })}
+                      checked={formData.isPublic === true}
+                      onChange={() => setFormData({ ...formData, isPublic: true })}
                       className="rounded-full"
                       disabled={isLoading}
                     />
@@ -255,15 +253,15 @@ export default function RegisterPage() {
                       type="radio"
                       name="privacy"
                       value="private"
-                      checked={formData.privacy === 'private'}
-                      onChange={(e) => setFormData({ ...formData, privacy: e.target.value })}
+                      checked={formData.isPublic === false}
+                      onChange={() => setFormData({ ...formData, isPublic: false })}
                       className="rounded-full"
                     />
                     <span>Private</span>
                   </label>
                 </div>
                 <p className="text-sm text-gray-500">
-                  {formData.privacy === 'public'
+                  {formData.isPublic
                     ? 'Your profile will be visible to everyone'
                     : 'Only approved followers can see your profile'}
                 </p>

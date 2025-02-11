@@ -29,6 +29,7 @@ type RegisterData struct {
 	Avatar      string `json:"avatar,omitempty"`
 	Nickname    string `json:"nickname,omitempty"`
 	AboutMe     string `json:"aboutMe,omitempty"`
+	IsPublic    bool   `json:"isPublic,omitempty"`
 }
 
 type LoginData struct {
