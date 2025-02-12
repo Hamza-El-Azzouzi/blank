@@ -4,8 +4,8 @@ import (
 	"net/http"
 )
 
-
 func CheckCORS(next http.Handler) http.Handler {
+  
 	var originAllowlist = "http://localhost:3000"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -20,6 +20,7 @@ func CheckCORS(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }

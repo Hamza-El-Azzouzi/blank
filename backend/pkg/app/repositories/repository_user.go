@@ -186,3 +186,48 @@ func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error
 	}
 	return user, nil
 }
+
+// Helper function to return sql.NullString
+func nullIfEmpty(value string) sql.NullString {
+	if value == "" {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{String: value, Valid: true}
+}
+
+func (r *UserRepository) UpdateUserInfo(user_id uuid.UUID, userInfo models.UserInfo) error {
+	query := `
+		UPDATE User 
+		SET 
+			first_name = ?,
+			last_name = ?,
+			email = ?,
+			nickname = ?,
+			about_me = ?,
+			date_of_birth = ?,
+			is_public = ?
+		WHERE 
+			user_id = ?`
+
+	stm, err := r.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stm.Close()
+
+	_, err = stm.Exec(
+		userInfo.FirstName,
+		userInfo.LastName,
+		userInfo.Email,
+		nullIfEmpty(userInfo.Nickname),
+		nullIfEmpty(userInfo.About),
+		userInfo.DateOfBirth,
+		userInfo.IsPublic,
+		user_id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

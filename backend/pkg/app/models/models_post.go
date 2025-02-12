@@ -34,6 +34,18 @@ type PostWithUser struct {
 	TotalCount    int
 }
 
+type PostByUser struct {
+	ID            string    `json:"id"`
+	Content       string    `json:"content"`
+	Image         string    `json:"image,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+	FormattedDate string    `json:"timestamp"`
+	LikeCount     int       `json:"likes"`
+	DisLikeCount  int       `json:"dislikes"`
+	CommentCount  int       `json:"comments"`
+	Privacy       string    `json:"privacy"`
+}
+
 type CommentDetails struct {
 	CommentID     uuid.UUID
 	Content       string

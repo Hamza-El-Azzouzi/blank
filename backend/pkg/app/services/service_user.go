@@ -18,3 +18,11 @@ func (a *UserService) GetUserInfo(userID uuid.UUID) (*models.UserInfo, error) {
 	}
 	return user, nil
 }
+
+func (a *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo) error {
+	err := a.UserRepo.UpdateUserInfo(userID, userInfo)
+	if err != nil {
+		return err
+	}
+	return nil
+}
