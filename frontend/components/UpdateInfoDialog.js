@@ -9,6 +9,7 @@ import { Textarea } from './ui/textarea';
 import { BASE_URL } from '../config';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { validateForm } from '@/lib/validateUserInfo';
 
 export default function UpdateInfoDialog({ user, onClose, setProfile }) {
   const [isChanged, setIsChanged] = useState(false);
@@ -51,6 +52,12 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
     e.preventDefault();
     if (!isChanged) return;
     formData.date_of_birth = formData.date_of_birth?.split('T')[0];
+
+    const validation = validateForm(formData);
+    if (!validation.isValid) {
+      toast.error(validation.message);
+      return;
+    }
 
     axios.put(`${BASE_URL}/api/user-upadte-info`, formData)
       .then(res => {
