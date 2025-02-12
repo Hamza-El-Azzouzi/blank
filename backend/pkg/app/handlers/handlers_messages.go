@@ -83,7 +83,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 		if data["Ask"] == "Who Are You" && existSessions {
 			m.ClientsMu.Lock()
 			m.Clients[userID].Conn.WriteJSON(map[string]string{
-				"username": user.Username,
+				"username": user.Nickname,
 			})
 			m.ClientsMu.Unlock()
 		}
@@ -95,7 +95,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			}
 			m.Clients[data["id"]].Conn.WriteJSON(map[string]string{
 				"pimp" : data["pimp"],
-				"usernametyper" : user.Username,
+				"usernametyper" : user.Nickname,
 			})
 		}
 		if data["type"] == "ping" && existSessions {
@@ -131,7 +131,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 			receiverClient, exists := m.Clients[data["id"]]
 			m.ClientsMu.Unlock()
 			data["session"] = userSender.String()
-			data["senderUserName"] = user.Username
+			data["senderUserName"] = user.Nickname
 			if exists {
 				err = receiverClient.Conn.WriteJSON(data)
 				if err != nil {

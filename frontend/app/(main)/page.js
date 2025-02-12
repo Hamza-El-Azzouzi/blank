@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import CreatePost from '../../components/CreatePost';
-import ProfileSidebar from '../../components/ProfileSidebar';
-import ContactsSidebar from '../../components/ContactsSidebar';
-import Post from '../../components/Post';
+import Post from '@/components/Post';
+import CreatePost from '@/components/CreatePost';
+import ProfileSidebar from '@/components/ProfileSidebar';
+import ContactsSidebar from '@/components/ContactsSidebar';
 
 const MOCK_POSTS = [
   {

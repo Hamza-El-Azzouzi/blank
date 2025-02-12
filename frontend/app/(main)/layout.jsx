@@ -1,7 +1,7 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
-import Navbar from '../../components/Navbar';
-import { Toaster } from '../../components/ui/sonner';
+import Navbar from '@/components/Navbar';
+import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
         <main className="container mx-auto px-4 pt-16">
           {children}
         </main>
+
         <Toaster position="top-right"/>
       </body>
     </html>

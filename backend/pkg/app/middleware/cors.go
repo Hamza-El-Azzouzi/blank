@@ -5,9 +5,11 @@ import (
 )
 
 func CheckCORS(next http.Handler) http.Handler {
-	originAllowlist := "http://127.0.0.1:3000"
+  
+	var originAllowlist = "http://localhost:3000"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
+		
 		if origin == originAllowlist {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT")

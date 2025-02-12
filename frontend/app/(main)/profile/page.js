@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import axios from 'axios';
 import { Mail, Calendar } from 'lucide-react';
 import { Avatar } from '../../../components/ui/avatar';
@@ -77,6 +76,7 @@ export default function ProfilePage() {
         </div>
         <div className="absolute bottom-4 left-4 flex items-end gap-4">
           <Avatar className="h-40 w-40 border-4 border-white">
+
             {loading ?
               <div className='bg-white w-full h-full flex justify-center align-middle'>
                 <Skeleton className='w-full h-full rounded-full' />
@@ -97,6 +97,7 @@ export default function ProfilePage() {
       <div className="px-4">
         <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-6">
           <div className="flex items-center gap-1">
+
             <Mail className="h-4 w-4" />
             <a href={`mailto:${profile.email}`} className="text-blue-600 hover:underline">
               {profile.email}
