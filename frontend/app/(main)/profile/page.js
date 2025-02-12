@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 
 import axios from 'axios';
 import { Mail, Calendar } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Avatar } from '../../components/ui/avatar';
-import Post from '../../components/Post';
-import UpdateInfoDialog from '../../components/UpdateInfoDialog';
-import { BASE_URL } from '../../config';
-import { Skeleton } from '../../components/ui/skeleton';
+import { Avatar } from '../../../components/ui/avatar';
+import Post from '../../../components/Post';
+import UpdateInfoDialog from '../../../components/UpdateInfoDialog';
+import { BASE_URL } from '../../../config';
+import { Skeleton } from '../../../components/ui/skeleton';
+import { Button } from '../../../components/ui/button';
 
 export default function ProfilePage() {
 
