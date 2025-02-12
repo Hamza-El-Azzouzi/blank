@@ -25,6 +25,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/user-info", userHandler.InfoGetter)
 	mux.HandleFunc("/api/user-upadte-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/user-posts/", postHandler.PostsByUser)
+	mux.HandleFunc("/storage/avatars/{avatar}", utils.ServeAvatars)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/categories", postHandler.GetCategories)

@@ -231,3 +231,25 @@ func (r *UserRepository) UpdateUserInfo(user_id uuid.UUID, userInfo models.UserI
 
 	return nil
 }
+
+func (r *UserRepository) SaveAvatar(userID uuid.UUID, filename string) error {
+	query := `
+		UPDATE User 
+		SET 
+			avatar = ?
+		WHERE 
+			user_id = ?`
+
+	stm, err := r.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stm.Close()
+
+	_, err = r.DB.Exec(query, filename, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -10,8 +10,10 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-const imageDir = "./storage/avatars"
-const MaxImageSize = 3 * 1024 * 1024
+const (
+	imageDir     = "./storage/avatars"
+	MaxImageSize = 3 * 1024 * 1024
+)
 
 func SaveAvatar(base64Data string) (string, error) {
 	if base64Data == "" {
@@ -19,7 +21,7 @@ func SaveAvatar(base64Data string) (string, error) {
 	}
 
 	// Create avatars directory if it doesn't exist
-	if err := os.MkdirAll(imageDir, 0755); err != nil {
+	if err := os.MkdirAll(imageDir, 0o755); err != nil {
 		return "", err
 	}
 
@@ -54,9 +56,9 @@ func SaveAvatar(base64Data string) (string, error) {
 	filepath := filepath.Join(imageDir, filename)
 
 	// Save the file
-	if err := os.WriteFile(filepath, imgData, 0644); err != nil {
+	if err := os.WriteFile(filepath, imgData, 0o644); err != nil {
 		return "", err
 	}
 
-	return filename, nil
+	return "storage/avatars/" + filename, nil
 }

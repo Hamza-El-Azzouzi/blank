@@ -28,10 +28,10 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/user-info`)
+    axios.get(`${BASE_URL}/api/user-info`)
       .then(res => {
         const data = res.data;
-        data.avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop'; // to be removed after implementing avatar import
+        data.avatar = BASE_URL + data.avatar
         setProfile(data);
       }).catch(err => {
         console.error('Error fetching user info:', err);
@@ -43,7 +43,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!profile.first_name) return;
 
-    axios.get(`${BASE_URL}/user-posts/${postsPgae}`)
+    axios.get(`${BASE_URL}/user-posts/api/${postsPgae}`)
       .then(res => {
         const data = res.data;
         const user = {

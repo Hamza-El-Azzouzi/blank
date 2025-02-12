@@ -9,6 +9,7 @@ import (
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -69,6 +70,35 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&userInfo)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if isValid, message := utils.ValidateFullName(userInfo.FirstName); !isValid {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
+		return
+	}
+
+	if isValid, message := utils.ValidateFullName(userInfo.LastName); !isValid {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
+		return
+	}
+
+	if isValid, message := utils.ValidateDateOfBirth(userInfo.DateOfBirth); !isValid {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
+		return
+	}
+
+	if isValid, message := utils.ValidateNickname(userInfo.Nickname); !isValid {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
+		return
+	}
+
+	if isValid, message := utils.ValidateAboutMe(userInfo.About ); !isValid {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
+		return
+	}
+
+	if isValid, message := utils.ValidateEmail(userInfo.Email); !isValid {
+		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
 

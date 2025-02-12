@@ -50,8 +50,9 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isChanged) return;
+    formData.date_of_birth = formData.date_of_birth?.split('T')[0];
 
-    axios.put(`${BASE_URL}/user-upadte-info`, formData)
+    axios.put(`${BASE_URL}/api/user-upadte-info`, formData)
       .then(res => {
         const data = res.data;
         if (data.message === "success") {
@@ -110,7 +111,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
 
           <div>
             <label htmlFor="date_of_birth" className="block text-sm text-gray-500 mb-1 ml-2">Date of Birth</label>
-            <Input id="date_of_birth" name="date_of_birth" type="date" value={formData.date_of_birth?.split('T')[0]} onChange={handleChange} />
+            <Input id="date_of_birth" name="date_of_birth" type="date" value={new Date(formData.date_of_birth)?.toISOString().split('T')[0]} onChange={handleChange} />
           </div>
 
           <div className="">
