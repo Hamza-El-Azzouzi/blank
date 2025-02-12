@@ -64,16 +64,21 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
         const data = res.data;
         if (data.message === "success") {
           setProfile(formData);
-          toast.success(data.message)
-          onClose()
+          toast.success("Profile updated successfully!");
+          onClose();
         } else {
-          toast.error(data.message)
+          toast.error(data.message);
         }
       })
       .catch(err => {
-        console.error('Error updating user info:', err);
-        toast.error(err)
-      })
+        if (err.response && err.response.status === 400 && err.response.data.message === "email already exists") {
+          toast.error("This email is already in use. Please use a different one.");
+        } else {
+          console.error("Error updating user info:", err);
+          toast.error("An error occurred while updating your info.");
+        }
+      });
+
   };
 
   return (

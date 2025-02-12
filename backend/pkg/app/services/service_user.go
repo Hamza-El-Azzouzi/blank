@@ -26,9 +26,6 @@ func (a *UserService) GetUserInfo(userID uuid.UUID) (*models.UserInfo, error) {
 func (a *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo) error {
 	err := a.UserRepo.UpdateUserInfo(userID, userInfo)
 	if err != nil {
-		if err.Error() == "UNIQUE constraint failed: User.email" {
-			return fmt.Errorf("email already exists")
-		}
 		return err
 	}
 	if strings.HasPrefix(userInfo.Avatar, "data:image") {

@@ -92,7 +92,7 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isValid, message := utils.ValidateAboutMe(userInfo.About ); !isValid {
+	if isValid, message := utils.ValidateAboutMe(userInfo.About); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
@@ -104,8 +104,9 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	err = p.UserService.UpdateUserInfo(userID, userInfo)
 	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		if err.Error() == "UNIQUE constraint failed: User.email" {
+			utils.SendResponses(w, http.StatusBadRequest, "email already exists", nil)
+		}
 		return
 	}
 
