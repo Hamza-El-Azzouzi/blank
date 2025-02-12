@@ -11,6 +11,8 @@ import { Camera, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { validateForm } from '@/lib/validateUserInfo';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -155,7 +157,7 @@ export default function RegisterPage() {
             {/* account Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">account Information</h3>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name *</Label>
@@ -192,11 +194,17 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  <DatePicker
+                    selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : ''}
+                    onChange={(date) => setFormData({...formData, dateOfBirth: date ? date.toISOString().split('T')[0] : ''})}
+                    dateFormat="yyyy-MM-dd"
+                    maxDate={new Date().setFullYear(new Date().getFullYear() - 15)}
+                    minDate={new Date(1940, 0, 1)}
+                    showYearDropdown
+                    scrollableYearDropdown
+                    yearDropdownItemNumber={80}
+                    placeholderText="Select your birth date"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isLoading}
                     required
                   />
@@ -209,7 +217,7 @@ export default function RegisterPage() {
                 <textarea
                   id="aboutMe"
                   rows={3}
-                  className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="resize-none w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   placeholder="Tell us a bit about yourself..."
                   maxLength={"150"}
                   value={formData.aboutMe}

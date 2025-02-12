@@ -55,6 +55,7 @@
     "node": "20.18.2",
     "postcss": "8.4.35",
     "react": "18.2.0",
+    "react-datepicker": "^8.0.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.0",
