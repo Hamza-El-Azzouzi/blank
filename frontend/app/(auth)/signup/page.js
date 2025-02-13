@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import * as validator from '@/lib/form_validator';
 
 export default function SignUp() {
     const [currentStep, setCurrentStep] = useState(1);
+    const [attemptedNext, setAttemptedNext] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        confirmPassword: '',
         firstName: '',
         lastName: '',
         dateOfBirth: '',
@@ -20,6 +23,7 @@ export default function SignUp() {
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
+
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -41,16 +45,79 @@ export default function SignUp() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Add your sign-up logic here
         console.log('Sign up:', { ...formData, avatar });
     };
+    const isStepValid = (step) => {
+        let isValid = true;
+        let errorMessage = "";
 
+        switch (step) {
+            case 1: // Account step
+                if (!validator.validateEmail(formData.email)) {
+                    isValid = false;
+                    errorMessage = "Invalid Email";
+                } else if (!validator.validatePassword(formData.password)) {
+                    isValid = false;
+                    errorMessage = "Invalid Password";
+                } else if (
+                    !validator.validatePasswordConfirmation(
+                        formData.password,
+                        formData.confirmPassword
+                    )
+                ) {
+                    isValid = false;
+                    errorMessage = "Passwords Don't Match";
+                }
+                break;
+
+            case 2: // Profile step
+                if (!validator.validateFirstName(formData.firstName)) {
+                    isValid = false;
+                    errorMessage = "Invalid First Name";
+                } else if (!validator.validateLastName(formData.lastName)) {
+                    isValid = false;
+                    errorMessage = "Invalid Last Name";
+                } else if (!validator.validateDateOfBirth(formData.dateOfBirth)) {
+                    isValid = false;
+                    errorMessage = "Invalid Birth Date";
+                }
+                break;
+
+            case 3: // Privacy step
+                isValid = true; // Add your privacy validation logic here
+                break;
+
+            case 4: // About step
+                if (!validator.validateNickname(formData.nickname)) {
+                    isValid = false;
+                    errorMessage = "Invalid Nickname";
+                } else if (!validator.validateAboutMe(formData.aboutMe)) {
+                    isValid = false;
+                    errorMessage = "Invalid About Me";
+                }
+                break;
+
+            default:
+                isValid = false;
+                errorMessage = "Invalid Step";
+        }
+
+        return { isValid, errorMessage };
+    };
     const nextStep = () => {
-        setCurrentStep(prev => Math.min(prev + 1, 4));
+        const { isValid, errorMessage } = isStepValid(currentStep);
+        console.log(isStepValid(currentStep).isValid)
+        if (isValid) {
+            setCurrentStep((prev) => Math.min(prev + 1, 4));
+            setError("");
+        } else {
+            setError(errorMessage);
+        }
     };
 
     const prevStep = () => {
         setCurrentStep(prev => Math.max(prev - 1, 1));
+        setError("")
     };
 
     return (
@@ -62,24 +129,35 @@ export default function SignUp() {
                 </div>
 
                 <div className="steps-progress">
-                    {[1, 2, 3, 4].map((step) => (
-                        <div
-                            key={step}
-                            className={`step-item ${step === currentStep ? 'active' : ''
-                                } ${step < currentStep ? 'completed' : ''}`}
-                        >
-                            <div className="step-number">
-                                {step < currentStep ? '✓' : step}
-                            </div>
-                            <div className="step-label">
-                                {step === 1 && 'Account'}
-                                {step === 2 && 'Profile'}
-                                {step === 3 && 'Privacy'}
-                                {step === 4 && 'About'}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+        {[1, 2, 3, 4].map((step) => {
+          const { isValid } = isStepValid(step);
+          const stepClass = `step-item ${
+            step === currentStep ? "active" : ""
+          } ${
+            step < currentStep ? (isValid ? "completed" : "fail") : ""
+          } ${
+            step === currentStep && error ? "current-fail" : ""
+          }`;
+
+          return (
+            <div key={step} className={stepClass}>
+              <div className="step-number">
+                {step < currentStep
+                  ? "✓"
+                  : step === currentStep && error
+                  ? "✗"
+                  : step}
+              </div>
+              <div className="step-label">
+                {step === 1 && "Account"}
+                {step === 2 && "Profile"}
+                {step === 3 && "Privacy"}
+                {step === 4 && "About"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
                 <form onSubmit={handleSubmit}>
                     {/* Step 1: Account Information */}
@@ -107,6 +185,18 @@ export default function SignUp() {
                                 onChange={handleChange}
                                 required
                                 placeholder="Choose a strong password"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="confirmPassword">Password Confirmation</label>
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type="password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                required
+                                placeholder="retype your password"
                             />
                         </div>
                     </div>
@@ -211,10 +301,10 @@ export default function SignUp() {
                             >
                                 <div
                                     className="image-preview"
-                                    
-                                    style={avatarPreview ? { backgroundImage: `url(${avatarPreview})` } : {backgroundImage:`url(./default-avatar.jpg)`}}
+
+                                    style={avatarPreview ? { backgroundImage: `url(${avatarPreview})` } : { backgroundImage: `url(./default-avatar.jpg)` }}
                                 />
-                               
+
                                 <label>
                                     {avatarPreview ? 'Change Avatar' : 'Upload Avatar'}
                                     <span className="optional-label">(Optional)</span>
@@ -223,7 +313,7 @@ export default function SignUp() {
                                     id="avatar"
                                     type="file"
                                     accept="image/*"
-                                    
+
                                     onChange={handleImageChange}
                                 />
                             </div>

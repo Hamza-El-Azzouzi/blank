@@ -1,4 +1,30 @@
-/* Reset default styles */
+:root {
+  /* Background */
+  --bg-primary: #191820;
+  --bg-secondary: #23242c;
+  --bg-tertiary: #2c2d35;
+
+  /* Text colors */
+  --text-primary: #fafafa;
+  --text-secondary: #b5b5be;
+  --text-tertiary: #71717a;
+
+  /* Main colors */
+  --primary: #0d6aff;
+  --primary-hover: #0258d8;
+  --primary-light: #2b81f1;
+
+  /* Border colors */
+  --border: #374151;
+  --border-light: #676772;
+  --border-color: #00459e;
+
+  /* Status colors */
+  --success: #25B74D;
+  --error: #f43f5e;
+  --warning: #f59e0b;
+  --info: #0981b9;
+}
 * {
   margin: 0;
   padding: 0;
@@ -8,7 +34,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background:"#191820";
+  background:var(--bg-primary);
   color: #333;
   min-height: 100vh;
 }

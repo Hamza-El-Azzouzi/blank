@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';  
+import Link from 'next/link';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -21,7 +21,7 @@ export default function SignIn() {
           <h1>Welcome Back</h1>
           <p>Sign in to your account</p>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -34,7 +34,7 @@ export default function SignIn() {
               placeholder="Enter your email"
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -48,10 +48,12 @@ export default function SignIn() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
-          
-          <button type="submit" className="auth-button">
-            Sign In
-          </button>
+          <div className="step-buttons">
+            <button type="submit" className="step-button button-next">
+              Sign In
+            </button>
+          </div>
+
         </form>
 
         <div className="auth-footer">

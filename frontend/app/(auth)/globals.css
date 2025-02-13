@@ -149,6 +149,15 @@
     color: white;
 }
 
+.step-item.fail .step-number {
+    background: var(--error);
+    color: white;
+}
+
+.step-item.current-fail .step-number {
+    background: var(--error);
+    color: white;
+}
 /* Form Styles */
 .form-step {
     display: none;
@@ -203,7 +212,7 @@
 .form-group textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid #e2e8f0;
+    border: 1px solid var(--border-light);
     border-radius: 10px;
     font-size: 0.875rem;
     transition: all 0.2s;
@@ -367,4 +376,14 @@
     color: var(--text-secondary);
     text-align: center;
     margin: 0;
+}
+.auth-footer,a{
+    text-decoration: none;
+    margin-top: 20px;
+}
+a{
+    color: var(--primary-light);
+}
+.error-message{
+    color: var(--error);
 }
