@@ -1,6 +1,5 @@
 import "./globals.css";
 
-
 export const metadata = {
   title: "blank",
   description: "This is a blank Project",
