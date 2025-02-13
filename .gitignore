@@ -17,6 +17,25 @@
 /frontend/build
 /frontend/dist
 
+
+# dependencies
+/frontend-v1/node_modules/
+/frontend-v1/.pnp
+/frontend-v1/.pnp.js
+
+# testing
+/frontend-v1/coverage
+/frontend-v1/.nyc_output
+
+# next.js
+/frontend-v1/.next/
+/frontend-v1/out/
+/frontend-v1/.vercel
+
+# production
+/frontend-v1/build
+/frontend-v1/dist
+
 # misc
 .DS_Store
 *.pem
