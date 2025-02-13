@@ -49,3 +49,11 @@ func (p *PostService) AllPosts(pagination int) ([]models.PostWithUser, error) {
 	}
 	return posts, nil
 }
+
+func (p *PostService) PostsByUser(userID uuid.UUID, pagination int) ([]models.PostByUser, error) {
+	posts, err := p.PostRepo.PostsByUser(userID, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("error Kayn f Posts by user service : %v", err)
+	}
+	return posts, nil
+}
