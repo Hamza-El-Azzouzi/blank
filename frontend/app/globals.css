@@ -17,15 +17,18 @@
   --primary-light: #2b81f1;
 
   /* Border colors */
-  --border: #374151;
-  --border-light: #676772;
-  --border-color: #00459e;
+  --border: #676772;
+  --border-light: #9a9a9c;
+  --border-color: #2282ff;
 
   /* Status colors */
   --success: #25B74D;
   --error: #f43f5e;
   --warning: #f59e0b;
   --info: #0981b9;
+
+  --sidebar-width: 350px;
+  --sidebar-width-sm: 300px;
 }
 
 * {
@@ -33,4 +36,10 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: var(--bg-primary);
+  height: 100vh;
+  overflow: hidden;
 }

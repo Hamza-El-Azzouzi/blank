@@ -1,30 +1,70 @@
 /* Layout Container */
 .app-container {
-  display: grid;
-  grid-template-columns: 350px 1fr 350px;
-  min-height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
 
-/* Main Content */
 .main-content {
-  padding: 2rem;
-  background-color: var(--bg-primary);
+  margin: 10px;
+  margin-top: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-tertiary) var(--bg-primary);
 }
 
-/* Left Sidebar Styles */
 .left-sidebar {
+  max-width: var(--sidebar-width);
+  width: 100%;
+  margin: 15px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
   background-color: var(--bg-secondary);
-  padding: 1.5rem;
-  border-right: 1px solid var(--border);
+  overflow-y: auto;
+
 }
 
+.right-sidebar {
+  max-width: var(--sidebar-width);
+  width: 100%;
+  margin: 15px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background-color: var(--bg-secondary);
+  overflow-y: auto;
+}
+
+.toggle-btn {
+  display: none;
+  position: fixed;
+  top: 10px;
+  width: 40px;
+  height: 40px;
+  z-index: 1000;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.left-toggle {
+  left: 1rem;
+}
+
+.right-toggle {
+  right: 1rem;
+}
+
+/* left sidebar */
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 16px;
 }
 
 .logo {
@@ -33,12 +73,12 @@
 }
 
 .nav-menu {
-  margin-top: 2rem;
+  margin-top: 25px;
 }
 
 .nav-item {
   list-style: none;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .nav-link {
@@ -61,15 +101,8 @@
   font-size: 1.25rem;
 }
 
-.logout {
+.profile {
   margin-top: 2rem;
-}
-
-/* Right Sidebar Styles */
-.right-sidebar {
-  background-color: var(--bg-secondary);
-  padding: 1.5rem;
-  border-left: 1px solid var(--border);
 }
 
 .search-container {
@@ -89,6 +122,7 @@
   color: var(--text-tertiary);
 }
 
+/* right sidebar */
 .recent-chats h2 {
   font-size: 1.25rem;
   color: var(--text-secondary);
@@ -97,4 +131,67 @@
 
 .chat-list {
   list-style: none;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1100px) {
+  .right-toggle {
+    display: block;
+  }
+
+  .main-content {
+    margin-top: 4rem;
+  }
+
+  .right-sidebar {
+    position: fixed;
+    right: 0;
+    top: 4rem;
+    right: -100%;
+    width: 300px;
+    margin: 0;
+    margin-right: 10px;
+    height: 90vh;
+    z-index: 100;
+    transition: right 0.5s ease;
+  }
+
+  .right-sidebar.active {
+    right: 0;
+  }
+
+  .left-sidebar {
+    max-width: var(--sidebar-width-sm);
+  }
+
+}
+
+@media (max-width: 750px) {
+  .left-toggle {
+    display: block;
+  }
+
+  .main-content {
+    margin: 10px;
+    margin-top: 4rem;
+  }
+
+  .left-sidebar {
+    position: fixed;
+    left: 0;
+    top: 4rem;
+    left: -100%;
+    width: 300px;
+    margin: 0;
+    margin-left: 10px;
+    height: 90vh;
+    z-index: 100;
+    transition: left 0.5s ease;
+  }
+
+  .left-sidebar.active {
+    left: 0;
+  }
+
+
 }
