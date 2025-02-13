@@ -28,12 +28,18 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 3 {
+	if len(pathParts) != 4 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	var err error
-	userID := uuid.Must(uuid.FromString("fdc16121-2efa-49d7-b7e4-b29b7fd7dc17"))
+	userID, err := uuid.FromString(r.PathValue("id"))
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
 	user, err := p.UserService.GetUserInfo(userID)
 	if err != nil {
 		log.Println(err)
