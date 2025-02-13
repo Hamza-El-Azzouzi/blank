@@ -1,0 +1,172 @@
+.container {
+    max-width: 800px;
+    margin: auto;
+    color: var(--text-primary);
+}
+
+.profile-header {
+    position: relative;
+    text-align: center;
+}
+
+.cover-photo {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+}
+
+.profile-info .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid white;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.loading-avatar {
+    width: 100px;
+    height: 100px;
+    background-color: lightgray;
+    border-radius: 50%;
+}
+
+.profile-info .name {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 15px;
+}
+
+.profile-info h1 {
+    font-size: 24px;
+}
+
+.edit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    background-color: var(--primary);
+    color: var(--text-primary);
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.edit-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.profile-details {
+    padding: 20px;
+    margin-top: 40px;
+    border-radius: 5px;
+}
+
+.profile-details .date-email {
+    display: flex;
+    gap: 20px;
+}
+
+.profile-details .follow {
+    display: flex;
+    gap: 20px;
+}
+
+.profile-details p {
+    margin: 5px 0;
+}
+
+.posts {
+    margin-top: 20px;
+}
+
+.post {
+    background: var(--bg-tertiary);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialog-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+input,
+textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    margin: 5px;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type='submit'] {
+    background-color: #28a745;
+    color: var(--text-primary);
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+button[type='button'] {
+    background-color: #dc3545;
+    color: var(--text-primary);
+}
