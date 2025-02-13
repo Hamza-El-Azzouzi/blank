@@ -12,12 +12,11 @@ import (
 )
 
 type PostHandler struct {
-	AuthService     *services.AuthService
-	AuthMidlaware   *middleware.AuthMiddleware
-	CategoryService *services.CategoryService
-	PostService     *services.PostService
-	CommentService  *services.CommentService
-	AuthHandler     *AuthHandler
+	AuthService    *services.AuthService
+	AuthMidlaware  *middleware.AuthMiddleware
+	PostService    *services.PostService
+	CommentService *services.CommentService
+	AuthHandler    *AuthHandler
 }
 
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
@@ -52,23 +51,6 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *PostHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	categories, errCat := p.CategoryService.GetAllCategories()
-	if errCat != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(categories)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -82,11 +64,7 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	if postData.Title == "" || postData.Content == "" || len(postData.Categories) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	if len(postData.Title) > 250 || len(postData.Content) > 5000 {
+	if postData.Content == "" || len(postData.Content) > 5000{
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -95,7 +73,7 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	err = p.PostService.PostSave(usermid.ID, postData.Title, postData.Content, postData.Categories)
+	err = p.PostService.PostSave(usermid.ID, postData.Content)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

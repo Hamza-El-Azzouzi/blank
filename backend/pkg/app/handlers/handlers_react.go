@@ -38,13 +38,13 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if react.Target == "post" {
-		err := rh.ReactService.Create(user.ID, react.ID, "", react.Type, react.Target)
+		err := rh.ReactService.Create(user.ID, react.ID, "", react.Target)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
-		err := rh.ReactService.Create(user.ID, "", react.ID, react.Type, react.Target)
+		err := rh.ReactService.Create(user.ID, "", react.ID, react.Target)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return

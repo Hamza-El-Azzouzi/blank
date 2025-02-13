@@ -23,7 +23,6 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
-	mux.HandleFunc("/api/categories", postHandler.GetCategories)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
 	mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
 	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)

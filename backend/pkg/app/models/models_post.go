@@ -9,28 +9,22 @@ import (
 type Post struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
-	Title     string
 	Content   string
+	Image     string
+	Privacy   string
 	CreatedAt time.Time
-}
-
-type PostCategory struct {
-	PostID     uuid.UUID
-	CategoryID string
 }
 
 type PostWithUser struct {
 	PostID        uuid.UUID
-	Title         string
 	Content       string
+	Image         string
 	CreatedAt     time.Time
 	UserID        uuid.UUID
 	Username      string
 	FormattedDate string
-	CategoryName  string
 	CommentCount  string
 	LikeCount     int
-	DisLikeCount  int
 	TotalCount    int
 }
 
@@ -52,7 +46,8 @@ type CommentData struct {
 }
 
 type PostData struct {
-	Title      string   `json:"title"`
-	Content    string   `json:"content"`
-	Categories []string `json:"categories"`
+	Content string `json:"content"`
+	Privacy string `json:"privacy"`
+	Avatar  string `json:"avatar,omitempty"`
+	Friendlist []string `json:"friendlist,omitempty"`
 }

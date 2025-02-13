@@ -11,32 +11,15 @@ import (
 
 type PostService struct {
 	PostRepo     *repositories.PostRepository
-	CategoryRepo *repositories.CategoryRepository
 }
 
-func (p *PostService) PostSave(userId uuid.UUID, title, content string, category []string) error {
+func (p *PostService) PostSave(userId uuid.UUID, content string) error {
 	postId := uuid.Must(uuid.NewV4())
 
 	post := &models.Post{
 		ID:      postId,
 		UserID:  userId,
-		Title:   title,
 		Content: content,
-	}
-	for _, id := range category {
-		if p.CategoryRepo.CheckCategorie(id) {
-			postCategory := &models.PostCategory{
-				PostID:     postId,
-				CategoryID: id,
-			}
-
-			err := p.PostRepo.PostCatgorie(postCategory)
-			if err != nil {
-				return fmt.Errorf("error F categorie : %v ", err)
-			}
-		} else {
-			return fmt.Errorf("categorie not found")
-		}
 	}
 
 	return p.PostRepo.Create(post)

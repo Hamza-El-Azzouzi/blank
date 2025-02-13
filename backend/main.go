@@ -21,11 +21,10 @@ func main() {
 
 	defer database.Close()
 
-	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo := app.InitRepositories(database)
+	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo := app.InitRepositories(database)
 
-	authService, postService, categoryService, commentService, likeService, sessionService, messageService, userService := app.InitServices(userRepo,
+	authService, postService, commentService, likeService, sessionService, messageService, userService := app.InitServices(userRepo,
 		postRepo,
-		categoryRepo,
 		commentRepo,
 		likeRepo,
 		sessionRepo,
@@ -35,17 +34,12 @@ func main() {
 
 	authHandler, postHandler, likeHandler, MessageHandler, userHandler := app.InitHandlers(authService,
 		postService,
-		categoryService,
 		commentService,
 		likeService,
 		sessionService,
 		authMiddleware,
 		messageService,
 		userService)
-
-	// cleaner := &utils.Cleaner{SessionService: sessionService}
-
-	// go cleaner.CleanupExpiredSessions()
 
 	mux := http.NewServeMux()
 

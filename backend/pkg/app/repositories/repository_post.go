@@ -14,55 +14,40 @@ type PostRepository struct {
 
 func (r *PostRepository) Create(post *models.Post) error {
 	post.Content = html.EscapeString(post.Content)
-	post.Title = html.EscapeString(post.Title)
-	preparedQuery, err := r.DB.Prepare("INSERT INTO posts (ID, user_id, Title, Content) VALUES (?, ?, ?, ?)")
+	preparedQuery, err := r.DB.Prepare("INSERT INTO Post (post_id, user_id, content, image, privacy_level) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
-	_, err = preparedQuery.Exec(post.ID, post.UserID, post.Title, post.Content)
-	return err
-}
-
-func (r *PostRepository) PostCatgorie(postCategorie *models.PostCategory) error {
-	preparedQuery, err := r.DB.Prepare("INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)")
-	if err != nil {
-		return err
-	}
-	_, err = preparedQuery.Exec(postCategorie.PostID, postCategorie.CategoryID)
+	_, err = preparedQuery.Exec(post.ID, post.UserID, post.Content)
 	return err
 }
 
 func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error) {
 	query := `SELECT 
-		posts.id AS post_id,
-		posts.title,
-		posts.content,
-		posts.created_at,
-		users.id AS user_id,
-		users.username,
-		REPLACE(IFNULL(GROUP_CONCAT(DISTINCT categories.name), ''), ',', ' | ') AS category_names,
+		Post.post_id,
+		Post.content,
+		Post.image,
+		Post.created_at,
+		User.user_id,
+		User.first_name,
+		User.last_name,
 		CASE
    			WHEN comment_counts.comment_count > 100 THEN '+100'
     		ELSE IFNULL(CAST(comment_counts.comment_count AS TEXT), '0')
 		END AS comment_count,
-		(SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id AND likes.react_type = "like") AS likes_count,
-		(SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id AND likes.react_type = "dislike") AS dislike_count,
+		(SELECT COUNT(*) FROM Like WHERE Like.post_id = posts.id) AS like_count,
 		COUNT(*) OVER() AS total_count
 		FROM 
-   			posts
+   			Post
 		JOIN 
-			users ON posts.user_id = users.id
+			User ON Post.user_id = User.user_id
 		LEFT JOIN 
-			post_categories ON posts.id = post_categories.post_id
-		LEFT JOIN 
-			categories ON post_categories.category_id = categories.id
-		LEFT JOIN 
-			(SELECT post_id, COUNT(*) AS comment_count FROM comments GROUP BY post_id) AS comment_counts
-			ON posts.id = comment_counts.post_id
+			(SELECT post_id, COUNT(*) AS comment_count FROM Comment GROUP BY post_id) AS comment_count
+			ON Post.post_id = comment_count.post_id
 		GROUP BY 
-			posts.id
+			Post.post_id
 		ORDER BY 
-			posts.created_at DESC 
+			Post.created_at DESC 
 		LIMIT 20 OFFSET ?;`
 	rows, err := r.DB.Query(query, pagination)
 	if err != nil {
@@ -75,15 +60,13 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 		var post models.PostWithUser
 		err = rows.Scan(
 			&post.PostID,
-			&post.Title,
 			&post.Content,
+			&post.Image,
 			&post.CreatedAt,
 			&post.UserID,
 			&post.Username,
-			&post.CategoryName,
 			&post.CommentCount,
 			&post.LikeCount,
-			&post.DisLikeCount,
 			&post.TotalCount,
 		)
 		if err != nil {
@@ -102,7 +85,7 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 
 func (r *PostRepository) PostExist(postID string) bool {
 	var num int
-	query := `SELECT COUNT(*) FROM posts WHERE id = ?`
+	query := `SELECT COUNT(*) FROM Post WHERE post_id = ?`
 	row := r.DB.QueryRow(query, postID)
 	err := row.Scan(&num)
 	if err != nil {
