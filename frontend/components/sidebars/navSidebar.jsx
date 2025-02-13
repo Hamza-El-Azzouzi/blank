@@ -4,10 +4,10 @@ import Link from 'next/link';
 
 const NavSidebar = () => {
   return (
-    <aside className="left-sidebar">
+    <>
       <div className="logo-container">
         <img src="/logo.png" alt="Space Logo" className="logo" />
-        <input type="text" placeholder="search" className="search-input"/>
+        <input type="text" placeholder="search" className="search-input" />
       </div>
       <nav className="nav-menu">
         <ul>
@@ -18,18 +18,24 @@ const NavSidebar = () => {
             </Link>
           </li>
           <li className="nav-item">
+            <Link href="/notifications" className="nav-link">
+              <span className="nav-icon">📑</span>
+              <span>Notifications</span>
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link href="/groups" className="nav-link">
+              <span className="nav-icon">📑</span>
+              <span>Groups</span>
+            </Link>
+          </li>
+          <li className="nav-item profile">
             <Link href="/profile" className="nav-link">
               <span className="nav-icon">👤</span>
               <span>Profile</span>
             </Link>
           </li>
           <li className="nav-item">
-            <Link href="/categories" className="nav-link">
-              <span className="nav-icon">📑</span>
-              <span>Categories</span>
-            </Link>
-          </li>
-          <li className="nav-item logout">
             <Link href="/logout" className="nav-link">
               <span className="nav-icon">🚪</span>
               <span>Log out</span>
@@ -37,7 +43,7 @@ const NavSidebar = () => {
           </li>
         </ul>
       </nav>
-    </aside>
+    </>
   );
 };
 
