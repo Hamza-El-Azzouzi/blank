@@ -45,6 +45,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
     e.preventDefault();
     if (!isChanged) return;
     formData.date_of_birth = formData.date_of_birth?.split('T')[0];
+    if (formData?.avatar?.includes("default-avatar")) formData.avatar = null
 
     const validation = validateForm(formData);
     if (!validation.isValid) {
@@ -63,24 +64,22 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
 
       const data = await response.json();
       if (data.message === 'success') {
+        if (!formData.avatar) formData.avatar = '/default-avatar.jpg'
         setProfile(formData);
-        alert('Profile updated successfully!');
         onClose();
       } else {
         alert(data.message);
       }
     } catch (error) {
       console.error('Error updating user info:', error);
-      alert('An error occurred while updating your info.');
     }
   };
 
   return (
     <div className="dialog-overlay">
       <div className="dialog-content">
-        <h3>Update Profile</h3>
         <label htmlFor="avatar-upload" className="avatar-container">
-          <img src={formData.avatar || '/default-avatar.jpg'} alt="Avatar" className="avatar" />
+          <img src={formData.avatar || '/default-avatar.jpg'} alt="Avatar" className="avatar-update" />
         </label>
         <input type="file" id="avatar-upload" accept="image/*" onChange={handleAvatarChange} />
 
@@ -102,8 +101,10 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
             </label>
           </div>
           <p>{formData.is_public ? 'Your profile will be visible to everyone' : 'Only approved followers can see your profile'}</p>
-          <button type="button" onClick={onClose}>Cancel</button>
-          <button type="submit" disabled={!isChanged}>Save</button>
+          <div className='form-action'>
+            <button type="button" onClick={onClose}>Cancel</button>
+            <button type="submit" disabled={!isChanged}>Save</button>
+          </div>
         </form>
       </div>
     </div>

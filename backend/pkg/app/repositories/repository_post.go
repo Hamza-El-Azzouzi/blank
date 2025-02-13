@@ -149,7 +149,7 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
 		}
-		post.FormattedDate = post.CreatedAt.Format("01/02/2006, 3:04:05 PM")
+		post.FormattedDate = post.CreatedAt.Format("01/02/2006, 3:04 PM")
 		posts = append(posts, post)
 	}
 	err = rows.Err()

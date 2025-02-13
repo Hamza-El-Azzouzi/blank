@@ -54,19 +54,26 @@
 
 .profile-info h1 {
     font-size: 24px;
+    color: var(--bg-secondary);
+}
+
+.profile-info p {
+    color: var(--bg-tertiary);
 }
 
 .edit-btn {
     position: absolute;
     top: 10px;
     right: 10px;
-    padding: 8px 12px;
     background-color: var(--primary);
     color: var(--text-primary);
     border: none;
-    font-size: 1.2rem;
+    border-radius: 6px;
+    padding: 5px 20px;
+    font-size: 18px;
+    font-weight: 500;
     cursor: pointer;
-    border-radius: 5px;
+    transition: background-color 0.2s;
 }
 
 .edit-btn:hover {
@@ -74,15 +81,30 @@
 }
 
 .profile-details {
-    padding: 20px;
-    margin-top: 40px;
+    padding: 20px 20px 20px 0;
     border-radius: 5px;
 }
 
 .profile-details .date-email {
     display: flex;
-    gap: 20px;
+    gap: 30px;
+
 }
+
+.profile-details .email {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.profile-details .born-date {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
 
 .profile-details .follow {
     display: flex;
@@ -91,6 +113,10 @@
 
 .profile-details p {
     margin: 5px 0;
+}
+
+.about {
+    margin-top: 10px;
 }
 
 .posts {
@@ -105,68 +131,165 @@
     margin-bottom: 10px;
 }
 
+/* edit user info dialog style */
+
 .dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.75);
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .dialog-content {
-    background: white;
-    padding: 20px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    text-align: center;
+    padding: 1rem 2rem 0;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+
+}
+
+.dialog-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .avatar-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px;
+    display: block;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    transition: border-color 0.2s;
 }
 
-.avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+.avatar-container:hover {
+    border-color: var(--primary);
+}
+
+.avatar-update {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
-input,
-textarea {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+#avatar-upload {
+    display: none;
 }
 
-button {
-    margin: 5px;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
+.dialog-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dialog-content input[type="text"],
+.dialog-content input[type="email"],
+.dialog-content input[type="date"],
+.dialog-content textarea {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    width: 100%;
+    transition: border-color 0.2s;
+}
+
+.dialog-content input:focus,
+.dialog-content textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.dialog-content textarea {
+    min-height: 100px;
+    resize: none;
+}
+
+.dialog-content input::placeholder,
+.dialog-content textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+.dialog-content div {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.dialog-content label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
     cursor: pointer;
 }
 
-button[type='submit'] {
-    background-color: #28a745;
-    color: var(--text-primary);
+.dialog-content input[type="radio"] {
+    accent-color: var(--primary);
+    cursor: pointer;
 }
 
-button:disabled {
-    background-color: #ccc;
+.dialog-content p {
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    margin-bottom: 0.2rem;
+}
+
+.dialog-content .form-action {
+    display: flex;
+    justify-content: space-between;
+}
+
+.dialog-content button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 45%;
+    transition: all 0.2s;
+}
+
+.dialog-content button[type="button"] {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.dialog-content button[type="button"]:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+.dialog-content button[type="submit"] {
+    background-color: var(--primary);
+    color: var(--text-primary);
+    border: none;
+}
+
+.dialog-content button[type="submit"]:hover {
+    background-color: var(--primary-hover);
+}
+
+.dialog-content button[type="submit"]:disabled {
+    background-color: var(--bg-tertiary);
+    color: var(--text-tertiary);
     cursor: not-allowed;
-}
-
-button[type='button'] {
-    background-color: #dc3545;
-    color: var(--text-primary);
 }

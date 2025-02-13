@@ -23,7 +23,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
 
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
-	mux.HandleFunc("/api/user-upadte-info", userHandler.UpdateUserInfo)
+	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 	mux.HandleFunc("/storage/avatars/{avatar}", utils.ServeAvatars)
 

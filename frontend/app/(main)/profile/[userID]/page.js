@@ -6,6 +6,7 @@ import { BASE_URL } from '@/config';
 import { MdOutlineMail } from "react-icons/md";
 import { FaUserEdit } from "react-icons/fa";
 import UpdateInfoDialog from '@/components/profile/UpdateInfoDialog';
+import Post from '@/components/posts/post';
 
 export default function ProfilePage({ params }) {
 
@@ -42,6 +43,7 @@ export default function ProfilePage({ params }) {
     fetch(`${BASE_URL}/api/user-info/${userID}`)
       .then(res => res.json())
       .then(data => {
+        data.avatar = BASE_URL + data.avatar || '/default-avatar.jpg';
         setProfile(data);
       })
       .catch(err => {
@@ -81,7 +83,7 @@ export default function ProfilePage({ params }) {
     <div className="container">
       <div className="profile-header">
         <img
-          src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=300&fit=crop"
+          src="/cover.jpg"
           alt="Cover"
           className="cover-photo"
         />
@@ -91,7 +93,7 @@ export default function ProfilePage({ params }) {
               <div className="loading-avatar"></div>
             ) : (
               <img
-                src={profile.avatar || '/default-avatar.jpg'}
+                src={profile.avatar}
                 alt={`${profile.first_name} ${profile.last_name}`}
               />
             )}
@@ -108,15 +110,15 @@ export default function ProfilePage({ params }) {
 
       <div className="profile-details">
         <div className='date-email'>
-          <p><MdOutlineMail /><a href={`mailto:${profile.email}`}>{profile.email}</a></p>
-          <p>Born on {new Date(profile.date_of_birth).toLocaleDateString()}</p>
+          {profile.date_of_birth && <a href={`mailto:${profile.email}`} className='email'><MdOutlineMail /> {profile.email}</a>}
+          {profile.date_of_birth && <p className='born-date'>Born on {new Date(profile.date_of_birth)?.toLocaleDateString()}</p>}
         </div>
         <div className='follow'>
           <p>{profile.followers} Followers</p>
           <p>{profile.following} Following</p>
         </div>
         {profile.about && (
-          <div>
+          <div className='about'>
             <h3>About</h3>
             <p>{profile.about}</p>
           </div>
@@ -127,10 +129,7 @@ export default function ProfilePage({ params }) {
       <div className="posts">
         {posts.length > 0 ? (
           posts.map(post => (
-            <div key={post.id} className="post">
-              <h4>{post.title}</h4>
-              <p>{post.content}</p>
-            </div>
+            <Post key={post.id} post={post} />
           ))
         ) : (
           <p>{profile.first_name} {profile.last_name} hasn't posted anything yet!</p>
