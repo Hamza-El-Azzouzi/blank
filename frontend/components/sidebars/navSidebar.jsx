@@ -1,48 +1,62 @@
-// components/sidebars/left.jsx
+// components/sidebars/navSidebar.jsx
 import React from 'react';
 import Link from 'next/link';
+import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
+import { BiSearch } from 'react-icons/bi';
+import './sidebar.css';
+
 
 const NavSidebar = () => {
   return (
     <>
-      <div className="logo-container">
-        <img src="/logo.png" alt="Space Logo" className="logo" />
-        <input type="text" placeholder="search" className="search-input" />
+      <div className="search-container">
+        <div className="search-input-wrapper">
+          <BiSearch className="search-icon" />
+          <input type="text" placeholder="Search..." className="search-input" />
+        </div>
       </div>
+
       <nav className="nav-menu">
         <ul>
           <li className="nav-item">
             <Link href="/" className="nav-link">
-              <span className="nav-icon">🏠</span>
+              <FiHome className="nav-icon" />
               <span>Home</span>
             </Link>
           </li>
           <li className="nav-item">
+            <Link href="/groups" className="nav-link">
+              <FiUsers className="nav-icon" />
+              <span>Groups</span>
+            </Link>
+          </li>
+          <li className="nav-item">
             <Link href="/notifications" className="nav-link">
-              <span className="nav-icon">📑</span>
+              <FiBell className="nav-icon" />
               <span>Notifications</span>
             </Link>
           </li>
           <li className="nav-item">
-            <Link href="/groups" className="nav-link">
-              <span className="nav-icon">📑</span>
-              <span>Groups</span>
-            </Link>
-          </li>
-          <li className="nav-item profile">
-            <Link href="/profile" className="nav-link">
-              <span className="nav-icon">👤</span>
-              <span>Profile</span>
+            <Link href="/messages" className="nav-link">
+              <FiMessageSquare className="nav-icon" />
+              <span>Messages</span>
             </Link>
           </li>
           <li className="nav-item">
-            <Link href="/logout" className="nav-link">
-              <span className="nav-icon">🚪</span>
-              <span>Log out</span>
+            <Link href="/profile" className="nav-link">
+              <FiUser className="nav-icon" />
+              <span>Profile</span>
             </Link>
           </li>
         </ul>
       </nav>
+
+      <div className="nav-footer">
+        <Link href="/logout" className="nav-link logout">
+          <FiLogOut className="nav-icon" />
+          <span>Log out</span>
+        </Link>
+      </div>
     </>
   );
 };
