@@ -1,113 +1,164 @@
 /* components/posts/posts.css */
 .home-page {
-    max-width: 700px;
+    max-width: 900px;
 }
 
-.create-post {
+.create-post-container {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 2rem;
-    transition: all 0.3s ease;
+    border-radius: 15px;
+    padding: 16px;
+    margin-bottom: 30px;
 }
 
-.create-post-header {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 1rem;
-}
-
-.post-input {
-    flex: 1;
+.post-textarea {
     background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     border: 1px solid var(--border);
     border-radius: 8px;
+    width: 100%;
+    margin-bottom: 16px;
+    font-size: 16px;
     padding: 10px;
-    color: var(--text-primary);
     font-family: inherit;
-    font-size: 1rem;
     resize: none;
 }
 
-.post-input:focus {
-    outline: none;
-    border-color: var(--border-color);
+.post-textarea::placeholder {
+    color: var(--text-tertiary);
 }
 
-.post-input::placeholder {
-    color: var(--text-tertiary);
+.post-textarea:focus {
+    outline: none;
+    border-color: var(--border-light);
+
+}
+
+.create-post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
 }
 
 .create-post-actions {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
+    gap: 12px;
 }
 
-.attachment-button {
-    position: relative;
+.upload-image-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background-color: var(--bg-tertiary);
+    gap: 8px;
     color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
 
-.attachment-button:hover {
+.upload-image-label:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
-    border-color: var(--primary);
 }
 
-.attachment-icon {
-    font-size: 18px;
+.action-icon {
+    font-size: 24px;
 }
 
-.file-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
+.hidden-input {
+    display: none;
 }
 
-.post-button {
-    background-color: var(--primary);
-    color: var(--text-primary);
+.privacy-selector {
+    position: relative;
+}
+
+.privacy-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
     border: none;
-    border-radius: 6px;
-    padding: 5px 20px;
-    font-size: 18px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.privacy-button:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.privacy-icon,
+.dropdown-icon {
+    font-size: 16px;
+}
+
+.privacy-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 10;
+    min-width: 150px;
+}
+
+.privacy-option {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.privacy-option:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.post-submit-button {
+    padding: 8px 20px;
+    background-color: var(--primary);
+    border: none;
+    border-radius: 4px;
+    color: white;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.post-button:hover {
+.post-submit-button:hover {
     background-color: var(--primary-hover);
 }
 
-.image-preview-container {
+.post-submit-button:disabled {
+    background-color: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+}
+
+.image-preview-wrapper {
     position: relative;
-    margin: 1rem 0;
+    margin: 12px 0;
     border-radius: 8px;
     overflow: hidden;
-    max-width: 100%;
     background-color: var(--bg-tertiary);
 }
 
-.image-preview {
+.preview-image {
     display: block;
     max-width: 100%;
     max-height: 300px;
@@ -115,16 +166,17 @@
     margin: 0 auto;
 }
 
-.remove-image-button {
+.remove-image {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background-color: #202020;
-    color: white;
-    border: none;
-    border-radius: 50%;
+    top: 8px;
+    right: 8px;
     width: 24px;
     height: 24px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -132,31 +184,30 @@
     transition: background-color 0.2s;
 }
 
-.remove-image-button:hover {
-    background-color: #000000b3;
+.remove-image:hover {
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* post style */
 .post {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    overflow: hidden;
 }
 
 .post-header {
+    padding: 15px;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 12px;
 }
 
-.avatar {
-    width: 40px;
-    height: 40px;
+.post-avatar {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    object-fit: cover;
 }
 
 .post-meta {
@@ -164,43 +215,192 @@
     flex-direction: column;
 }
 
-.author {
+.post-author {
     color: var(--text-primary);
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 15px;
 }
 
-.time {
-    color: var(--text-tertiary);
-    font-size: 0.875rem;
+.post-time {
+    color: var(--text-secondary);
+    font-size: 12px;
 }
 
 .post-content {
+    padding: 0 16px;
+}
+
+.post-text {
     color: var(--text-primary);
-    margin-bottom: 1rem;
+    font-size: 14px;
     line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.post-image-container {
+    margin: 0 -16px;
+}
+
+.post-image {
+    width: 100%;
+    max-height: 500px;
+    object-fit: fill;
+}
+
+.engagement-stats {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    color: var(--text-tertiary);
+    font-size: 14px;
 }
 
 .post-actions {
     display: flex;
-    gap: 1rem;
-    border-top: 1px solid var(--border);
-    padding-top: 10px;
+    padding: 8px;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
 }
 
 .action-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
     background: none;
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    border-radius: 8px;
+    transition: all 0.2s;
 }
 
 .action-button:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
+}
+
+.action-button.liked {
+    color: var(--error);
+}
+
+.action-icon.liked {
+    fill: var(--error);
+}
+
+/* Comments Section */
+.comments-section {
+    padding: 16px;
+    background-color: var(--bg-secondary);
+}
+
+.comment-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.comment-input-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-tertiary);
+    border-radius: 20px;
+    padding: 4px;
+}
+
+.comment-input {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.comment-input:focus {
+    outline: none;
+}
+
+.comment-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.send-comment-button {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.send-comment-button:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--primary-light);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.comment {
+    display: flex;
+    gap: 12px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.comment-content {
+    flex: 1;
+    background-color: var(--bg-tertiary);
+    padding: 8px 12px;
+    border-radius: 12px;
+}
+
+.comment-author {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.comment-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.comment-time {
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .post-actions span {
+        display: none;
+    }
+
+    .action-button {
+        padding: 8px;
+    }
+
+    .action-icon {
+        margin: 0;
+    }
 }
