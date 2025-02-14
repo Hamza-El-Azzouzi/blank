@@ -80,8 +80,6 @@ export default function Home() {
   };
 
   return (
-    
-
       <main className="main-content">
         <div className="create-post">
           <textarea
