@@ -72,22 +72,29 @@
 /* Contacts Sidebar */
 .contacts-header {
     font-size: 20px;
-    color: var(--text-primary);
-    margin-bottom: 20px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    /* border-bottom: 1px solid var(--border); */
 }
 
 .contacts-list {
     list-style: none;
 }
 
+.contact-item span {
+    color: var(--text-secondary);
+}
+
 .contact-item {
+    margin-left: 10px;  
     display: flex;
     align-items: center;
     padding: 8px;
-    margin-bottom: 4px;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    margin-bottom: 15px;
 }
 
 .contact-item:hover {
@@ -97,13 +104,13 @@
 .contact-avatar-wrapper {
     position: relative;
     margin-right: 12px;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
 }
 
 .contact-avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
 }
 
@@ -111,9 +118,9 @@
     position: absolute;
     bottom: 0px;
     right: 0px;
-    width: 12px;
+    width: 10px;
     background-color: var(--text-secondary);
-    height: 12px;
+    height: 10px;
     border-radius: 50%;
     border: 2px solid var(--bg-secondary);
 }

@@ -2,7 +2,7 @@
 
 .app-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -10,6 +10,7 @@
 
 .main-content {
   margin: 15px;
+  min-width: 350px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--bg-tertiary) var(--bg-primary);
@@ -18,9 +19,9 @@
 .nav-sidebar {
   max-width: var(--sidebar-width);
   width: 100%;
-  border-right: 1px solid var(--border);
+  /* border-right: 1px solid var(--border); */
   padding: 20px;
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-primary);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -31,15 +32,14 @@
   max-width: var(--sidebar-width);
   width: 100%;
   padding: 20px;
-  border-left: 1px solid var(--border);
-  background-color: var(--bg-secondary);
+  /* border-left: 1px solid var(--border); */
+  background-color: var(--bg-primary);
   overflow-y: auto;
 }
 
 .toggle-btn {
   display: none;
   position: fixed;
-  top: 10px;
   width: 40px;
   height: 40px;
   z-index: 1000;
@@ -58,19 +58,53 @@
   right: 16px;
 }
 
-@media (max-width: 1100px) {
-  .right-toggle {
-    display: block;
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  z-index: 1000;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.mobile-nav-item:hover {
+  color: var(--primary);
+}
+
+.mobile-nav-icon {
+  font-size: 24px;
+}
+
+@media (max-width: 900px) {
+  .mobile-nav {
+    display: flex;
   }
 
   .main-content {
-    margin-top: 60px;
+    margin-bottom: 60px;
+    margin-top: 15px;
   }
 
   .contact-sidebar {
     position: fixed;
     right: 0;
-    top: 60px;
+    bottom: 60px;
     right: -100%;
     height: calc(100vh - 60px);
     z-index: 100;
@@ -80,22 +114,11 @@
   .contact-sidebar.active {
     right: 0;
   }
-}
-
-@media (max-width: 750px) {
-  .left-toggle {
-    display: block;
-  }
-
-  .main-content {
-    margin: 10px;
-    margin-top: 60px;
-  }
 
   .nav-sidebar {
     position: fixed;
     left: 0;
-    top: 60px;
+    bottom: 60px;
     left: -100%;
     height: calc(100vh - 60px);
     z-index: 100;

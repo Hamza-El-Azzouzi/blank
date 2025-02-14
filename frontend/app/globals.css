@@ -29,8 +29,7 @@
   --warning: #f59e0b;
   --info: #0981b9;
 
-  --sidebar-width: 320px;
-  --sidebar-width-sm: 300px;
+  --sidebar-width: 300px;
 }
 
 * {
