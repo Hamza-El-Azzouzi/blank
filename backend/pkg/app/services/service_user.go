@@ -29,7 +29,7 @@ func (a *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 		return err
 	}
 	if strings.HasPrefix(userInfo.Avatar, "data:image") {
-		avatarFilename, err := utils.SaveAvatar(userInfo.Avatar)
+		avatarFilename, err := utils.SaveImage(userInfo.Avatar)
 		if err != nil {
 			return fmt.Errorf("invalid image")
 		}

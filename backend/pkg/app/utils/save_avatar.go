@@ -15,7 +15,7 @@ const (
 	MaxImageSize = 3 * 1024 * 1024
 )
 
-func SaveAvatar(base64Data string) (string, error) {
+func SaveImage(base64Data string) (string, error) {
 	if base64Data == "" {
 		return "", nil
 	}
