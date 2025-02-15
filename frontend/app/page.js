@@ -1,65 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Image, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Image, Heart, MessageCircle, Share2, Search } from 'lucide-react';
+import LeftSidebar from './components/LeftSidebar';
+import RightSidebar from './components/RightSidebar';
+import { Dialog, DialogTitle, Button, Checkbox } from './components/Dialog';
 
-const samplePosts = [
-  {
-    id: 1,
-    user: { name: 'Emma Watson', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop' },
-    content: 'Just finished reading an amazing book! 📚 Sometimes the perfect weekend is just you, a good book, and a cup of coffee. What are you all reading these days?',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-    time: '2 hours ago',
-    likes: 234,
-    comments: 45,
-    shares: 12
-  },
-  {
-    id: 2,
-    user: { name: 'James Smith', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop' },
-    content: '🌄 Early morning hike was totally worth it! The view from the top was breathtaking. Nature never fails to amaze me. #Adventure #Nature #Hiking',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-    time: '5 hours ago',
-    likes: 456,
-    comments: 67,
-    shares: 23
-  },
-  {
-    id: 3,
-    user: { name: 'Sophia Chen', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop' },
-    content: '🎨 Finally finished my latest art piece! Been working on this for weeks. Art is such a beautiful way to express emotions. What do you think?',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-    time: '8 hours ago',
-    likes: 789,
-    comments: 89,
-    shares: 34
-  },
-  {
-    id: 4,
-    user: { name: 'Marcus Johnson', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop' },
-    content: '🍳 Sunday brunch vibes! Tried this new recipe and it turned out amazing. Nothing beats homemade food. Who else loves cooking on weekends?',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-    time: '12 hours ago',
-    likes: 567,
-    comments: 78,
-    shares: 15
-  },
-  {
-    id: 5,
-    user: { name: 'Isabella Garcia', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop' },
-    content: '🌺 Spring is finally here! The garden is blooming and everything feels so fresh and new. Nature\'s colors are truly inspiring.',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop',
-    time: '1 day ago',
-    likes: 890,
-    comments: 123,
-    shares: 45
-  }
-];
+const allFollowers = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  name: `Follower ${i + 1}`,
+  username: `user${i + 1}`,
+  avatar: `https://source.unsplash.com/random/40x40?portrait=${i + 1}`
+}));
 
 export default function Home() {
   const [postText, setPostText] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showFollowersDialog, setShowFollowersDialog] = useState(false);
+  const [selectedFollowers, setSelectedFollowers] = useState([]);
+  const [displayedFollowers, setDisplayedFollowers] = useState(allFollowers.slice(0, 20));
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -72,14 +33,64 @@ export default function Home() {
     }
   };
 
+  const handlePrivacyChange = (e) => {
+    const value = e.target.value;
+    setPrivacy(value);
+    if (value === 'private') {
+      setShowFollowersDialog(true);
+    }
+  };
+
+  const handleFollowerSelect = (followerId) => {
+    setSelectedFollowers(prev => {
+      if (prev.includes(followerId)) {
+        return prev.filter(id => id !== followerId);
+      }
+      return [...prev, followerId];
+    });
+  };
+
+  const handleScroll = (e) => {
+    const bottom = e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
+    if (bottom) {
+      const currentLength = displayedFollowers.length;
+      const nextFollowers = allFollowers.slice(currentLength, currentLength + 20);
+      if (nextFollowers.length > 0) {
+        setDisplayedFollowers(prev => [...prev, ...nextFollowers]);
+      }
+    }
+  };
+
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+    if (query) {
+      const filtered = allFollowers.filter(follower => 
+        follower.name.toLowerCase().includes(query) || 
+        follower.username.toLowerCase().includes(query)
+      ).slice(0, 20);
+      setDisplayedFollowers(filtered);
+    } else {
+      setDisplayedFollowers(allFollowers.slice(0, 20));
+    }
+  };
+
   const handlePost = () => {
-    console.log({ postText, privacy, selectedImage });
+    console.log({ 
+      postText, 
+      privacy, 
+      selectedImage, 
+      selectedFollowers: privacy === 'private' ? selectedFollowers : [] 
+    });
     setPostText('');
     setSelectedImage(null);
     setPrivacy('public');
+    setSelectedFollowers([]);
   };
 
   return (
+    <div className="container">
+      <LeftSidebar />
       <main className="main-content">
         <div className="create-post">
           <textarea
@@ -106,7 +117,7 @@ export default function Home() {
               <select
                 className="privacy-select"
                 value={privacy}
-                onChange={(e) => setPrivacy(e.target.value)}
+                onChange={handlePrivacyChange}
               >
                 <option value="public">Public</option>
                 <option value="almost-private">Followers Only</option>
@@ -157,5 +168,103 @@ export default function Home() {
           </div>
         ))}
       </main>
+      <RightSidebar />
+
+      <Dialog open={showFollowersDialog} onClose={() => setShowFollowersDialog(false)}>
+        <DialogTitle>Select Followers</DialogTitle>
+        <div className="followers-search">
+          <Search className="search-icon" size={20} />
+          <input
+            type="text"
+            placeholder="Search followers..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="followers-search-input"
+          />
+        </div>
+        <div className="followers-list" onScroll={handleScroll}>
+          {displayedFollowers.map((follower) => (
+            <div 
+              key={follower.id} 
+              className={`follower-item ${selectedFollowers.includes(follower.id) ? 'selected' : ''}`}
+              onClick={() => handleFollowerSelect(follower.id)}
+            >
+              <div className="follower-info">
+                <img src={follower.avatar} alt={follower.name} className="follower-avatar" />
+                <div className="follower-details">
+                  <div className="follower-name">{follower.name}</div>
+                  <div className="follower-username">@{follower.username}</div>
+                </div>
+              </div>
+              <Checkbox
+                checked={selectedFollowers.includes(follower.id)}
+                onChange={() => handleFollowerSelect(follower.id)}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="dialog-footer">
+          <Button variant="secondary" onClick={() => setShowFollowersDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => setShowFollowersDialog(false)}>
+            Done ({selectedFollowers.length})
+          </Button>
+        </div>
+      </Dialog>
+    </div>
   );
 }
+
+const samplePosts = [
+  {
+    id: 1,
+    user: { name: 'Emma Watson', avatar: 'https://source.unsplash.com/random/40x40?woman' },
+    content: 'Just finished reading an amazing book! 📚 Sometimes the perfect weekend is just you, a good book, and a cup of coffee. What are you all reading these days?',
+    image: 'https://source.unsplash.com/random/600x400?book',
+    time: '2 hours ago',
+    likes: 234,
+    comments: 45,
+    shares: 12
+  },
+  {
+    id: 2,
+    user: { name: 'James Smith', avatar: 'https://source.unsplash.com/random/40x40?man' },
+    content: '🌄 Early morning hike was totally worth it! The view from the top was breathtaking. Nature never fails to amaze me. #Adventure #Nature #Hiking',
+    image: 'https://source.unsplash.com/random/600x400?mountain',
+    time: '5 hours ago',
+    likes: 456,
+    comments: 67,
+    shares: 23
+  },
+  {
+    id: 3,
+    user: { name: 'Sophia Chen', avatar: 'https://source.unsplash.com/random/40x40?girl' },
+    content: '🎨 Finally finished my latest art piece! Been working on this for weeks. Art is such a beautiful way to express emotions. What do you think?',
+    image: 'https://source.unsplash.com/random/600x400?art',
+    time: '8 hours ago',
+    likes: 789,
+    comments: 89,
+    shares: 34
+  },
+  {
+    id: 4,
+    user: { name: 'Marcus Johnson', avatar: 'https://source.unsplash.com/random/40x40?boy' },
+    content: '🍳 Sunday brunch vibes! Tried this new recipe and it turned out amazing. Nothing beats homemade food. Who else loves cooking on weekends?',
+    image: 'https://source.unsplash.com/random/600x400?food',
+    time: '12 hours ago',
+    likes: 567,
+    comments: 78,
+    shares: 15
+  },
+  {
+    id: 5,
+    user: { name: 'Isabella Garcia', avatar: 'https://source.unsplash.com/random/40x40?woman-2' },
+    content: '🌺 Spring is finally here! The garden is blooming and everything feels so fresh and new. Nature\'s colors are truly inspiring.',
+    image: 'https://source.unsplash.com/random/600x400?garden',
+    time: '1 day ago',
+    likes: 890,
+    comments: 123,
+    shares: 45
+  }
+];
