@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ExpFullName = `^[a-z]{3,20}$`
+	ExpFullName = `^[a-zA-Z ]{3,20}$`
 	ExpEmail    = `(?i)^[a-z0-9]+\.?[a-z0-9]+@[a-z0-9]+\.[a-z]{2,}$`
 	ExpNickname = `^[a-zA-Z0-9_.-]{3,20}$`
 )

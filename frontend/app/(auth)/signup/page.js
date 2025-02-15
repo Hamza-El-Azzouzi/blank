@@ -3,10 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import * as validator from '@/lib/form_validator';
+import Toast from '@/app/components/Toast';
+import { useRouter } from 'next/navigation';
 
 export default function SignUp() {
+    const router = useRouter()
+    const [toasts, setToasts] = useState([]);
+    const [avatar, setAvatar] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState('');
+    const [error, setError] = useState('');
     const [currentStep, setCurrentStep] = useState(1);
-    const [attemptedNext, setAttemptedNext] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -18,10 +24,14 @@ export default function SignUp() {
         aboutMe: '',
         accountType: 'public'
     });
-    const [avatar, setAvatar] = useState(null);
-    const [avatarPreview, setAvatarPreview] = useState('');
-    const [error, setError] = useState('');
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
 
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
     const handleChange = (e) => {
 
         const { name, value } = e.target;
@@ -34,10 +44,22 @@ export default function SignUp() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (file.size > 3 * 1024 * 1024) {
+                showToast('warning', 'image size should be less than 3MB');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                showToast('warning', 'Please upload an image file');
+                return;
+            }
             setAvatar(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setAvatarPreview(reader.result);
+                const base64 = reader.result
+                setAvatar(base64)
+                setFormData({ ...formData, avatar })
+                setAvatarPreview(base64);
             };
             reader.readAsDataURL(file);
         }
@@ -45,14 +67,31 @@ export default function SignUp() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Sign up:', { ...formData, avatar });
+        fetch(`${process.env.BACK_END_DOMAIN}api/register`, {
+            method: "POST",
+            body: JSON.stringify({ ...formData, avatar }),
+            headers: { 'content-type': 'application/json' },
+            credentials: "include", 
+
+        }).then(response => {
+            if (!response.ok) {
+                return response.json().then(error => { throw error; });
+            }
+            return response.json();
+        })
+            .then(() => {
+                showToast('success', 'Success! Operation completed.');
+                router.push("/");
+            }).catch((error) => {
+                showToast('error', error.message);
+            })
     };
     const isStepValid = (step) => {
         let isValid = true;
         let errorMessage = "";
 
         switch (step) {
-            case 1: // Account step
+            case 1:
                 if (!validator.validateEmail(formData.email)) {
                     isValid = false;
                     errorMessage = "Invalid Email";
@@ -70,7 +109,7 @@ export default function SignUp() {
                 }
                 break;
 
-            case 2: // Profile step
+            case 2:
                 if (!validator.validateFirstName(formData.firstName)) {
                     isValid = false;
                     errorMessage = "Invalid First Name";
@@ -83,11 +122,11 @@ export default function SignUp() {
                 }
                 break;
 
-            case 3: // Privacy step
-                isValid = true; // Add your privacy validation logic here
+            case 3:
+                isValid = true;
                 break;
 
-            case 4: // About step
+            case 4:
                 if (!validator.validateNickname(formData.nickname)) {
                     isValid = false;
                     errorMessage = "Invalid Nickname";
@@ -106,7 +145,6 @@ export default function SignUp() {
     };
     const nextStep = () => {
         const { isValid, errorMessage } = isStepValid(currentStep);
-        console.log(isStepValid(currentStep).isValid)
         if (isValid) {
             setCurrentStep((prev) => Math.min(prev + 1, 4));
             setError("");
@@ -121,7 +159,17 @@ export default function SignUp() {
     };
 
     return (
+
         <div className="auth-container">
+            {toasts.map((toast) => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => removeToast(toast.id)}
+                />
+            ))}
+
             <div className="auth-box">
                 <div className="auth-header">
                     <h1>Create Your Account</h1>
@@ -129,38 +177,34 @@ export default function SignUp() {
                 </div>
 
                 <div className="steps-progress">
-        {[1, 2, 3, 4].map((step) => {
-          const { isValid } = isStepValid(step);
-          const stepClass = `step-item ${
-            step === currentStep ? "active" : ""
-          } ${
-            step < currentStep ? (isValid ? "completed" : "fail") : ""
-          } ${
-            step === currentStep && error ? "current-fail" : ""
-          }`;
+                    {[1, 2, 3, 4].map((step) => {
+                        const { isValid } = isStepValid(step);
+                        const stepClass = `step-item ${step === currentStep ? "active" : ""
+                            } ${step < currentStep ? (isValid ? "completed" : "fail") : ""
+                            } ${step === currentStep && error ? "current-fail" : ""
+                            }`;
 
-          return (
-            <div key={step} className={stepClass}>
-              <div className="step-number">
-                {step < currentStep
-                  ? "✓"
-                  : step === currentStep && error
-                  ? "✗"
-                  : step}
-              </div>
-              <div className="step-label">
-                {step === 1 && "Account"}
-                {step === 2 && "Profile"}
-                {step === 3 && "Privacy"}
-                {step === 4 && "About"}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                        return (
+                            <div key={step} className={stepClass}>
+                                <div className="step-number">
+                                    {step < currentStep
+                                        ? "✓"
+                                        : step === currentStep && error
+                                            ? "✗"
+                                            : step}
+                                </div>
+                                <div className="step-label">
+                                    {step === 1 && "Account"}
+                                    {step === 2 && "Profile"}
+                                    {step === 3 && "Privacy"}
+                                    {step === 4 && "About"}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
 
-                <form onSubmit={handleSubmit}>
-                    {/* Step 1: Account Information */}
+                <form>
                     <div className={`form-step ${currentStep === 1 ? 'active' : ''}`}>
                         <div className="form-group">
                             <label htmlFor="email">Email</label>
@@ -201,7 +245,6 @@ export default function SignUp() {
                         </div>
                     </div>
 
-                    {/* Step 2: Basic Profile */}
                     <div className={`form-step ${currentStep === 2 ? 'active' : ''}`}>
                         <div className="form-grid">
                             <div className="form-group">
@@ -244,7 +287,6 @@ export default function SignUp() {
                         </div>
                     </div>
 
-                    {/* Step 3: Privacy Settings */}
                     <div className={`form-step ${currentStep === 3 ? 'active' : ''}`}>
                         <div className="privacy-toggle">
                             <div className="privacy-option">
@@ -292,7 +334,6 @@ export default function SignUp() {
                         </div>
                     </div>
 
-                    {/* Step 4: Additional Information */}
                     <div className={`form-step ${currentStep === 4 ? 'active' : ''}`}>
                         <div className="form-group form-full">
                             <div
@@ -362,7 +403,7 @@ export default function SignUp() {
                                 Next
                             </button>
                         ) : (
-                            <button type="submit" className="step-button button-next">
+                            <button type='button' onClick={handleSubmit} className="step-button button-next">
                                 Create Account
                             </button>
                         )}
