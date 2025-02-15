@@ -124,7 +124,7 @@ export default function Home() {
         LastName: post.LastName,
         avatar: 'https://source.unsplash.com/random/40x40?profile',
         Content: post.Content,
-        Image: post.image,
+        Image: post.Image,
         FormattedDate: post.FormattedDate,
         likes: post.LikeCount,
         comments: post.CommentCount,
