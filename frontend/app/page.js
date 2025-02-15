@@ -141,6 +141,37 @@ export default function Home() {
     }
   };
 
+  const handleLike = async (postId) => {
+    try {
+      const response = await fetch('http://127.0.0.1:1414/api/reacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetId: postId,
+          targetType: "post"
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to like post');
+      }
+  
+      const data = await response.json();
+
+      setPosts(posts.map(post => {
+        if (post.PostID === data.id) {
+          return { ...post, LikeCount: data.likeCount };
+        }
+        return post;
+      }));
+  
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
   return (
     <div className="container">
       <LeftSidebar />
@@ -220,9 +251,9 @@ export default function Home() {
               />
             )}
             <div className="post-footer">
-              <div className="post-action">
+              <div className="post-action" onClick={() => handleLike(post.PostID)}>
                 <Heart size={20} />
-                <span>{post.likes}</span>
+                <span>{post.LikeCount}</span>
               </div>
               <div className="post-action">
                 <MessageCircle size={20} />
