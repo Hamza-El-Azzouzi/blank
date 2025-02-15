@@ -10,6 +10,7 @@ import (
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -57,41 +58,41 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 
 func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) != 5 {
-		w.WriteHeader(http.StatusNotFound)
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
 	pagination := pathParts[4]
 	if pagination == "" {
-		w.WriteHeader(http.StatusNotFound)
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
 	nPagination, err := strconv.Atoi(pagination)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
 
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
 		return
 	}
 
 	posts, err := p.PostService.PostsByUser(userID, nPagination)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(posts)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 	}
 }
 

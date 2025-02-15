@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"mime"
 	"net/http"
 	"os"
-	"path/filepath"
 	"text/template"
 )
 
@@ -38,30 +36,4 @@ func SetupStaticFilesHandlers(w http.ResponseWriter, r *http.Request) {
 	} else {
 		OpenHtml("index.html", w, "404")
 	}
-}
-
-func ServeAvatars(w http.ResponseWriter, r *http.Request) {
-	avatar := r.PathValue("avatar")
-	if avatar == "" {
-		http.NotFound(w, r)
-		return
-	}
-
-	filePath := "./storage/avatars/" + avatar
-	file, err := os.Open(filePath)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-	defer file.Close()
-
-	// Detect MIME type based on file extension
-	contentType := mime.TypeByExtension(filepath.Ext(filePath))
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
-	w.Header().Set("Content-Type", contentType)
-
-	// Serve the file
-	http.ServeFile(w, r, filePath)
 }
