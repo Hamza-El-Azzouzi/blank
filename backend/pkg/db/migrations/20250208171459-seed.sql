@@ -15,10 +15,10 @@ VALUES
 (2, 2, 'Book Club', 'Discussion about books');
 
 -- Insert sample posts
-INSERT INTO `Post` (post_id, user_id, content, privacy_level, created_at)
+INSERT INTO `Post` (post_id, user_id, content, image, privacy_level, created_at)
 VALUES
-(1, 1, 'Hello World!', 'public', CURRENT_TIMESTAMP),
-(2, 2, 'My first post!', 'public', CURRENT_TIMESTAMP);
+(1, 1, 'Hello World!', '', 'public', DATETIME ('now', 'localtime')),
+(2, 2, 'My first post!', '', 'public', DATETIME ('now', 'localtime'));
 
 -- +migrate Down
 

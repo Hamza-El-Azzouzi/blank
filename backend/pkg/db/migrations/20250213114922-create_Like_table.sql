@@ -4,7 +4,7 @@ CREATE TABLE `Like` (
         `user_id` text NOT NULL,
         `post_id` TEXT,
         `comment_id` TEXT,
-        `created_at` timestamp,
+        `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
         FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE,
         FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`) ON UPDATE CASCADE ON DELETE CASCADE,
         FOREIGN KEY (`comment_id`) REFERENCES `Comment` (`comment_id`) ON UPDATE CASCADE ON DELETE CASCADE,

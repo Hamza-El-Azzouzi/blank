@@ -46,8 +46,8 @@ type CommentData struct {
 }
 
 type PostData struct {
-	Content string `json:"content"`
-	Privacy string `json:"privacy"`
-	Avatar  string `json:"avatar,omitempty"`
-	Friendlist []string `json:"friendlist,omitempty"`
+	Content           string   `json:"content"`
+	Privacy           string   `json:"privacy"`
+	Image             string   `json:"image,omitempty"`
+	SelectedFollowers []string `json:"selectedFollowers,omitempty"`
 }

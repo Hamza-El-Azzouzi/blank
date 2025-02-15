@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,6 +10,8 @@ import (
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type PostHandler struct {
@@ -64,30 +67,33 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	if postData.Content == "" || len(postData.Content) > 5000{
+
+	if postData.Content == "" || len(postData.Content) > 5000 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
-	if !isLogged {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-	err = p.PostService.PostSave(usermid.ID, postData.Content)
+	// isLogged, usermid := p.AuthMidlaware.IsUserLoggedIn(w, r)
+	// if !isLogged {
+	// 	w.WriteHeader(http.StatusForbidden)
+	// 	return
+	// }
+	userID := uuid.Must(uuid.FromString("fdc16121-2efa-49d7-b7e4-b29b7fd7dc17"))
+	err = p.PostService.PostSave(userID, postData.Content, postData.Privacy, postData.Image, postData.SelectedFollowers)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	posts, err := p.PostService.AllPosts(0)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts[0])
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	// posts, err := p.PostService.AllPosts(0)
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	return
+	// }
+	// w.Header().Set("Content-Type", "application/json")
+	// err = json.NewEncoder(w).Encode(posts[0])
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// }
 }
 
 func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {

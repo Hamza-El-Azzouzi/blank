@@ -6,7 +6,7 @@ CREATE TABLE `Notification` (
   `type` varchar(255),
   `related_id` text,
   `unread` boolean,
-  `created_at` timestamp,
+  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
   FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
 

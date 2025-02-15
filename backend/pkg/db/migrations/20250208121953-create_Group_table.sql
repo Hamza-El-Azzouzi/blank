@@ -4,6 +4,7 @@ CREATE TABLE `Group` (
   `creator_id` text,
   `title` varchar(255),
   `description` text,
+  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
   FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`)
 );
 

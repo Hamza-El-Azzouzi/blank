@@ -6,6 +6,8 @@ import (
 	"html"
 
 	"blank/pkg/app/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type PostRepository struct {
@@ -18,7 +20,7 @@ func (r *PostRepository) Create(post *models.Post) error {
 	if err != nil {
 		return err
 	}
-	_, err = preparedQuery.Exec(post.ID, post.UserID, post.Content)
+	_, err = preparedQuery.Exec(post.ID, post.UserID, post.Content, post.Image, post.Privacy)
 	return err
 }
 
@@ -95,4 +97,13 @@ func (r *PostRepository) PostExist(postID string) bool {
 		return true
 	}
 	return false
+}
+
+func (r *PostRepository) PostPrivacy(postID uuid.UUID, userID string) error {
+	preparedQuery, err := r.DB.Prepare("INSERT INTO Post_Privacy (post_id, user_id) VALUES (?, ?)")
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec(postID, userID)
+	return err
 }

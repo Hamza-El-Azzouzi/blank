@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Image, Heart, MessageCircle, Share2, Search } from 'lucide-react';
+import { Image, Heart, MessageCircle, Share2, Search, X } from 'lucide-react';
 import LeftSidebar from './components/LeftSidebar';
 import RightSidebar from './components/RightSidebar';
 import { Dialog, DialogTitle, Button, Checkbox } from './components/Dialog';
@@ -14,9 +14,9 @@ const allFollowers = Array.from({ length: 100 }, (_, i) => ({
 }));
 
 export default function Home() {
-  const [postText, setPostText] = useState('');
+  const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [image, setImage] = useState(null);
   const [showFollowersDialog, setShowFollowersDialog] = useState(false);
   const [selectedFollowers, setSelectedFollowers] = useState([]);
   const [displayedFollowers, setDisplayedFollowers] = useState(allFollowers.slice(0, 20));
@@ -27,10 +27,14 @@ export default function Home() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setSelectedImage(reader.result);
+        setImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
   };
 
   const handlePrivacyChange = (e) => {
@@ -75,17 +79,52 @@ export default function Home() {
     }
   };
 
-  const handlePost = () => {
-    console.log({ 
-      postText, 
-      privacy, 
-      selectedImage, 
-      selectedFollowers: privacy === 'private' ? selectedFollowers : [] 
-    });
-    setPostText('');
-    setSelectedImage(null);
-    setPrivacy('public');
-    setSelectedFollowers([]);
+  const handlePost = async () => {
+    const postData = {
+      content,
+      image,
+      privacy,
+      selectedFollowers: privacy === 'private' ? selectedFollowers : []
+    };
+
+    try {
+      const response = await fetch('http://127.0.0.1:1414/api/createpost', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+
+      const newPost = {
+        id: Date.now(),
+        user: { 
+          name: 'Current User', 
+          avatar: 'https://source.unsplash.com/random/40x40?profile' 
+        },
+        content: content,
+        image: image,
+        time: 'Just now',
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        privacy: privacy,
+        selectedFollowers: privacy === 'private' ? selectedFollowers : []
+      };
+  
+      samplePosts.unshift(newPost);
+
+      setContent('');
+      setImage(null);
+      setPrivacy('public');
+      setSelectedFollowers([]);
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
   };
 
   return (
@@ -96,11 +135,24 @@ export default function Home() {
           <textarea
             className="post-input"
             placeholder="What's on your mind?"
-            value={postText}
-            onChange={(e) => setPostText(e.target.value)}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
           />
-          {selectedImage && (
-            <img src={selectedImage} alt="Selected" style={{ maxWidth: '100%', marginBottom: '15px', borderRadius: '8px' }} />
+          {image && (
+            <div className="selected-image-container">
+              <button 
+                className="remove-image-button"
+                onClick={handleRemoveImage}
+                aria-label="Remove image"
+              >
+                <X size={20} />
+              </button>
+              <img 
+                src={image} 
+                alt="Selected" 
+                className="selected-image"
+              />
+            </div>
           )}
           <div className="post-actions">
             <div className="post-options">

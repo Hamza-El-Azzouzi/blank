@@ -573,6 +573,45 @@ h3{
   background: var(--border-light);
 }
 
+.selected-image-container {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.selected-image {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+.remove-image-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+  padding: 0;
+  z-index: 1;
+}
+
+.remove-image-button:hover {
+  background: var(--error);
+  color: white;
+  border-color: var(--error);
+  transform: scale(1.05);
+}
+
 @media (max-width: 1200px) {
   .right-sidebar {
     display: none;

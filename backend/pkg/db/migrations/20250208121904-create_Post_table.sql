@@ -6,7 +6,7 @@ CREATE TABLE
     `content` text,
     `image` varchar(255),
     `privacy_level` varchar(255),
-    `created_at` timestamp,
+    `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
     FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
   );
 

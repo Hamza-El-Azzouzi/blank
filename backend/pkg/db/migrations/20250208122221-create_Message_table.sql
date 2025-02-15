@@ -7,7 +7,7 @@ CREATE TABLE `Message` (
   `group_id` text,
   `content` text,
   `unread` boolean,
-  `created_at` timestamp,
+  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
   FOREIGN KEY (`sender_id`) REFERENCES `User` (`user_id`),
   FOREIGN KEY (`receiver_id`) REFERENCES `User` (`user_id`),
   FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`)

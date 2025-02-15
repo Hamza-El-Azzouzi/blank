@@ -10,7 +10,8 @@ CREATE TABLE
     `avatar` varchar(255),
     `nickname` varchar(255),
     `about_me` text,
-    `is_public` boolean
+    `is_public` boolean,
+    `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime'))
   );
 
 CREATE INDEX idx_user_nickname ON `User` (`nickname`);
