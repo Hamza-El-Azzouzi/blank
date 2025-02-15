@@ -37,15 +37,15 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
    			WHEN comment_counts.comment_count > 100 THEN '+100'
     		ELSE IFNULL(CAST(comment_counts.comment_count AS TEXT), '0')
 		END AS comment_count,
-		(SELECT COUNT(*) FROM Like WHERE Like.post_id = posts.id) AS like_count,
+		(SELECT COUNT(*) FROM Like WHERE Like.post_id = Post.post_id) AS like_count,
 		COUNT(*) OVER() AS total_count
 		FROM 
    			Post
 		JOIN 
 			User ON Post.user_id = User.user_id
 		LEFT JOIN 
-			(SELECT post_id, COUNT(*) AS comment_count FROM Comment GROUP BY post_id) AS comment_count
-			ON Post.post_id = comment_count.post_id
+			(SELECT post_id, COUNT(*) AS comment_count FROM Comment GROUP BY post_id) AS comment_counts
+			ON Post.post_id = comment_counts.post_id
 		GROUP BY 
 			Post.post_id
 		ORDER BY 
@@ -66,7 +66,8 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 			&post.Image,
 			&post.CreatedAt,
 			&post.UserID,
-			&post.Username,
+			&post.FirstName,
+			&post.LastName,
 			&post.CommentCount,
 			&post.LikeCount,
 			&post.TotalCount,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Image, Heart, MessageCircle, Share2, Search, X } from 'lucide-react';
 import LeftSidebar from './components/LeftSidebar';
 import RightSidebar from './components/RightSidebar';
@@ -14,9 +14,26 @@ const allFollowers = Array.from({ length: 100 }, (_, i) => ({
 }));
 
 export default function Home() {
+  const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [image, setImage] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:1414/api/posts/0');
+        if (!response.ok) throw new Error('Failed to fetch posts');
+        const data = await response.json();
+        console.log(data);
+        setPosts(data);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
+    };
+
+    fetchPosts();
+  }, []);
   const [showFollowersDialog, setShowFollowersDialog] = useState(false);
   const [selectedFollowers, setSelectedFollowers] = useState([]);
   const [displayedFollowers, setDisplayedFollowers] = useState(allFollowers.slice(0, 20));
@@ -116,7 +133,7 @@ export default function Home() {
         selectedFollowers: privacy === 'private' ? selectedFollowers : []
       };
   
-      samplePosts.unshift(newPost);
+      posts.unshift(newPost);
 
       setContent('');
       setImage(null);
@@ -182,27 +199,29 @@ export default function Home() {
           </div>
         </div>
 
-        {samplePosts.map((post) => (
-          <div key={post.id} className="post">
+        {posts.map((post) => (
+          <div key={post.PostID} className="post">
             <div className="post-header">
               <img
-                src={post.user.avatar}
-                alt={post.user.name}
+                src={post.avatar}
+                alt={post.FirstName}
                 className="post-avatar"
               />
               <div className="post-user-info">
-                <div className="post-username">{post.user.name}</div>
-                <div className="post-time">{post.time}</div>
+                <div className="post-username">{post.FirstName} {post.LastName}</div>
+                <div className="post-time">{post.FormattedDate}</div>
               </div>
             </div>
             <div className="post-content">
-              {post.content}
+              {post.Content}
             </div>
-            <img
-              src={post.image}
-              alt="Post content"
-              className="post-image"
-            />
+            {post.Image && post.Image !== "" && (
+              <img
+                src={post.Image}
+                alt="Post content"
+                className="post-image"
+              />
+            )}
             <div className="post-footer">
               <div className="post-action">
                 <Heart size={20} />
@@ -212,10 +231,7 @@ export default function Home() {
                 <MessageCircle size={20} />
                 <span>{post.comments}</span>
               </div>
-              <div className="post-action">
-                <Share2 size={20} />
-                <span>{post.shares}</span>
-              </div>
+          
             </div>
           </div>
         ))}
@@ -267,56 +283,3 @@ export default function Home() {
     </div>
   );
 }
-
-const samplePosts = [
-  {
-    id: 1,
-    user: { name: 'Emma Watson', avatar: 'https://source.unsplash.com/random/40x40?woman' },
-    content: 'Just finished reading an amazing book! 📚 Sometimes the perfect weekend is just you, a good book, and a cup of coffee. What are you all reading these days?',
-    image: 'https://source.unsplash.com/random/600x400?book',
-    time: '2 hours ago',
-    likes: 234,
-    comments: 45,
-    shares: 12
-  },
-  {
-    id: 2,
-    user: { name: 'James Smith', avatar: 'https://source.unsplash.com/random/40x40?man' },
-    content: '🌄 Early morning hike was totally worth it! The view from the top was breathtaking. Nature never fails to amaze me. #Adventure #Nature #Hiking',
-    image: 'https://source.unsplash.com/random/600x400?mountain',
-    time: '5 hours ago',
-    likes: 456,
-    comments: 67,
-    shares: 23
-  },
-  {
-    id: 3,
-    user: { name: 'Sophia Chen', avatar: 'https://source.unsplash.com/random/40x40?girl' },
-    content: '🎨 Finally finished my latest art piece! Been working on this for weeks. Art is such a beautiful way to express emotions. What do you think?',
-    image: 'https://source.unsplash.com/random/600x400?art',
-    time: '8 hours ago',
-    likes: 789,
-    comments: 89,
-    shares: 34
-  },
-  {
-    id: 4,
-    user: { name: 'Marcus Johnson', avatar: 'https://source.unsplash.com/random/40x40?boy' },
-    content: '🍳 Sunday brunch vibes! Tried this new recipe and it turned out amazing. Nothing beats homemade food. Who else loves cooking on weekends?',
-    image: 'https://source.unsplash.com/random/600x400?food',
-    time: '12 hours ago',
-    likes: 567,
-    comments: 78,
-    shares: 15
-  },
-  {
-    id: 5,
-    user: { name: 'Isabella Garcia', avatar: 'https://source.unsplash.com/random/40x40?woman-2' },
-    content: '🌺 Spring is finally here! The garden is blooming and everything feels so fresh and new. Nature\'s colors are truly inspiring.',
-    image: 'https://source.unsplash.com/random/600x400?garden',
-    time: '1 day ago',
-    likes: 890,
-    comments: 123,
-    shares: 45
-  }
-];

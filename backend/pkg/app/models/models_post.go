@@ -21,7 +21,8 @@ type PostWithUser struct {
 	Image         string
 	CreatedAt     time.Time
 	UserID        uuid.UUID
-	Username      string
+	FirstName     string
+	LastName      string
 	FormattedDate string
 	CommentCount  string
 	LikeCount     int

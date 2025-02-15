@@ -44,6 +44,7 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 	}
 	posts, err := p.PostService.AllPosts(nPagination)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

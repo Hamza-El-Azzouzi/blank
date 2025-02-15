@@ -3,10 +3,10 @@
 -- Insert sample users
 --- exemple uuid.NewV4  fdc16121-2efa-49d7-b7e4-b29b7fd7dc17
 --- online generator https://www.uuidgenerator.net/version4
-INSERT INTO `User` (user_id, email, password, first_name, last_name, date_of_birth, nickname, is_public) 
+INSERT INTO `User` (user_id, email, password, first_name, last_name, date_of_birth, avatar, nickname, is_public) 
 VALUES 
-('fdc16121-2efa-49d7-b7e4-b29b7fd7dc17', 'john@example.com', 'hashed_password', 'John', 'Doe', '1990-01-01', 'johndoe', true),
-('7af873b5-1173-4867-99ce-757046835a38', 'jane@example.com', 'hashed_password', 'Jane', 'Smith', '1992-02-02', 'janesmith', true);
+('fdc16121-2efa-49d7-b7e4-b29b7fd7dc17', 'john@example.com', 'hashed_password', 'John', 'Doe', '1990-01-01', '', 'johndoe', true),
+('7af873b5-1173-4867-99ce-757046835a38', 'jane@example.com', 'hashed_password', 'Jane', 'Smith', '1992-02-02', '', 'janesmith', true);
 
 -- Insert sample groups
 INSERT INTO `Group` (group_id, creator_id, title, description)
