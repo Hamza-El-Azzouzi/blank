@@ -41,7 +41,6 @@ type PostByUser struct {
 	CreatedAt     time.Time `json:"created_at"`
 	FormattedDate string    `json:"timestamp"`
 	LikeCount     int       `json:"likes"`
-	DisLikeCount  int       `json:"dislikes"`
 	CommentCount  int       `json:"comments"`
 	Privacy       string    `json:"privacy"`
 }
