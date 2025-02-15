@@ -3,7 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"mime"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -85,16 +88,16 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// posts, err := p.PostService.AllPosts(0)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	return
-	// }
-	// w.Header().Set("Content-Type", "application/json")
-	// err = json.NewEncoder(w).Encode(posts[0])
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// }
+	posts, err := p.PostService.AllPosts(0)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(posts[0])
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
@@ -169,4 +172,28 @@ func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func (p *PostHandler) ServeAvatars(w http.ResponseWriter, r *http.Request) {
+	avatar := r.PathValue("avatar")
+	if avatar == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	filePath := "./storage/avatars/" + avatar
+	file, err := os.Open(filePath)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer file.Close()
+
+	contentType := mime.TypeByExtension(filepath.Ext(filePath))
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", contentType)
+
+	http.ServeFile(w, r, filePath)
 }

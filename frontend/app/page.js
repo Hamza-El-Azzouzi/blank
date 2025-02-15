@@ -1,6 +1,6 @@
 'use client';
 
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Image, Heart, MessageCircle, Share2, Search, X } from 'lucide-react';
 import LeftSidebar from './components/LeftSidebar';
 import RightSidebar from './components/RightSidebar';
@@ -25,7 +25,6 @@ export default function Home() {
         const response = await fetch('http://127.0.0.1:1414/api/posts/0');
         if (!response.ok) throw new Error('Failed to fetch posts');
         const data = await response.json();
-        console.log(data);
         setPosts(data);
       } catch (error) {
         console.error('Error fetching posts:', error);
@@ -86,8 +85,8 @@ export default function Home() {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
     if (query) {
-      const filtered = allFollowers.filter(follower => 
-        follower.name.toLowerCase().includes(query) || 
+      const filtered = allFollowers.filter(follower =>
+        follower.name.toLowerCase().includes(query) ||
         follower.username.toLowerCase().includes(query)
       ).slice(0, 20);
       setDisplayedFollowers(filtered);
@@ -117,23 +116,21 @@ export default function Home() {
         throw new Error('Failed to create post');
       }
 
+      const post = await response.json();
+
       const newPost = {
-        id: Date.now(),
-        user: { 
-          name: 'Current User', 
-          avatar: 'https://source.unsplash.com/random/40x40?profile' 
-        },
-        content: content,
-        image: image,
-        time: 'Just now',
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        privacy: privacy,
-        selectedFollowers: privacy === 'private' ? selectedFollowers : []
+        PostID: post.PostID,
+        FirstName: post.FirstName,
+        LastName: post.LastName,
+        avatar: 'https://source.unsplash.com/random/40x40?profile',
+        Content: post.Content,
+        Image: post.image,
+        FormattedDate: post.FormattedDate,
+        likes: post.LikeCount,
+        comments: post.CommentCount,
       };
-  
-      posts.unshift(newPost);
+
+      if (posts) { posts.unshift(newPost) } else { setPosts(newPost) }
 
       setContent('');
       setImage(null);
@@ -157,16 +154,16 @@ export default function Home() {
           />
           {image && (
             <div className="selected-image-container">
-              <button 
+              <button
                 className="remove-image-button"
                 onClick={handleRemoveImage}
                 aria-label="Remove image"
               >
                 <X size={20} />
               </button>
-              <img 
-                src={image} 
-                alt="Selected" 
+              <img
+                src={image}
+                alt="Selected"
                 className="selected-image"
               />
             </div>
@@ -199,7 +196,7 @@ export default function Home() {
           </div>
         </div>
 
-        {posts.map((post) => (
+        {posts && posts.map((post) => (
           <div key={post.PostID} className="post">
             <div className="post-header">
               <img
@@ -217,7 +214,7 @@ export default function Home() {
             </div>
             {post.Image && post.Image !== "" && (
               <img
-                src={post.Image}
+                src={"http://127.0.0.1:1414/storage/avatars/"+post.Image}
                 alt="Post content"
                 className="post-image"
               />
@@ -231,7 +228,7 @@ export default function Home() {
                 <MessageCircle size={20} />
                 <span>{post.comments}</span>
               </div>
-          
+
             </div>
           </div>
         ))}
@@ -252,8 +249,8 @@ export default function Home() {
         </div>
         <div className="followers-list" onScroll={handleScroll}>
           {displayedFollowers.map((follower) => (
-            <div 
-              key={follower.id} 
+            <div
+              key={follower.id}
               className={`follower-item ${selectedFollowers.includes(follower.id) ? 'selected' : ''}`}
               onClick={() => handleFollowerSelect(follower.id)}
             >
