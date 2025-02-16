@@ -1,8 +1,9 @@
 // app/(main)/groups/page.js
 "use client"
 import React, { useState } from 'react';
-import { FiSearch, FiUsers, FiPlus } from 'react-icons/fi';
-import Link from 'next/link';
+import { FiSearch, FiPlus } from 'react-icons/fi';
+import CreateGroup from '@/components/groups/create/createGroup';
+import GroupCard from '@/components/groups/cards/groupCard';
 import './groups.css';
 
 const mockGroups = [
@@ -31,50 +32,60 @@ const mockGroups = [
 
 const GroupsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredGroups, setFilteredGroups] = useState(mockGroups);
+    const [showCreateGroup, setShowCreateGroup] = useState(false);
+    const [groups, setGroups] = useState(mockGroups);
 
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
-
-        const filtered = mockGroups.filter(group =>
-            group.name.toLowerCase().includes(term)
-        );
-        setFilteredGroups(filtered);
     };
+
+    const handleCreateGroup = (groupData) => {
+        const newGroup = {
+            id: groups.length + 1,
+            ...groupData,
+            memberCount: 1,
+            isJoined: true
+        };
+        setGroups([newGroup, ...groups]);
+    };
+
+    const handleJoinGroup = (groupId) => {
+        setGroups(groups.map(group => {
+            if (group.id === groupId) {
+                return { ...group, isJoined: !group.isJoined };
+            }
+            return group;
+        }));
+    };
+
+    const filteredGroups = groups.filter(group =>
+        group.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="groups-page">
             <div className="groups-header">
                 <h1>Discover Groups</h1>
-                <button className="create-group-btn">
+                <button className="create-group-btn" onClick={() => setShowCreateGroup(true)}>
                     <FiPlus /> Create New Group
                 </button>
             </div>
 
             <div className="groups-search">
                 <FiSearch className="search-icon" />
-                <input type="text" placeholder="Search groups..." value={searchTerm} onChange={handleSearch} className="search-input" />
+                <input type="text" placeholder="Search groups..." value={searchTerm} onChange={handleSearch} className="search-input"/>
             </div>
 
             <div className="groups-grid">
                 {filteredGroups.map(group => (
-                    <Link href={`/groups/${group.id}`} key={group.id} className="group-card">
-                        <div className="group-info">
-                            <h3>{group.name}</h3>
-                            <p>{group.description}</p>
-                            <div className="group-stats">
-                                <span className="member-count">
-                                    <FiUsers /> {group.memberCount} members
-                                </span>
-                                <button className={`join-button ${group.isJoined ? 'joined' : ''}`}>
-                                    {group.isJoined ? 'Joined' : 'Join'}
-                                </button>
-                            </div>
-                        </div>
-                    </Link>
+                    <GroupCard key={group.id} group={group} onJoinClick={handleJoinGroup}/>
                 ))}
             </div>
+
+            {showCreateGroup && (
+                <CreateGroup onClose={() => setShowCreateGroup(false)} onSubmit={handleCreateGroup}/>
+            )}
         </div>
     );
 };
