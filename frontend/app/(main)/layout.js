@@ -20,14 +20,14 @@ export default function MainLayout({ children }) {
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Handle left sidebar
-      if (leftOpen && !leftSidebarRef.current?.contains(event.target) && 
-          !leftToggleRef.current?.contains(event.target)) {
+      if (leftOpen && !leftSidebarRef.current?.contains(event.target) &&
+        !leftToggleRef.current?.contains(event.target)) {
         setLeftOpen(false);
       }
-      
+
       // Handle right sidebar
-      if (rightOpen && !rightSidebarRef.current?.contains(event.target) && 
-          !rightToggleRef.current?.contains(event.target)) {
+      if (rightOpen && !rightSidebarRef.current?.contains(event.target) &&
+        !rightToggleRef.current?.contains(event.target)) {
         setRightOpen(false);
       }
     };
@@ -37,7 +37,7 @@ export default function MainLayout({ children }) {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     // Add click handlers to all nav links
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
@@ -77,15 +77,15 @@ export default function MainLayout({ children }) {
       </div>
 
       <nav className="mobile-nav">
-        <button className="mobile-nav-item"  onClick={handleLeftToggle} ref={leftToggleRef}>
+        <button className="mobile-nav-item" onClick={handleLeftToggle} ref={leftToggleRef}>
           <TiThMenu className="mobile-nav-icon" />
         </button>
-        
+
         <Link href="/notifications" className="mobile-nav-item">
           <FiBell className="mobile-nav-icon" />
         </Link>
-        
-        <button  className="mobile-nav-item"  onClick={handleRightToggle} ref={rightToggleRef}>
+
+        <button className="mobile-nav-item" onClick={handleRightToggle} ref={rightToggleRef}>
           <MdPeopleAlt className="mobile-nav-icon" />
         </button>
       </nav>

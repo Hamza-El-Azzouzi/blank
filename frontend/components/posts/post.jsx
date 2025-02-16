@@ -54,6 +54,7 @@ const Post = ({ post }) => {
         <div className="post-meta">
           <span className="post-author">{post.author}</span>
           <span className="post-time">{post.time}</span>
+
         </div>
       </div>
 
