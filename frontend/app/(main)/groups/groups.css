@@ -1,0 +1,109 @@
+/* app/(main)/groups/groups.css */
+.groups-page {
+    padding: 20px;
+}
+
+.groups-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.groups-header h1 {
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.create-group-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.create-group-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.groups-search {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.group-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.group-card:hover {
+    transform: translateY(-2px);
+}
+
+.group-info {
+    padding: 16px;
+}
+
+.group-info h3 {
+    color: var(--text-primary);
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.group-info p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.group-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.member-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+}
+
+.join-button {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--primary);
+    background: none;
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.join-button:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.join-button.joined {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border);
+    color: var(--text-secondary);
+}
