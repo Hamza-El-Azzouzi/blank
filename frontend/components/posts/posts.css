@@ -1,6 +1,9 @@
 /* components/posts/posts.css */
 .home-page {
-    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 800px;
+    margin: auto;
 }
 
 .create-post-container {
