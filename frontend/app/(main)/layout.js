@@ -1,5 +1,5 @@
-"use client"
 // app/(main)/layout.js
+"use client"
 import NavSidebar from '@/components/sidebars/navSidebar';
 import UserSidebar from '@/components/sidebars/userSidebar';
 import './main.css';
@@ -20,26 +20,22 @@ export default function MainLayout({ children }) {
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Handle left sidebar
-      if (leftOpen && 
-          !leftSidebarRef.current?.contains(event.target) && 
+      if (leftOpen && !leftSidebarRef.current?.contains(event.target) && 
           !leftToggleRef.current?.contains(event.target)) {
         setLeftOpen(false);
       }
       
       // Handle right sidebar
-      if (rightOpen && 
-          !rightSidebarRef.current?.contains(event.target) && 
+      if (rightOpen && !rightSidebarRef.current?.contains(event.target) && 
           !rightToggleRef.current?.contains(event.target)) {
         setRightOpen(false);
       }
     };
 
-    // Handle clicking nav links
     const handleNavLinkClick = () => {
       setLeftOpen(false);
     };
 
-    // Add event listeners
     document.addEventListener('mousedown', handleClickOutside);
     
     // Add click handlers to all nav links

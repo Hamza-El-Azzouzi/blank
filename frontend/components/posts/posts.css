@@ -1,10 +1,4 @@
 /* components/posts/posts.css */
-.home-page {
-    display: grid;
-    grid-template-columns: 1fr;
-    max-width: 800px;
-    margin: auto;
-}
 
 .create-post-container {
     background-color: var(--bg-secondary);

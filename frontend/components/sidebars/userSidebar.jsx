@@ -18,7 +18,7 @@ const UserSidebar = () => {
         {mockContacts.map(contact => (
           <li key="{contact.id}" className="contact-item">
             <div className="contact-avatar-wrapper">
-              <img src="https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg" alt={contact.name} className="contact-avatar" />
+              <img src="/default-avatar.jpg" alt={contact.name} className="contact-avatar" />
               <span className={`status-indicator ${contact.status}`}></span>
             </div>
             <span className="contact-name">{contact.name}</span>

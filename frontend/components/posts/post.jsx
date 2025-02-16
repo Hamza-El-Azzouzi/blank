@@ -1,5 +1,5 @@
-"use client"
 // components/posts/post.jsx
+"use client"
 import React, { useState } from 'react';
 import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
 
@@ -8,14 +8,12 @@ const mockComments = [
   {
     id: 1,
     author: "Alex Turner",
-    avatar: AVATAR,
     content: "This is amazing! 👏",
     time: "15m ago"
   },
   {
     id: 2,
     author: "Sara Wilson",
-    avatar: AVATAR,
     content: "Great progress! Keep it up",
     time: "1h ago"
   }
@@ -52,7 +50,7 @@ const Post = ({ post }) => {
   return (
     <div className="post">
       <div className="post-header">
-        <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
+        <img src="/default-avatar.jpg" alt={`${post.author}'s avatar`} className="post-avatar" />
         <div className="post-meta">
           <span className="post-author">{post.author}</span>
           <span className="post-time">{post.time}</span>
@@ -93,7 +91,7 @@ const Post = ({ post }) => {
       {showComments && (
         <div className="comments-section">
           <form onSubmit={handleSubmitComment} className="comment-form">
-            <img src={AVATAR} alt="Your avatar" className="comment-avatar" />
+            <img src="/default-avatar.jpg" alt="Your avatar" className="comment-avatar" />
             <div className="comment-input-container">
               <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..." className="comment-input" />
@@ -106,7 +104,7 @@ const Post = ({ post }) => {
           <div className="comments-list">
             {comments.map(comment => (
               <div key={comment.id} className="comment">
-                <img src={comment.avatar} alt={`${comment.author}'s avatar`} className="comment-avatar" />
+                <img src="/default-avatar.jpg" alt={`${comment.author}'s avatar`} className="comment-avatar" />
                 <div className="comment-content">
                   <div className="comment-author">{comment.author}</div>
                   <p className="comment-text">{comment.content}</p>

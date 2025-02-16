@@ -1,5 +1,5 @@
-"use client"
 // components/posts/createPost.jsx
+"use client"
 import React, { useState } from 'react';
 import { FiImage, FiGlobe, FiChevronDown } from 'react-icons/fi';
 import './posts.css';
@@ -25,8 +25,6 @@ const CreatePost = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle post submission
-        console.log({ content, privacy, imagePreview });
     };
 
     const removeImage = () => {

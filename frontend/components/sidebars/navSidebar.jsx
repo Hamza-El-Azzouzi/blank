@@ -43,7 +43,7 @@ const NavSidebar = () => {
             </Link>
           </li>
           <li className="nav-item">
-            <Link href="/profile" className="nav-link">
+            <Link href="/my-profile" className="nav-link">
               <FiUser className="nav-icon" />
               <span>Profile</span>
             </Link>
