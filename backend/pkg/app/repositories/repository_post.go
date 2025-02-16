@@ -6,6 +6,8 @@ import (
 	"html"
 
 	"blank/pkg/app/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type PostRepository struct {
@@ -90,6 +92,64 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
 		}
 		post.FormattedDate = post.CreatedAt.Format("01/02/2006, 3:04:05 PM")
+		posts = append(posts, post)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("error iterating posts with user info: %v", err)
+	}
+
+	return posts, nil
+}
+
+func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models.PostByUser, error) {
+	query := `
+		SELECT
+			p.post_id,
+			p.content,
+			COALESCE(p.image, '') AS image,
+			p.privacy_level,
+			p.created_at,
+			(
+				SELECT
+					COUNT(*)
+				FROM
+					Comment c
+				WHERE
+					c.post_id = p.post_id
+			) AS comments_count
+		FROM
+			Post p
+			JOIN User u ON p.user_id = u.user_id
+		WHERE
+			p.user_id = ?
+		GROUP BY
+			p.post_id
+		ORDER BY
+			p.created_at DESC
+		LIMIT 20 OFFSET ?;
+	`
+	rows, err := r.DB.Query(query, userID, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("error querying posts with user info: %v", err)
+	}
+	defer rows.Close()
+
+	var posts []models.PostByUser
+	for rows.Next() {
+		var post models.PostByUser
+		err = rows.Scan(
+			&post.ID,
+			&post.Content,
+			&post.Image,
+			&post.Privacy,
+			&post.CreatedAt,
+			&post.CommentCount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning post with user info: %v", err)
+		}
+		post.FormattedDate = post.CreatedAt.Format("01/02/2006, 3:04 PM")
 		posts = append(posts, post)
 	}
 	err = rows.Err()
