@@ -1,0 +1,83 @@
+/* components/groups/groupHeader.css */
+.group-header {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.group-info {
+    flex: 1;
+}
+
+.group-info h1 {
+    color: var(--text-primary);
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+
+.group-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.group-meta {
+    display: flex;
+    gap: 16px;
+}
+
+.group-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+}
+
+.join-group-btn,
+.leave-group-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.join-group-btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+}
+
+.join-group-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.leave-group-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.leave-group-btn:hover {
+    background-color: var(--error);
+    color: white;
+}
+
+@media (max-width: 640px) {
+    .group-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .group-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

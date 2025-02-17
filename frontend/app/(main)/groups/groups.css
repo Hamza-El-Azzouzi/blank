@@ -1,0 +1,44 @@
+/* app/(main)/groups/groups.css */
+.groups-page {
+    padding: 20px;
+}
+
+.groups-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.groups-header h1 {
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.create-group-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.create-group-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.groups-search {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
