@@ -8,7 +8,7 @@ import (
 
 type Post struct {
 	ID        uuid.UUID
-	UserID    uuid.UUID
+	UserID    any
 	Content   string
 	Image     string
 	Privacy   string
@@ -27,6 +27,18 @@ type PostWithUser struct {
 	CommentCount  string
 	LikeCount     int
 	TotalCount    int
+	Author        string
+}
+
+type PostByUser struct {
+	ID            string    `json:"id"`
+	Content       string    `json:"content"`
+	Image         string    `json:"image,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+	FormattedDate string    `json:"timestamp"`
+	LikeCount     int       `json:"likes"`
+	CommentCount  int       `json:"comments"`
+	Privacy       string    `json:"privacy"`
 }
 
 type CommentDetails struct {

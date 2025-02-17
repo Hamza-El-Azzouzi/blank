@@ -1,7 +1,5 @@
+// app/layout.js
 import "./globals.css";
-
-import LeftSidebar from "./components/LeftSidebar";
-import RightSidebar from "./components/RightSidebar";
 
 export const metadata = {
   title: "blank",
@@ -13,9 +11,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <div className="container">
-          <LeftSidebar />
             {children}
-          <RightSidebar />
         </div>
       </body>
     </html>

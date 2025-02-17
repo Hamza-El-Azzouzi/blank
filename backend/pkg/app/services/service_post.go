@@ -14,10 +14,10 @@ type PostService struct {
 	PostRepo *repositories.PostRepository
 }
 
-func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string, image string, selectedFollowers []string) error {
+func (p *PostService) PostSave(userId any, content string, privacy string, image string, selectedFollowers []string) error {
 	postId := uuid.Must(uuid.NewV4())
 
-	imageFilename, err := utils.SaveAvatar(image)
+	imageFilename, err := utils.SaveImage(image)
 	if err != nil {
 		return err
 	}
@@ -50,6 +50,14 @@ func (p *PostService) AllPosts(pagination int) ([]models.PostWithUser, error) {
 	posts, err := p.PostRepo.AllPosts(pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error Kayn f All Post service : %v", err)
+	}
+	return posts, nil
+}
+
+func (p *PostService) PostsByUser(userID uuid.UUID, pagination int) ([]models.PostByUser, error) {
+	posts, err := p.PostRepo.PostsByUser(userID, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("error Kayn f Posts by user service : %v", err)
 	}
 	return posts, nil
 }

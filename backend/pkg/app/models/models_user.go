@@ -30,6 +30,7 @@ type RegisterData struct {
 	Nickname    string `json:"nickname,omitempty"`
 	AboutMe     string `json:"aboutMe,omitempty"`
 	IsPublic    bool   `json:"isPublic,omitempty"`
+	
 }
 
 type LoginData struct {
@@ -45,7 +46,7 @@ type UserInfo struct {
 	About       string `json:"about"`
 	DateOfBirth string `json:"date_of_birth"`
 	Avatar      string `json:"avatar"`
-	IsPublic    string `json:"is_public"`
+	IsPublic    bool   `json:"is_public"`
 	Following   int    `json:"following"`
 	Followers   int    `json:"followers"`
 }

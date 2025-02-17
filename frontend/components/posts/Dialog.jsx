@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { FiX } from "react-icons/fi";
+import './dialog.css'
 
 export function Dialog({ open, onClose, children }) {
   const dialogRef = useRef(null);
@@ -30,7 +31,7 @@ export function Dialog({ open, onClose, children }) {
     <div className="dialog-overlay" onClick={() => onClose()}>
       <div className="dialog-content" onClick={e => e.stopPropagation()} ref={dialogRef}>
         <button className="dialog-close" onClick={onClose}>
-          <X size={20} />
+          <FiX size={20} />
         </button>
         {children}
       </div>

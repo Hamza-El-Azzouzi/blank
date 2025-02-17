@@ -35,7 +35,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 	sessionId, err := r.Cookie("sessionId")
 
 	if err == nil && sessionId.Value != "" {
-		existSessions = m.SessionService.CheckSession(sessionId.Value)
+		_,existSessions = m.SessionService.CheckSession(sessionId.Value)
 	}
 	if !existSessions {
 		log.Printf("session doesn't exist: %#v\n", err)

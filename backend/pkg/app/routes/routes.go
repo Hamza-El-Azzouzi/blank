@@ -15,13 +15,18 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
 	mux.HandleFunc("/api/register", authHandler.HandleRegister)
 	mux.HandleFunc("/api/login", authHandler.HandleLogin)
+	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 	mux.HandleFunc("/storage/avatars/{avatar}", postHandler.ServeAvatars)
-	// mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
+
 	mux.HandleFunc("/api/users/", authHandler.GetUsers)
 	mux.HandleFunc("/api/searchedusers", authHandler.SearchUsers)
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
 	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
+
+	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
+	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
+	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
