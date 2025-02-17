@@ -32,6 +32,12 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var err error
+	AuthUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
@@ -43,6 +49,8 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
+
+	user.IsOwner = userID == AuthUserID
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(user)
@@ -69,7 +77,12 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 		userInfo models.UserInfo
 	)
 
-	userID = uuid.Must(uuid.FromString("fdc16121-2efa-49d7-b7e4-b29b7fd7dc17"))
+	userID, err = uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
 	err = json.NewDecoder(r.Body).Decode(&userInfo)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)

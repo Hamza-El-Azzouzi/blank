@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import './profileHeader.css';
 import UpdateInfoDialog from '../UpdateInfoDialog';
+import { FaUserEdit } from "react-icons/fa";
 
-const ProfileHeader = ({ profile, setProfile }) => {
+const ProfileHeader = ({ profile, setProfile, cookieValue }) => {
 
-    const isOwner = true
     const [updateInfo, setUpdateInfo] = useState(false);
 
 
@@ -29,12 +29,12 @@ const ProfileHeader = ({ profile, setProfile }) => {
 
                 </div>
             </div>
-            {isOwner ? (
+            {profile.is_owner ? (
                 <button
                     className="update-info-btn"
                     onClick={() => setUpdateInfo(true)}
                 >
-                    Update Info
+                    <FaUserEdit />
                 </button>
             ) : (
                 <></> // here will be follow button
@@ -45,6 +45,7 @@ const ProfileHeader = ({ profile, setProfile }) => {
                     user={profile}
                     onClose={() => setUpdateInfo(false)}
                     setProfile={setProfile}
+                    cookieValue={cookieValue}
                 />
             )}
         </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { validateForm } from '@/lib/validateUserInfo';
 
-export default function UpdateInfoDialog({ user, onClose, setProfile }) {
+export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValue }) {
   const [isChanged, setIsChanged] = useState(false);
   const [formData, setFormData] = useState({
     first_name: user.first_name || '',
@@ -55,8 +55,10 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-update-info`, {
         method: 'PUT',
+        credentials: "include",
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${cookieValue}`
         },
         body: JSON.stringify(formData),
       });
@@ -67,7 +69,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
         // Preserve followers & following values
         formData.followers = user.followers;
         formData.following = user.following;
-        
+
         setProfile(formData);
         onClose();
       } else {

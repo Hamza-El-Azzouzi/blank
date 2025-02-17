@@ -5,9 +5,12 @@ import "./profile.css"
 import Post from '@/components/posts/post';
 import ProfileHeader from '@/components/profile/profileHeader/profileHeader';
 import ProfileAbout from '@/components/profile/profileAbout/profileAbout';
+import * as cookies from '@/lib/cookie';
+import { fetchBlob } from '@/lib/fetch_blob';
 
 export default function ProfilePage({ params }) {
 
+  const [cookieValue, setCookieValue] = useState(null);
   const [userID, setUserID] = useState()
   const [profile, setProfile] = useState({
     first_name: "",
@@ -18,6 +21,7 @@ export default function ProfilePage({ params }) {
     following: 0,
     followers: 0,
     about: "",
+    is_owner: false,
     nickname: ""
   });
 
@@ -26,6 +30,10 @@ export default function ProfilePage({ params }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('posts');
 
+
+  useEffect(() => {
+    setCookieValue(cookies.GetCookie("sessionId"));
+  }, [cookieValue]);
 
   useEffect(() => {
     const getUserID = async () => {
@@ -38,10 +46,17 @@ export default function ProfilePage({ params }) {
   useEffect(() => {
     if (!userID) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-info/${userID}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-info/${userID}`, {
+      method: "GET",
+      credentials: "include",
+      headers: { 'Authorization': `Bearer ${cookieValue}` }
+    })
       .then(res => res.json())
-      .then(data => {
-        data.avatar = data.avatar ? process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar : '/default-avatar.jpg';
+      .then(async (data) => { 
+        data.avatar = data.avatar
+          ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
+          : '/default-avatar.jpg';
+
         setProfile(data);
       })
       .catch(err => {
@@ -50,12 +65,18 @@ export default function ProfilePage({ params }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [userID]);
+  }, [userID, cookieValue]);
+
 
   useEffect(() => {
     if (!profile.first_name) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`, {
+      method: "GET",
+      credentials: "include",
+      headers: { 'Authorization': `Bearer ${cookieValue}` }
+
+    })
       .then(res => res.json())
       .then(data => {
         const user = {
@@ -79,7 +100,7 @@ export default function ProfilePage({ params }) {
 
   return (
     <div className="container">
-      <ProfileHeader profile={profile} setProfile={setProfile} />
+      <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} />
 
       <div className="profile-tabs">
         <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
