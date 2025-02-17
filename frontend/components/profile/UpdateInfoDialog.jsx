@@ -69,6 +69,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
         // Preserve followers & following values
         formData.followers = user.followers;
         formData.following = user.following;
+        formData.is_owner = user.is_owner;
 
         setProfile(formData);
         onClose();
