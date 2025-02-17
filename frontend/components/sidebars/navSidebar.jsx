@@ -1,12 +1,41 @@
 // components/sidebars/navSidebar.jsx
-import React from 'react';
+import React,{useState,useEffect} from 'react';
 import Link from 'next/link';
 import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
 import { BiSearch } from 'react-icons/bi';
 import './sidebar.css';
+import * as cookies from '@/lib/cookie';
 
+import { useRouter } from 'next/navigation';
 
 const NavSidebar = () => {
+  const [cookieValue, setCookieValue] = useState(null);
+  useEffect(() => {
+    setCookieValue(cookies.GetCookie("sessionId"));
+}, [cookieValue]);
+  const router = useRouter()
+  const handleLogOut = () => {
+
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/logout`,{
+      method :"GET",
+      credentials:"include",
+      headers :{'Authorization':`Bearer ${cookieValue}`}
+      
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(error => { throw error; });
+        }
+        return response.json();
+      })
+      .then(() => {
+        cookies.DeleteCookie("sessionId")
+        router.push("/signin");
+      }).catch(() => {
+        router.push("/");
+      })
+  }
+
   return (
     <>
       <div className="search-container">
@@ -52,10 +81,10 @@ const NavSidebar = () => {
       </nav>
 
       <div className="nav-footer">
-        <Link href="/logout" className="nav-link logout">
+        <button onClick={handleLogOut} className="nav-link logout">
           <FiLogOut className="nav-icon" />
           <span>Log out</span>
-        </Link>
+        </button>
       </div>
     </>
   );

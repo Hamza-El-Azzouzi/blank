@@ -18,7 +18,7 @@ export default function SignIn() {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(process.env.NEXT_PUBLIC_BACK_END_DOMAIN)
+  
     fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/login`, {
       method: "POST",
       body: JSON.stringify({ email, password }),
