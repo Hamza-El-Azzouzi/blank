@@ -58,12 +58,6 @@ go.sum
 
 ### General ###
 
-# Environment variables
-.env
-*.env
-.env.*
-!.env.example
-
 # IDE specific files
 .idea/
 .vscode/

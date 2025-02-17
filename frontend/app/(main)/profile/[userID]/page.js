@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import "./profile.css"
-import { BASE_URL } from '@/config';
-import { FaUserEdit } from "react-icons/fa";
-import UpdateInfoDialog from '@/components/profile/UpdateInfoDialog';
 import Post from '@/components/posts/post';
 import ProfileHeader from '@/components/profile/profileHeader/profileHeader';
 import ProfileAbout from '@/components/profile/profileAbout/profileAbout';
@@ -41,10 +38,10 @@ export default function ProfilePage({ params }) {
   useEffect(() => {
     if (!userID) return;
 
-    fetch(`${BASE_URL}/api/user-info/${userID}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-info/${userID}`)
       .then(res => res.json())
       .then(data => {
-        data.avatar = data.avatar ? BASE_URL + data.avatar : '/default-avatar.jpg';
+        data.avatar = data.avatar ? process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar : '/default-avatar.jpg';
         setProfile(data);
       })
       .catch(err => {
@@ -58,7 +55,7 @@ export default function ProfilePage({ params }) {
   useEffect(() => {
     if (!profile.first_name) return;
 
-    fetch(`${BASE_URL}api/user-posts/${userID}/${postsPgae}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`)
       .then(res => res.json())
       .then(data => {
         const user = {

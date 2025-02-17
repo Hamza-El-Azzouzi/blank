@@ -16,7 +16,8 @@ const UserSidebar = () => {
       <h2 className="contacts-header">Contacts</h2>
       <ul className="contacts-list">
         {mockContacts.map(contact => (
-          <li key="{contact.id}" className="contact-item">
+    
+          <li key={contact.id} className="contact-item">
             <div className="contact-avatar-wrapper">
               <img src="/default-avatar.jpg" alt={contact.name} className="contact-avatar" />
               <span className={`status-indicator ${contact.status}`}></span>

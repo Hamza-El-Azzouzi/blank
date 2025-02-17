@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BASE_URL } from '@/config';
 import { validateForm } from '@/lib/validateUserInfo';
 
 export default function UpdateInfoDialog({ user, onClose, setProfile }) {
@@ -54,7 +53,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile }) {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/api/user-update-info`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-update-info`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

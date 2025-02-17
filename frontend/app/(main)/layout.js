@@ -8,6 +8,7 @@ import { TiThMenu } from "react-icons/ti";
 import { MdPeopleAlt } from "react-icons/md";
 import { FiBell } from 'react-icons/fi';
 import Link from 'next/link';
+import GetCookie from '@/lib/cookie';
 
 export default function MainLayout({ children }) {
   const [leftOpen, setLeftOpen] = useState(false);
@@ -16,7 +17,7 @@ export default function MainLayout({ children }) {
   const rightSidebarRef = useRef(null);
   const leftToggleRef = useRef(null);
   const rightToggleRef = useRef(null);
-
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Handle left sidebar
