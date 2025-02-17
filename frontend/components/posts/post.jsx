@@ -2,6 +2,7 @@
 "use client"
 import React, { useState } from 'react';
 import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
+import './posts.css';
 
 const AVATAR = "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
 const mockComments = [
@@ -46,14 +47,13 @@ const Post = ({ post }) => {
     setComments(prev => [comment, ...prev]);
     setNewComment('');
   };
-
   return (
     <div className="post">
       <div className="post-header">
-        <img src="/default-avatar.jpg" alt={`${post.author}'s avatar`} className="post-avatar" />
+        <img src={post.user.avatar} alt={`${post.user.name}'s avatar`} className="post-avatar" />
         <div className="post-meta">
-          <span className="post-author">{post.author}</span>
-          <span className="post-time">{post.time}</span>
+          <span className="post-author">{post.user.name}</span>
+          <span className="post-time">{post.timestamp}</span>
 
         </div>
       </div>
@@ -73,7 +73,7 @@ const Post = ({ post }) => {
           {likesCount} likes
         </span>
         <span className="comments-count">
-          {comments.length} comments
+          {post.comments} comments
         </span>
       </div>
 
