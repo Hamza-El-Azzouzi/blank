@@ -1,8 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
 import "./profile.css"
-import { BASE_URL } from '@/config';
 import { MdOutlineMail } from "react-icons/md";
 import { FaUserEdit } from "react-icons/fa";
 import UpdateInfoDialog from '@/components/profile/UpdateInfoDialog';
@@ -35,12 +35,12 @@ export default function ProfilePage({ params }) {
       setUserID(query.userID);
     };
     getUserID();
-  }, []);
+  }, [params]);
 
   useEffect(() => {
     if (!userID) return;
 
-    fetch(`${BASE_URL}/api/user-info/${userID}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-info/${userID}`)
       .then(res => res.json())
       .then(data => {
         data.avatar = data.avatar ? BASE_URL + data.avatar : '/default-avatar.jpg';
@@ -57,7 +57,7 @@ export default function ProfilePage({ params }) {
   useEffect(() => {
     if (!profile.first_name) return;
 
-    fetch(`${BASE_URL}api/user-posts/${userID}/${postsPgae}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`)
       .then(res => res.json())
       .then(data => {
         const user = {
@@ -77,7 +77,7 @@ export default function ProfilePage({ params }) {
       .catch(err => {
         console.error('Error fetching posts of the user:', err);
       });
-  }, [profile]);
+  }, [postsPgae, profile, userID]);
 
   return (
     <div className="container">
@@ -127,14 +127,14 @@ export default function ProfilePage({ params }) {
 
       {profile.first_name &&
         <>
-          <h3>{profile.first_name}'s posts</h3>
+          <h3>{profile.first_name}&lsquo;s posts</h3>
           <div className="posts">
             {posts.length > 0 ? (
               posts.map(post => (
                 <Post key={post.id} post={post} />
               ))
             ) : (
-              <p>{profile.first_name} {profile.last_name} hasn't posted anything yet!</p>
+              <p>{profile.first_name} {profile.last_name} hasn&rsquo;t posted anything yet!</p>
             )}
           </div>
         </>

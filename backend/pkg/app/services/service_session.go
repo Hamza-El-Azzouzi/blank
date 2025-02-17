@@ -14,7 +14,7 @@ func (s *SessionService) DeleteSession(sessionID string) error {
 	return s.SessionRepo.DeleteSession(sessionID)
 }
 
-func (s *SessionService) CheckSession(sessionID string) bool {
+func (s *SessionService) CheckSession(sessionID string) (string,bool) {
 	return s.SessionRepo.CheckSession(sessionID)
 }
 

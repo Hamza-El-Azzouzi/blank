@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"html"
 	"net/http"
 	"strconv"
@@ -80,8 +81,9 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
-
+	// image, err := utils.SaveAvatar(user.Avatar)
 	status, message := h.AuthService.Register(user)
+	fmt.Println(status, message)
 	utils.SendResponses(w, status, message, nil)
 }
 
@@ -115,58 +117,50 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	SetCookies(w, "sessionId", sessionId)
+	utils.SetCookies(w, "sessionId", sessionId)
 	utils.SendResponses(w, http.StatusOK, "success", nil)
-}
-
-func SetCookies(w http.ResponseWriter, name, value string) {
-	cookie := &http.Cookie{
-		Name:     name,
-		Value:    value,
-		Path:     "/",
-		HttpOnly: false,
-	}
-
-	http.SetCookie(w, cookie)
 }
 
 func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
-	activeUser, user := h.AuthMidlaware.IsUserLoggedIn(w, r)
-	if !activeUser {
-		utils.SendResponses(w, http.StatusBadRequest, "you are not logged in", nil)
+
+	authHeader := r.Header.Get("Authorization")
+	tokenParts := strings.Split(authHeader, " ")
+	sessionID := tokenParts[1]
+	err := h.SessionService.DeleteSession(sessionID)
+	if err != nil {
+		fmt.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "internal server error", nil)
 		return
 	}
 
-	sessionId, err := r.Cookie("sessionId")
-	if err == nil || sessionId.Value != "" {
-		err := h.SessionService.DeleteSession(sessionId.Value)
-		if err != nil {
-			utils.SendResponses(w, http.StatusInternalServerError, "internal server error", nil)
-			return
-		}
-	}
-
-	h.MessageHandler.DisconnectClient(user.ID.String())
+	// h.MessageHandler.DisconnectClient(user.ID.String())
 	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
-// func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method != http.MethodGet {
-// 		w.WriteHeader(http.StatusMethodNotAllowed)
-// 		return
-// 	}
-// 	sessionId, err := r.Cookie("sessionId")
-// 	if err != nil && sessionId.Value == "" {
-// 		w.WriteHeader(http.StatusForbidden)
-// 		return
-// 	}
-// 	exist := h.SessionService.CheckSession(sessionId.Value)
-// 	if !exist {
-// 		// sendResponse(w, "No User Found")
-// 	} else {
-// 		// sendResponse(w, "Done")
-// 	}
-// }
+type SessionData struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var session SessionData
+
+	if err := json.NewDecoder(r.Body).Decode(&session); err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		return
+	}
+	_, exist := h.SessionService.CheckSession(session.Value)
+	if !exist {
+		utils.SendResponses(w, http.StatusForbidden, "User Not Found", nil)
+	} else {
+		utils.SendResponses(w, http.StatusOK, "success", nil)
+	}
+}
 
 func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -199,7 +193,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	_, existSessions := h.SessionService.CheckSession(sessionId.Value)
 	if !existSessions {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -240,7 +234,7 @@ func (h *AuthHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	_, existSessions := h.SessionService.CheckSession(sessionId.Value)
 	if !existSessions {
 		w.WriteHeader(http.StatusForbidden)
 		return
