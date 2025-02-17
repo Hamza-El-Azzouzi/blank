@@ -175,7 +175,7 @@ fmt.Println("hi")
 		return
 	}
 	fmt.Println("Received session value:", session.Value)
-	exist := h.SessionService.CheckSession(session.Value)
+	_,exist := h.SessionService.CheckSession(session.Value)
 	if !exist {
 		fmt.Println("not found")
 		utils.SendResponses(w, http.StatusForbidden, "User Not Found", nil)
@@ -215,7 +215,7 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	_,existSessions := h.SessionService.CheckSession(sessionId.Value)
 	if !existSessions {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -256,7 +256,7 @@ func (h *AuthHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existSessions := h.SessionService.CheckSession(sessionId.Value)
+	_,existSessions := h.SessionService.CheckSession(sessionId.Value)
 	if !existSessions {
 		w.WriteHeader(http.StatusForbidden)
 		return

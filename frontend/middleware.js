@@ -25,7 +25,6 @@ export default async function Middleware(request) {
 
             const data = await response.json();
             if (data.status !== 200) {
-                console.log("Session is invalid, deleting cookie and redirecting to /signin");
                 const response = NextResponse.redirect(new URL('/signin', request.url));
                 response.cookies.set('sessionId', '', {
                     expires: new Date(0),
@@ -36,7 +35,6 @@ export default async function Middleware(request) {
 
             return NextResponse.next();
         } catch (error) {
-            console.error("Error validating session integrity:", error);
             return NextResponse.redirect(new URL('/signin', request.url));
         }
     }
@@ -44,7 +42,6 @@ export default async function Middleware(request) {
         if (restrictedRoutesForLoggedInUsers.includes(pathname)) {
             return NextResponse.next();
         }
-        console.log("User is not logged in, redirecting to /signin");
         return NextResponse.redirect(new URL('/signin', request.url));
     }
 }

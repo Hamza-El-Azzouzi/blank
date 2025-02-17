@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 	"strings"
 
@@ -50,7 +50,6 @@ func (h *AuthMiddleware) Protect(next http.Handler) http.Handler {
 		}
 
 		if _, ok := publicRoutes[r.URL.Path]; ok {
-			fmt.Println("midd")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -67,11 +66,12 @@ func (h *AuthMiddleware) Protect(next http.Handler) http.Handler {
 			return
 		}
 		sessionID := tokenParts[1]
-		if !h.SessionService.CheckSession(sessionID) {
+		user_id, ok := h.SessionService.CheckSession(sessionID)
+		if !ok {
 			utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: Invalid session", nil)
 			return
 		}
-
+		r = r.WithContext(context.WithValue(r.Context(), "user_id", user_id))
 		next.ServeHTTP(w, r)
 	})
 }

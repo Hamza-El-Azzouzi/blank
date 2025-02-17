@@ -15,17 +15,18 @@ func (s *SessionsRepositorie) DeleteSession(sessionID string) error {
 	return err
 }
 
-func (s *SessionsRepositorie) CheckSession(sessionID string) bool {
+func (s *SessionsRepositorie) CheckSession(sessionID string) (string,bool) {
 	exist := 0
-	query := `SELECT count(*) FROM sessions WHERE session_id = ?`
-	err := s.DB.QueryRow(query, sessionID).Scan(&exist)
+	user_id := ""
+	query := `SELECT user_id,count(*) FROM sessions WHERE session_id = ?`
+	err := s.DB.QueryRow(query, sessionID).Scan(&user_id,&exist)
 	if err != nil {
-		return false
+		return user_id,false
 	}
 	if exist == 1 {
-		return true
+		return user_id,true
 	}
-	return false
+	return user_id,false
 }
 
 func (s *SessionsRepositorie) CreateSession(sessionID string, userID uuid.UUID) error {
