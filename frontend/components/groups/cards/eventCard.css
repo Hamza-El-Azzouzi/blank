@@ -1,0 +1,85 @@
+/* components/groups/eventCard.css */
+.event-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-info h3 {
+    color: var(--text-primary);
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.event-info p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.event-meta {
+    display: flex;
+    gap: 16px;
+}
+
+.event-date,
+.event-attendees {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+.event-response-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.response-button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.response-button:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.response-button.going {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.response-button.not-going {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border);
+    color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+    .event-card {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .event-meta {
+        justify-content: center;
+    }
+}

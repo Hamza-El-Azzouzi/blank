@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 export default async function Middleware(request) {
     const restrictedRoutesForLoggedInUsers = ["/signin", "/signup"];
     const { pathname } = request.nextUrl;
-
     if (pathname.startsWith("/_next")) {
         return NextResponse.next();
     }

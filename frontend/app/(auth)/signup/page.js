@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import * as validator from '@/lib/form_validator';
-import Toast from '@/app/components/Toast';
+import Toast from '@/components/toast/Toast';
 import { useRouter } from 'next/navigation';
 
 export default function SignUp() {
@@ -67,7 +67,7 @@ export default function SignUp() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        fetch(`${process.env.BACK_END_DOMAIN}api/register`, {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/register`, {
             method: "POST",
             body: JSON.stringify({ ...formData, avatar }),
             headers: { 'content-type': 'application/json' },
@@ -83,6 +83,7 @@ export default function SignUp() {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/");
             }).catch((error) => {
+                console.log(error)
                 showToast('error', error.message);
             })
     };

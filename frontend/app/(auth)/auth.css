@@ -1,32 +1,3 @@
-:root {
-    /* Background */
-    --bg-primary: #191820;
-    --bg-secondary: #23242c;
-    --bg-tertiary: #2c2d35;
-  
-    /* Text colors */
-    --text-primary: #fafafa;
-    --text-secondary: #b5b5be;
-    --text-tertiary: #71717a;
-  
-    /* Main colors */
-    --primary: #0d6aff;
-    --primary-hover: #0258d8;
-    --primary-light: #2b81f1;
-  
-    /* Border colors */
-    --border: #374151;
-    --border-light: #676772;
-    --border-color: #00459e;
-  
-    /* Status colors */
-    --success: #25B74D;
-    --error: #f43f5e;
-    --warning: #f59e0b;
-    --info: #0981b9;
-  }
-
-
 .auth-container {
     min-height: 100vh;
     display: flex;

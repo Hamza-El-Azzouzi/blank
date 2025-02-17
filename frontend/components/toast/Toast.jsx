@@ -1,4 +1,4 @@
-// components/Toast.js
+// components/Toast.jsx
 import { useEffect, useState } from 'react';
 import styles from './Toast.module.css';
 const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {

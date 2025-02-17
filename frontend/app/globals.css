@@ -1,40 +1,44 @@
+/* app/globals.css */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+
 :root {
   /* Background */
-  --bg-primary: #191820;
-  --bg-secondary: #23242c;
-  --bg-tertiary: #2c2d35;
+  --bg-primary: #141324;
+  --bg-secondary: #1c1a30;
+  --bg-tertiary: #33304d;
 
   /* Text colors */
-  --text-primary: #fafafa;
-  --text-secondary: #b5b5be;
-  --text-tertiary: #71717a;
+  --text-primary: #ffffff;
+  --text-secondary: #b5b5d4;
+  --text-tertiary: #8585a5;
 
   /* Main colors */
-  --primary: #0d6aff;
-  --primary-hover: #0258d8;
-  --primary-light: #2b81f1;
+  --primary: #0f57ca;
+  --primary-hover: #0f469e;
+  --primary-light: #3b7adf;
 
   /* Border colors */
-  --border: #374151;
-  --border-light: #676772;
-  --border-color: #00459e;
+  --border: #4b4b64;
+  --border-light: #5f5f92;
+  --border-color: #1953af;
 
   /* Status colors */
   --success: #25B74D;
   --error: #f43f5e;
   --warning: #f59e0b;
   --info: #0981b9;
+
+  --sidebar-width: 300px;
 }
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background:var(--bg-primary);
-  color: #333;
-  min-height: 100vh;
+  background-color: var(--bg-primary);
+  height: 100vh;
+  overflow: hidden;
 }

@@ -85,6 +85,7 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	// image, err := utils.SaveAvatar(user.Avatar)
 	status, message := h.AuthService.Register(user)
+	fmt.Println(status,message)
 	utils.SendResponses(w, status, message, nil)
 }
 
