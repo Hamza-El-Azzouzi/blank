@@ -61,17 +61,21 @@
     gap: 0.75rem;
 }
 
-.profile-email-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+
+.profile-data {
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: 400;
+    font-size: 0.95rem;
+}
+
+.email {
     text-decoration: none;
     color: var(--primary);
-    font-size: 0.95rem;
     transition: color 0.2s ease;
 }
 
-.profile-email-link:hover {
+.email:hover {
     color: var(--primary-hover);
     text-decoration: underline;
 }

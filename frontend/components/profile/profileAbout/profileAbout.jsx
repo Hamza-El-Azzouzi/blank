@@ -6,14 +6,21 @@ const ProfileAbout = ({ profile }) => {
   return (
     <div className="profile-about-container">
       <div className="profile-personal-info">
+        {profile.nickname && (
+          <span>
+            Nickname :<p className="profile-data"> {profile.nickname}</p></span>
+        )}
         {profile.email && (
-          <a href={`mailto:${profile.email}`} className="profile-email-link">
-            <MdOutlineMail className="email-icon" /> {profile.email}
-          </a>
+          <span>
+            Email :
+            <a href={`mailto:${profile.email}`} className="profile-data email"> 
+              {profile.email}
+            </a>
+          </span>
         )}
         {profile.date_of_birth && (
           <p className="profile-birthdate">
-            Born on {new Date(profile.date_of_birth)?.toLocaleDateString()}
+            Born on <p className="profile-data">{new Date(profile.date_of_birth)?.toLocaleDateString()}</p>
           </p>
         )}
       </div>
