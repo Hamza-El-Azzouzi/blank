@@ -117,7 +117,7 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
                 author: post.author,
                 avatar: post.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar): '/default-avatar.jpg',
                 content: post.content,
-                image: post.image,
+                image: await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image),
                 formatted_date: post.formatted_date,
                 like_count: post.like_count,
                 comment_count: post.comment_count,
