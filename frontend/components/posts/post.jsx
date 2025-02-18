@@ -21,8 +21,8 @@ const mockComments = [
 ];
 
 const Post = ({ post }) => {
-  const [isLiked, setIsLiked] = useState(post.IsLiked);
-  const [likesCount, setLikesCount] = useState(post.LikeCount);
+  const [isLiked, setIsLiked] = useState(post.has_liked);
+  const [likesCount, setLikesCount] = useState(post.like_count);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState('');
@@ -37,7 +37,7 @@ const Post = ({ post }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          targetId: post.PostID,
+          targetId: post.post_id,
           targetType: "post"
         })
       });
@@ -48,7 +48,7 @@ const Post = ({ post }) => {
 
       const data = await response.json();
       setIsLiked(!isLiked);
-      setLikesCount(data.likeCount);
+      setLikesCount(data.like_count);
 
     } catch (error) {
       console.error('Error liking post:', error);
@@ -74,21 +74,21 @@ const Post = ({ post }) => {
   return (
     <div className="post">
       <div className="post-header">
-        <img src={post.avatar} alt={`${post.Author}'s avatar`} className="post-avatar" />
+        <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
         <div className="post-meta">
-          <span className="post-author">{post.Author}</span>
-          <span className="post-time">{post.FormattedDate}</span>
+          <span className="post-author">{post.author}</span>
+          <span className="post-time">{post.formatted_date}</span>
         </div>
       </div>
 
       <div className="post-content">
-        <p className="post-text">{post.Content}</p>
+        <p className="post-text">{post.content}</p>
 
         {post.image && (
           <div className="post-image-container">
-            {post.Image && post.Image !== "" && (
+            {post.image && post.image !== "" && (
               <img
-                src={"http://127.0.0.1:1414/storage/avatars/" + post.Image}
+                src={post.image}
                 alt="Post content"
                 className="post-image"
               />
@@ -102,7 +102,7 @@ const Post = ({ post }) => {
           {likesCount} likes
         </span>
         <span className="comments-count">
-          {post.CommentCount} comments
+          {post.comment_count} comments
         </span>
       </div>
 

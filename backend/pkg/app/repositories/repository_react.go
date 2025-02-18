@@ -56,7 +56,7 @@ func (r *ReactReposetorie) GetReacts(Id, target string) (any, error) {
 
 	data := map[string]any{
 		"id":        Id,
-		"likeCount": like,
+		"like_count": like,
 	}
 	return data, nil
 }

@@ -54,7 +54,6 @@ func (h *AuthMiddleware) Protect(next http.Handler) http.Handler {
 			return
 		}
 		authHeader := r.Header.Get("Authorization")
-
 		if authHeader == "" {
 			utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: No session token provided", nil)
 			return

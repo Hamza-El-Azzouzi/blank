@@ -2,12 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"fmt"
-	"mime"
+	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -32,6 +29,13 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) != 4 {
 		w.WriteHeader(http.StatusNotFound)
@@ -47,7 +51,7 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	posts, err := p.PostService.AllPosts(nPagination)
+	posts, err := p.PostService.AllPosts(nPagination, userID)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -118,15 +122,18 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	userID := r.Context().Value("user_id")
-	fmt.Println(userID)
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
 	err = p.PostService.PostSave(userID, postData.Content, postData.Privacy, postData.Image, postData.SelectedFollowers)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	posts, err := p.PostService.AllPosts(0)
+	posts, err := p.PostService.AllPosts(0, userID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -210,28 +217,4 @@ func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-}
-
-func (p *PostHandler) ServeAvatars(w http.ResponseWriter, r *http.Request) {
-	avatar := r.PathValue("avatar")
-	if avatar == "" {
-		http.NotFound(w, r)
-		return
-	}
-
-	filePath := "./storage/avatars/" + avatar
-	file, err := os.Open(filePath)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
-	defer file.Close()
-
-	contentType := mime.TypeByExtension(filepath.Ext(filePath))
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
-	w.Header().Set("Content-Type", contentType)
-
-	http.ServeFile(w, r, filePath)
 }

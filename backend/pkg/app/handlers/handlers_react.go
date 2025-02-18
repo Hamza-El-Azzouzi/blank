@@ -9,6 +9,7 @@ import (
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -35,12 +36,11 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	// logeddUser, user := rh.AuthMidlaware.IsUserLoggedIn(w, r)
-	// if !logeddUser {
-	// 	w.WriteHeader(http.StatusForbidden)
-	// 	return
-	// }
-	userID := uuid.Must(uuid.FromString("fdc16121-2efa-49d7-b7e4-b29b7fd7dc17"))
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
 	if react.Target == "post" {
 		err := rh.ReactService.Create(userID, react.ID, "", react.Target)
 		if err != nil {

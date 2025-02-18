@@ -5,6 +5,7 @@ import { FiImage, FiSearch } from 'react-icons/fi';
 import { Dialog, DialogTitle, Button, Checkbox } from './Dialog';
 import './posts.css';
 import * as cookies from '@/lib/cookie';
+import { fetchBlob } from '@/lib/fetch_blob';
 
 const allFollowers = Array.from({ length: 100 }, (_, i) => ({
     id: i + 1,
@@ -111,16 +112,16 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
             }
 
             const post = await response.json();
-
             const newPost = {
-                PostID: post.PostID,
-                Author: post.Author,
-                Avatar: 'https://source.unsplash.com/random/40x40?profile',
-                Content: post.Content,
-                Image: post.Image,
-                FormattedDate: post.FormattedDate,
-                LikeCount: post.LikeCount,
-                CommentCount: post.CommentCount,
+                post_id: post.post_id,
+                author: post.author,
+                avatar: post.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar): '/default-avatar.jpg',
+                content: post.content,
+                image: post.image,
+                formatted_date: post.formatted_date,
+                like_count: post.like_count,
+                comment_count: post.comment_count,
+                isLiked:post.HasLiked,
             };
 
             if (onPostCreated) onPostCreated(newPost);

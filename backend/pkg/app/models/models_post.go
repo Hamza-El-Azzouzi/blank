@@ -8,7 +8,7 @@ import (
 
 type Post struct {
 	ID        uuid.UUID
-	UserID    any
+	UserID    uuid.UUID
 	Content   string
 	Image     string
 	Privacy   string
@@ -16,18 +16,20 @@ type Post struct {
 }
 
 type PostWithUser struct {
-	PostID        uuid.UUID
-	Content       string
-	Image         string
-	CreatedAt     time.Time
-	UserID        uuid.UUID
-	FirstName     string
-	LastName      string
-	FormattedDate string
-	CommentCount  string
-	LikeCount     int
-	TotalCount    int
-	Author        string
+	PostID        uuid.UUID `json:"post_id"`
+	Content       string    `json:"content"`
+	Image         string    `json:"image"`
+	CreatedAt     time.Time `json:"created_at"`
+	UserID        uuid.UUID `json:"user_id"`
+	FirstName     string    `json:"first_name"`
+	LastName      string    `json:"last_name"`
+	CommentCount  string    `json:"comment_count"`
+	LikeCount     int       `json:"like_count"`
+	TotalCount    int       `json:"total_count"`
+	FormattedDate string    `json:"formatted_date"`
+	Author        string    `json:"author"`
+	HasLiked      bool      `json:"has_liked"`
+	Avatar        string    `json:"avatar"`
 }
 
 type PostByUser struct {

@@ -24,7 +24,7 @@ func (r *PostRepository) Create(post *models.Post) error {
 	return err
 }
 
-func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error) {
+func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]models.PostWithUser, error) {
 	query := `SELECT 
 		Post.post_id,
 		Post.content,
@@ -33,11 +33,13 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 		User.user_id,
 		User.first_name,
 		User.last_name,
+		User.avatar,
 		CASE
    			WHEN comment_counts.comment_count > 100 THEN '+100'
     		ELSE IFNULL(CAST(comment_counts.comment_count AS TEXT), '0')
 		END AS comment_count,
 		(SELECT COUNT(*) FROM Like WHERE Like.post_id = Post.post_id) AS like_count,
+		EXISTS(SELECT 1 FROM Like WHERE Like.post_id = Post.post_id AND Like.user_id = ?) AS has_liked,
 		COUNT(*) OVER() AS total_count
 		FROM 
    			Post
@@ -51,7 +53,7 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 		ORDER BY 
 			Post.created_at DESC 
 		LIMIT 20 OFFSET ?;`
-	rows, err := r.DB.Query(query, pagination)
+	rows, err := r.DB.Query(query, currentUserID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
@@ -68,8 +70,10 @@ func (r *PostRepository) AllPosts(pagination int) ([]models.PostWithUser, error)
 			&post.UserID,
 			&post.FirstName,
 			&post.LastName,
+			&post.Avatar,
 			&post.CommentCount,
 			&post.LikeCount,
+			&post.HasLiked,
 			&post.TotalCount,
 		)
 		if err != nil {
