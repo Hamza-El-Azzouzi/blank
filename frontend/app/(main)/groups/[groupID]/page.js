@@ -1,13 +1,16 @@
 // app/(main)/groups/[id]/page.js
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { FiCalendar, FiUsers, FiPlus } from 'react-icons/fi';
 import CreatePost from '@/components/groups/create/createPost';
 import CreateEvent from '@/components/groups/create/createEvent';
 import GroupHeader from '@/components/groups/groupHeader/groupHeader';
 import EventCard from '@/components/groups/cards/eventCard';
 import Post from '@/components/posts/post';
+import { GetCookie } from '@/lib/cookie';
 import './group.css';
+
 
 const mockGroup = {
     id: 1,
@@ -57,7 +60,32 @@ const GroupDetailPage = () => {
     const [showCreateEvent, setShowCreateEvent] = useState(false);
     const [events, setEvents] = useState(mockEvents);
     const [groupData, setGroupData] = useState(mockGroup);
+    const { groupID } = useParams(); 
+    const cookieValue = GetCookie("sessionId")
+    console.log(groupID)
+    useEffect(() => {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+            .then(response => {
 
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data.data)
+                setGroupData(data.data);
+            }).catch((error) => {
+                console.log(error)
+            })
+    }, []);
     const handleMembershipUpdate = (isJoining) => {
         setGroupData(prev => ({
             ...prev,

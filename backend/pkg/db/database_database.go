@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -17,7 +18,16 @@ func InitDB(dataSourceName string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		return nil, err
+	}
+	var foreignKeysEnabled int
+	err = db.QueryRow("PRAGMA foreign_keys;").Scan(&foreignKeysEnabled)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Foreign Keys Enabled:", foreignKeysEnabled)
 	migrations := &migrate.FileMigrationSource{
 		Dir: "./pkg/db/migrations",
 	}

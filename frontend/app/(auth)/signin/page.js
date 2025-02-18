@@ -46,7 +46,7 @@ export default function SignIn() {
           key={toast.id}
           message={toast.message}
           type={toast.type}
-          onClose={() => removeToast(toast.id)}
+          onClose={() => toastlib.removeToast(toast.id)}
         />
       ))}
       <div className="auth-box">

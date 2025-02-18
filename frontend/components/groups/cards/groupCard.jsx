@@ -1,30 +1,37 @@
-// components/groups/groupCard.jsx
-"use client"
-import React from 'react';
-import Link from 'next/link';
-import { FiUsers } from 'react-icons/fi';
-import './groupCard.css';
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
+import { FiUsers } from "react-icons/fi";
+import "./groupCard.css";
 
 const GroupCard = ({ group, onJoinClick }) => {
+  const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
+
   const handleJoinClick = (e) => {
     e.preventDefault();
-    onJoinClick(group.id);
+    setIsDisabled(true);
+    onJoinClick(group.GroupeId);
   };
 
   return (
-    <Link href={`/groups/${group.id}`} className="group-card">
+    <Link href={`/groups/${group.GroupeId}`} className="group-card">
       <div className="group-info">
-        <h3>{group.name}</h3>
-        <p>{group.description}</p>
+        <h3>{group.Name}</h3>
+        <p>{group.Description}</p>
         <div className="group-stats">
           <span className="member-count">
-            <FiUsers /> {group.memberCount} members
+            <FiUsers /> {group.Member_count} members
           </span>
-          <button 
+          <button
             onClick={handleJoinClick}
-            className={`join-button ${group.isJoined ? 'joined' : ''}`}
+            className={`join-button ${group.IsJoined ? "joined" : ""}`}
+            disabled={isDisabled}
           >
-            {group.isJoined ? 'Joined' : 'Join'}
+            {group.IsOwner ? "Joined" : group.IsJoined
+              ? "Joined"
+              : isDisabled
+              ? "Pending"
+              : "Join"}
           </button>
         </div>
       </div>

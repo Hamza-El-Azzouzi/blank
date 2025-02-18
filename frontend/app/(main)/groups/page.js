@@ -1,70 +1,130 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // app/(main)/groups/page.js
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiSearch, FiPlus } from 'react-icons/fi';
 import CreateGroup from '@/components/groups/create/createGroup';
 import GroupCard from '@/components/groups/cards/groupCard';
 import './groups.css';
-
-const mockGroups = [
-    {
-        id: 1,
-        name: "Tech Enthusiasts",
-        description: "A community for technology lovers and innovators",
-        memberCount: 1234,
-        isJoined: false
-    },
-    {
-        id: 2,
-        name: "Photography Club",
-        description: "Share your best shots and photography tips",
-        memberCount: 856,
-        isJoined: true
-    },
-    {
-        id: 3,
-        name: "Book Club",
-        description: "Discuss your favorite books and discover new reads",
-        memberCount: 567,
-        isJoined: false
-    }
-];
+import { GetCookie } from '@/lib/cookie';
+import Toast from '@/components/toast/Toast';
 
 const GroupsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateGroup, setShowCreateGroup] = useState(false);
-    const [groups, setGroups] = useState(mockGroups);
+    const [toasts, setToasts] = useState([]);
+    const [groups, setGroups] = useState([]);
+    // const [cookieValue, setCookieValue] = useState(null);
+    const cookieValue = GetCookie("sessionId")
+    useEffect(() => {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/groups`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+            .then(response => {
 
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data.data[0])
+                setGroups([...data.data, ...groups]);
+            }).catch((error) => {
+                console.log(error)
+            })
+    }, []);
+
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
     };
 
     const handleCreateGroup = (groupData) => {
-        const newGroup = {
-            id: groups.length + 1,
-            ...groupData,
-            memberCount: 1,
-            isJoined: true
-        };
-        setGroups([newGroup, ...groups]);
+        // api/createGroup
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/createGroup`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+            body: JSON.stringify(groupData)
+
+        })
+            .then(response => {
+                console.log(response)
+                if (!response.ok) {
+                    console.log(response)
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                showToast('success', 'Success! Operation completed.');
+                setShowCreateGroup(false)
+                console.log(data.data)
+                setGroups([data.data, ...groups]);
+            }).catch((error) => {
+                console.log(error)
+                showToast('error', error.message);
+            })
     };
 
     const handleJoinGroup = (groupId) => {
-        setGroups(groups.map(group => {
-            if (group.id === groupId) {
-                return { ...group, isJoined: !group.isJoined };
-            }
-            return group;
-        }));
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupId}/requested`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+            .then(response => {
+                console.log(response)
+                if (!response.ok) {
+                    console.log(response)
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                showToast('success', 'Success! Operation completed.');
+                console.log(data.data)
+            }).catch((error) => {
+                console.log(error)
+                showToast('error', error.message);
+            })
     };
 
-    const filteredGroups = groups.filter(group =>
-        group.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // const filteredGroups = groups.filter(group => {
+    //     if (group) group.Name.toLowerCase().includes(searchTerm.toLowerCase())
+    // }
+
+    // );
 
     return (
         <div className="groups-page">
+            {toasts.map((toast) => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => removeToast(toast.id)}
+                />
+            ))}
             <div className="groups-header">
                 <h1>Discover Groups</h1>
                 <button className="create-group-btn" onClick={() => setShowCreateGroup(true)}>
@@ -74,17 +134,17 @@ const GroupsPage = () => {
 
             <div className="groups-search">
                 <FiSearch className="search-icon" />
-                <input type="text" placeholder="Search groups..." value={searchTerm} onChange={handleSearch} className="search-input"/>
+                <input type="text" placeholder="Search groups..." value={searchTerm} onChange={handleSearch} className="search-input" />
             </div>
 
             <div className="groups-grid">
-                {filteredGroups.map(group => (
-                    <GroupCard key={group.id} group={group} onJoinClick={handleJoinGroup}/>
+                {groups.map(group => (
+                    <GroupCard key={group.GroupeId} group={group} onJoinClick={handleJoinGroup} />
                 ))}
             </div>
 
             {showCreateGroup && (
-                <CreateGroup onClose={() => setShowCreateGroup(false)} onSubmit={handleCreateGroup}/>
+                <CreateGroup onClose={() => setShowCreateGroup(false)} onSubmit={handleCreateGroup} />
             )}
         </div>
     );
