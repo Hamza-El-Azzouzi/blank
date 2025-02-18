@@ -50,7 +50,7 @@ export default function Home() {
           return post;
         }));
         setPosts(prevPosts => [...prevPosts, ...newPosts]);
-        setHasMore(newPosts.length === 20); // Assuming 20 is your page size
+        setHasMore(newPosts.length === 20);
       } else {
         setHasMore(false);
         setEndReached(true);
@@ -76,11 +76,11 @@ export default function Home() {
       <div className="posts-list">
         {posts.map((post, index) => {
           if (posts.length === index + 1 && !endReached) {
-            return <div ref={lastPostElementRef} key={`${post.post_id}-${index}`}>
+            return <div ref={lastPostElementRef} key={`${post.post_id}`}>
               <Post post={post} />
             </div>
           } else {
-            return <Post key={`${post.post_id}-${index}`} post={post} />;
+            return <Post key={`${post.post_id}`} post={post} />;
           }
         })}
         {loading && (

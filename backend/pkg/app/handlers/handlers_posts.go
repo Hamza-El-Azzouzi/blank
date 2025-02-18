@@ -118,7 +118,7 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if postData.Content == "" || len(postData.Content) > 5000 {
+	if (postData.Content == "" && postData.Image == "") || len(postData.Content) > 5000 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
