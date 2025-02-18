@@ -49,7 +49,12 @@ export default function Home() {
           }
           return post;
         }));
-        setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        
+        if (pageNumber === 0) {
+          setPosts(newPosts);
+        } else {
+          setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        }
         setHasMore(newPosts.length === 20);
       } else {
         setHasMore(false);

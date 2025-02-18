@@ -187,7 +187,6 @@ func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error
 	return user, nil
 }
 
-// Helper function to return sql.NullString
 func nullIfEmpty(value string) sql.NullString {
 	if value == "" {
 		return sql.NullString{Valid: false}

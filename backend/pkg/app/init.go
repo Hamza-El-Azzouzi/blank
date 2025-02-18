@@ -1,6 +1,5 @@
 package app
 
-// backend/pkg/app/handlers/handlers_login.go
 import (
 	"database/sql"
 	"net/http"
