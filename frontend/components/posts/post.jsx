@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
 import * as cookies from '@/lib/cookie';
+import './posts.css';
 
 const AVATAR = "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
 const mockComments = [
@@ -70,7 +71,6 @@ const Post = ({ post }) => {
     setComments(prev => [comment, ...prev]);
     setNewComment('');
   };
-
   return (
     <div className="post">
       <div className="post-header">
