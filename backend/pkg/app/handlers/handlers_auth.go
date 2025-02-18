@@ -144,7 +144,7 @@ type SessionData struct {
 
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
