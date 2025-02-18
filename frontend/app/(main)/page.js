@@ -53,7 +53,11 @@ export default function Home() {
         if (pageNumber === 0) {
           setPosts(newPosts);
         } else {
-          setPosts(prevPosts => [...prevPosts, ...newPosts]);
+          setPosts(prevPosts => {
+            const seen = new Set(prevPosts.map(p => p.post_id));
+            const filteredNewPosts = newPosts.filter(post => !seen.has(post.post_id));
+            return [...prevPosts, ...filteredNewPosts];
+          });
         }
         setHasMore(newPosts.length === 20);
       } else {
