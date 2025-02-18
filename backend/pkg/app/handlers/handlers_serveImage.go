@@ -5,19 +5,21 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"blank/pkg/app/utils"
 )
 
 func ServeImages(w http.ResponseWriter, r *http.Request) {
 	avatar := r.PathValue("avatar")
 	if avatar == "" {
-		http.NotFound(w, r)
+		utils.SendResponses(w, http.StatusNotFound, "Image Not Found", nil)
 		return
 	}
 
 	filePath := "./storage/avatars/" + avatar
 	file, err := os.Open(filePath)
 	if err != nil {
-		http.NotFound(w, r)
+		utils.SendResponses(w, http.StatusNotFound, "Image Not Found", nil)
 		return
 	}
 	defer file.Close()
