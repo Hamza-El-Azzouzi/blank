@@ -52,7 +52,7 @@ export default function ProfilePage({ params }) {
       headers: { 'Authorization': `Bearer ${cookieValue}` }
     })
       .then(res => res.json())
-      .then(async (data) => { 
+      .then(async (data) => {
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
@@ -75,21 +75,25 @@ export default function ProfilePage({ params }) {
       method: "GET",
       credentials: "include",
       headers: { 'Authorization': `Bearer ${cookieValue}` }
-
     })
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         const user = {
           name: profile.first_name + " " + profile.last_name,
           avatar: profile.avatar,
         };
-
         if (data && Array.isArray(data)) {
-          const updatedPosts = data.map(post => ({
-            ...post,
-            user: user
+          const updatedPosts = await Promise.all(data.map(async post => {
+            if (post.image) {
+              post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
+            }
+            return {
+              ...post,
+              author: user.name,
+              avatar: user.avatar
+            };
           }));
-
+          console.log(updatedPosts)
           setPosts(updatedPosts);
         }
       })
@@ -120,7 +124,7 @@ export default function ProfilePage({ params }) {
           <div className="posts">
             {posts.length > 0 ? (
               posts.map(post => (
-                <Post key={post.id} post={post} />
+                <Post key={post.post_id} post={post} />
               ))
             ) : (
               <p>{profile.first_name} {profile.last_name} hasn't posted anything yet!</p>
@@ -128,9 +132,6 @@ export default function ProfilePage({ params }) {
           </div>
         </>
       }
-
-
-
     </div>
   );
 }

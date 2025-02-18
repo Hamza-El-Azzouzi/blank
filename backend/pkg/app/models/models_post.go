@@ -33,14 +33,15 @@ type PostWithUser struct {
 }
 
 type PostByUser struct {
-	ID            string    `json:"id"`
+	ID            string    `json:"post_id"`
 	Content       string    `json:"content"`
 	Image         string    `json:"image,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`
-	FormattedDate string    `json:"timestamp"`
-	LikeCount     int       `json:"likes"`
-	CommentCount  int       `json:"comments"`
+	FormattedDate string    `json:"formatted_date"`
+	LikeCount     int       `json:"like_count"`
+	CommentCount  int       `json:"comment_count"`
 	Privacy       string    `json:"privacy"`
+	HasLiked      bool      `json:"has_liked"`
 }
 
 type CommentDetails struct {

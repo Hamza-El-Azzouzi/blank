@@ -86,7 +86,7 @@ const Post = ({ post }) => {
 
         {post.image && (
           <div className="post-image-container">
-            {post.image && post.image !== "" && (
+            {post.image !== "" && (
               <img
                 src={post.image}
                 alt="Post content"

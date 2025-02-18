@@ -99,6 +99,7 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 			COALESCE(p.image, '') AS image,
 			p.privacy_level,
 			p.created_at,
+			(SELECT COUNT(*) FROM Like WHERE Like.post_id = p.post_id) AS like_count,
 			(
 				SELECT
 					COUNT(*)
@@ -106,7 +107,8 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 					Comment c
 				WHERE
 					c.post_id = p.post_id
-			) AS comments_count
+			) AS comments_count,
+			EXISTS(SELECT 1 FROM Like WHERE Like.post_id = p.post_id AND Like.user_id = ?) AS has_liked
 		FROM
 			Post p
 			JOIN User u ON p.user_id = u.user_id
@@ -118,7 +120,7 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 			p.created_at DESC
 		LIMIT 20 OFFSET ?;
 	`
-	rows, err := r.DB.Query(query, userID, pagination)
+	rows, err := r.DB.Query(query, userID, userID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
@@ -133,7 +135,9 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 			&post.Image,
 			&post.Privacy,
 			&post.CreatedAt,
+			&post.LikeCount,
 			&post.CommentCount,
+			&post.HasLiked,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
