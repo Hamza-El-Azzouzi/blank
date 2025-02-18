@@ -32,7 +32,6 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
 		utils.SendResponses(w, http.StatusUnauthorized, "User Not Authorized", nil)
 		return
 	}
