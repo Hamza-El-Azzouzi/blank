@@ -1,16 +1,16 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
 import "./profile.css"
-import { MdOutlineMail } from "react-icons/md";
-import { FaUserEdit } from "react-icons/fa";
-import UpdateInfoDialog from '@/components/profile/UpdateInfoDialog';
 import Post from '@/components/posts/post';
+import ProfileHeader from '@/components/profile/profileHeader/profileHeader';
+import ProfileAbout from '@/components/profile/profileAbout/profileAbout';
+import * as cookies from '@/lib/cookie';
+import { fetchBlob } from '@/lib/fetch_blob';
 
 export default function ProfilePage({ params }) {
 
-  const isOwner = true
+  const [cookieValue, setCookieValue] = useState(null);
   const [userID, setUserID] = useState()
   const [profile, setProfile] = useState({
     first_name: "",
@@ -21,13 +21,19 @@ export default function ProfilePage({ params }) {
     following: 0,
     followers: 0,
     about: "",
+    is_owner: false,
     nickname: ""
   });
 
   const [posts, setPosts] = useState([]);
   const [postsPgae, setPostsPage] = useState(0);
-  const [updateInfo, setUpdateInfo] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('posts');
+
+
+  useEffect(() => {
+    setCookieValue(cookies.GetCookie("sessionId"));
+  }, [cookieValue]);
 
   useEffect(() => {
     const getUserID = async () => {
@@ -35,15 +41,22 @@ export default function ProfilePage({ params }) {
       setUserID(query.userID);
     };
     getUserID();
-  }, [params]);
+  }, []);
 
   useEffect(() => {
     if (!userID) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-info/${userID}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-info/${userID}`, {
+      method: "GET",
+      credentials: "include",
+      headers: { 'Authorization': `Bearer ${cookieValue}` }
+    })
       .then(res => res.json())
-      .then(data => {
-        data.avatar = data.avatar ? BASE_URL + data.avatar : '/default-avatar.jpg';
+      .then(async (data) => { 
+        data.avatar = data.avatar
+          ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
+          : '/default-avatar.jpg';
+
         setProfile(data);
       })
       .catch(err => {
@@ -52,12 +65,18 @@ export default function ProfilePage({ params }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [userID]);
+  }, [userID, cookieValue]);
+
 
   useEffect(() => {
     if (!profile.first_name) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`, {
+      method: "GET",
+      credentials: "include",
+      headers: { 'Authorization': `Bearer ${cookieValue}` }
+
+    })
       .then(res => res.json())
       .then(data => {
         const user = {
@@ -77,76 +96,41 @@ export default function ProfilePage({ params }) {
       .catch(err => {
         console.error('Error fetching posts of the user:', err);
       });
-  }, [postsPgae, profile, userID]);
+  }, [profile]);
 
   return (
     <div className="container">
-      <div className="profile-header">
-        <img
-          src="/cover.jpg"
-          alt="Cover"
-          className="cover-photo"
-        />
-        <div className="profile-info">
-          <div className="avatar">
-            {loading ? (
-              <div className="loading-avatar"></div>
-            ) : (
-              <img
-                src={profile.avatar}
-                alt={`${profile.first_name} ${profile.last_name}`}
-              />
-            )}
-          </div>
-          <div className="name">
-            <h1>{profile.first_name} {profile.last_name}</h1>
-            <p>{profile.nickname}</p>
-          </div>
-        </div>
-        {isOwner &&
-          <button className="btn edit-btn" onClick={() => setUpdateInfo(true)}><FaUserEdit /></button>
-        }
-      </div>
+      <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} />
 
-      <div className="profile-details">
-        <div className='date-email'>
-          {profile.date_of_birth && <a href={`mailto:${profile.email}`} className='email'><MdOutlineMail /> {profile.email}</a>}
-          {profile.date_of_birth && <p className='born-date'>Born on {new Date(profile.date_of_birth)?.toLocaleDateString()}</p>}
-        </div>
-        <div className='follow'>
-          <p>{profile.followers} Followers</p>
-          <p>{profile.following} Following</p>
-        </div>
-        {profile.about && (
-          <div className='about'>
-            <h3>About</h3>
-            <p>{profile.about}</p>
-          </div>
-        )}
+      <div className="profile-tabs">
+        <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+          Posts
+        </button>
+        <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+          About
+        </button>
       </div>
+      {activeTab === 'about' &&
+        <ProfileAbout profile={profile} />
+      }
 
-      {profile.first_name &&
+      {activeTab === 'posts' && profile.first_name &&
         <>
-          <h3>{profile.first_name}&lsquo;s posts</h3>
+          <h3>{profile.first_name}'s posts</h3>
           <div className="posts">
             {posts.length > 0 ? (
               posts.map(post => (
                 <Post key={post.id} post={post} />
               ))
             ) : (
-              <p>{profile.first_name} {profile.last_name} hasn&rsquo;t posted anything yet!</p>
+              <p>{profile.first_name} {profile.last_name} hasn't posted anything yet!</p>
             )}
           </div>
         </>
       }
 
-      {updateInfo && (
-        <UpdateInfoDialog
-          user={profile}
-          onClose={() => setUpdateInfo(false)}
-          setProfile={setProfile}
-        />
-      )}
+
+
     </div>
   );
 }
