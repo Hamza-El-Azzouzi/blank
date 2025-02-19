@@ -30,7 +30,10 @@ func (a *AuthService) Register(info models.RegisterData) (int, string) {
 	if err != nil {
 		return http.StatusBadRequest, "Invalid Image"
 	}
-
+	accountType := false
+	if info.AccountType == "public" {
+		accountType = true
+	}
 	user := &models.User{
 		ID:          user_id,
 		FirstName:   info.FirstName,
@@ -41,7 +44,7 @@ func (a *AuthService) Register(info models.RegisterData) (int, string) {
 		Nickname:    info.Nickname,
 		AboutMe:     info.AboutMe,
 		Avatar:      avatarFilename,
-		IsPublic:    info.IsPublic,
+		IsPublic:    accountType,
 	}
 
 	err = a.UserRepo.Create(user)

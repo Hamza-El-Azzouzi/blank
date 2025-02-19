@@ -8,16 +8,8 @@ import (
 	"blank/pkg/app/utils"
 )
 
-func SetupRoutes(
-	mux *http.ServeMux,
-	authHandler *handlers.AuthHandler,
-	postHandler *handlers.PostHandler,
-	reactHandler *handlers.ReactHandler,
-	authMiddleware *middleware.AuthMiddleware,
-	messageHnadler *handlers.MessageHandler,
-	userHandler *handlers.UserHandler,
-	commentHandler *handlers.CommentHandler,
-) {
+func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler , groupHandler *handlers.GroupHandler, commentHandler *handlers.CommentHandler) {
+  
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
@@ -44,6 +36,19 @@ func SetupRoutes(
 
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
+
+
+	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)
+	mux.HandleFunc("/api/groups", groupHandler.Groups)
+	mux.HandleFunc("/api/groups/search", groupHandler.GroupSearch)
+	mux.HandleFunc("/api/group/{group_id}", groupHandler.GroupDerails)
+	mux.HandleFunc("/api/group/{group_id}/delete", groupHandler.GroupDelete)
+	mux.HandleFunc("/api/group/{group_id}/request", groupHandler.GroupRequest)
+	mux.HandleFunc("/api/group/{group_id}/response", groupHandler.GroupResponse)
+	
+	mux.HandleFunc("/api/group/{group_id}/leave", groupHandler.GroupeLeave)
+
+	mux.HandleFunc("/api/join/{group_id}/", groupHandler.JoinGroup)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")
