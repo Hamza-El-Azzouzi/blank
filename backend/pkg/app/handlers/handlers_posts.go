@@ -17,11 +17,9 @@ import (
 )
 
 type PostHandler struct {
-	AuthService    *services.AuthService
 	AuthMidlaware  *middleware.AuthMiddleware
 	PostService    *services.PostService
 	CommentService *services.CommentService
-	AuthHandler    *AuthHandler
 }
 
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {

@@ -89,14 +89,4 @@ func (a *AuthService) GetUsers(sessionID string, nPagination int) ([]models.User
 	return allUser, nil
 }
 
-func (a *AuthService) GetUserByUserName(userName, session_id string) ([]models.User, error) {
-	user, err := a.GetUserBySessionID(session_id)
-	if err != nil {
-		return nil, err
-	}
-	allUser, errUser := a.UserRepo.GetUserByUserName(userName, user.ID)
-	if errUser != nil {
-		return nil, errUser
-	}
-	return allUser, nil
-}
+

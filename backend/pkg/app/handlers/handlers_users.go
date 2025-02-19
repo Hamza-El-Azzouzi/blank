@@ -21,7 +21,7 @@ type UserHandler struct {
 	AuthHandler   *AuthHandler
 }
 
-func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
@@ -44,7 +44,7 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := p.UserService.GetUserInfo(userID)
+	user, err := u.UserService.GetUserInfo(userID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
@@ -59,7 +59,7 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
@@ -118,7 +118,7 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = p.UserService.UpdateUserInfo(userID, userInfo)
+	err = u.UserService.UpdateUserInfo(userID, userInfo)
 	if err != nil {
 		if err.Error() == "UNIQUE constraint failed: User.email" {
 			utils.SendResponses(w, http.StatusBadRequest, "email already exists", nil)
@@ -133,5 +133,41 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(map[string]string{"message": "success"})
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+	}
+}
+
+func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var data map[string]string
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+	sessionId, err := r.Cookie("sessionId")
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	if sessionId.Value == "" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	users, errUsers := u.UserService.SearchUsers(data["search"])
+	if errUsers != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(&users)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

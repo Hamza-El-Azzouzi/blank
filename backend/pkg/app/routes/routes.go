@@ -8,7 +8,15 @@ import (
 	"blank/pkg/app/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler) {
+func SetupRoutes(mux *http.ServeMux,
+	authHandler *handlers.AuthHandler,
+	postHandler *handlers.PostHandler,
+	reactHandler *handlers.ReactHandler,
+	authMiddleware *middleware.AuthMiddleware,
+	messageHnadler *handlers.MessageHandler,
+	userHandler *handlers.UserHandler,
+	followHandler *handlers.FollowHandler,
+) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
@@ -18,13 +26,13 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/storage/avatars/{avatar}", handlers.ServeImages)
 
 	mux.HandleFunc("/api/users/", authHandler.GetUsers)
-	mux.HandleFunc("/api/searchedusers", authHandler.SearchUsers)
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
 	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
 
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
+	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
@@ -33,6 +41,14 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
+
+	mux.HandleFunc("/api/requestfollow", followHandler.RequestFollow)
+	mux.HandleFunc("/api/acceptfollow", followHandler.AcceptFollow)
+	mux.HandleFunc("/api/refusefollow", followHandler.RefuseFollow)
+	mux.HandleFunc("/api/deletefollowing", followHandler.DeleteFollowing)
+	mux.HandleFunc("/api/deletefollower", followHandler.DeleteFollower)
+	mux.HandleFunc("/api/followerlist", followHandler.FollowerList)
+	mux.HandleFunc("/api/followinglist", followHandler.FollowingList)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")

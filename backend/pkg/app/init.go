@@ -19,13 +19,15 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 	*repositories.ReactReposetorie,
 	*repositories.SessionsRepositorie,
 	*repositories.MessageRepository,
+	*repositories.FollowRepositorie,
 ) {
 	return &repositories.UserRepository{DB: db},
 		&repositories.PostRepository{DB: db},
 		&repositories.CommentRepositorie{DB: db},
 		&repositories.ReactReposetorie{DB: db},
 		&repositories.SessionsRepositorie{DB: db},
-		&repositories.MessageRepository{DB: db}
+		&repositories.MessageRepository{DB: db},
+		&repositories.FollowRepositorie{DB: db}
 }
 
 func InitServices(userRepo *repositories.UserRepository,
@@ -33,13 +35,15 @@ func InitServices(userRepo *repositories.UserRepository,
 	commentRepo *repositories.CommentRepositorie,
 	reactRepo *repositories.ReactReposetorie,
 	sessionRepo *repositories.SessionsRepositorie,
-	messageRepo *repositories.MessageRepository) (*services.AuthService,
+	messageRepo *repositories.MessageRepository,
+	followRepo *repositories.FollowRepositorie) (*services.AuthService,
 	*services.PostService,
 	*services.CommentService,
 	*services.ReactService,
 	*services.SessionService,
 	*services.MessageService,
 	*services.UserService,
+	*services.FollowService,
 ) {
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
 		&services.PostService{PostRepo: postRepo},
@@ -47,7 +51,8 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
-		&services.UserService{UserRepo: userRepo}
+		&services.UserService{UserRepo: userRepo},
+		&services.FollowService{FollowRepo: followRepo}
 }
 
 func InitHandlers(authService *services.AuthService,
@@ -57,11 +62,13 @@ func InitHandlers(authService *services.AuthService,
 	sessionService *services.SessionService,
 	authMiddleware *middleware.AuthMiddleware,
 	messageService *services.MessageService,
-	userService *services.UserService) (*handlers.AuthHandler,
+	userService *services.UserService,
+	followService *services.FollowService) (*handlers.AuthHandler,
 	*handlers.PostHandler,
 	*handlers.ReactHandler,
 	*handlers.MessageHandler,
 	*handlers.UserHandler,
+	*handlers.FollowHandler,
 ) {
 	MessageHandler := &handlers.MessageHandler{
 		MessageService: messageService,
@@ -81,19 +88,19 @@ func InitHandlers(authService *services.AuthService,
 		SessionService: sessionService,
 	}
 	postHandler := &handlers.PostHandler{
-		AuthService:     authService,
-		AuthMidlaware:   authMiddleware,
-		PostService:     postService,
-		CommentService:  commentService,
-		AuthHandler:     authHandler,
+		AuthMidlaware:  authMiddleware,
+		PostService:    postService,
+		CommentService: commentService,
 	}
 	reactHandler := &handlers.ReactHandler{
-		ReactService:  reactService,
-		AuthMidlaware: authMiddleware,
+		ReactService: reactService,
 	}
 	userHandler := &handlers.UserHandler{
 		UserService: userService,
 	}
 
-	return authHandler, postHandler, reactHandler, MessageHandler, userHandler
+	followHandler := &handlers.FollowHandler{
+		FollowService: followService,
+	}
+	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, followHandler
 }

@@ -15,16 +15,16 @@ type UserService struct {
 	UserRepo *repositories.UserRepository
 }
 
-func (a *UserService) GetUserInfo(userID uuid.UUID) (*models.UserInfo, error) {
-	user, err := a.UserRepo.GetUserInfo(userID)
+func (u *UserService) GetUserInfo(userID uuid.UUID) (*models.UserInfo, error) {
+	user, err := u.UserRepo.GetUserInfo(userID)
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (a *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo) error {
-	err := a.UserRepo.UpdateUserInfo(userID, userInfo)
+func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo) error {
+	err := u.UserRepo.UpdateUserInfo(userID, userInfo)
 	if err != nil {
 		return err
 	}
@@ -33,11 +33,19 @@ func (a *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 		if err != nil {
 			return fmt.Errorf("invalid image")
 		}
-		err = a.UserRepo.SaveAvatar(userID, avatarFilename)
+		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (u *UserService) SearchUsers(query string) ([]models.User, error) {
+	allUser, errUser := u.UserRepo.SearchUsers(query)
+	if errUser != nil {
+		return nil, errUser
+	}
+	return allUser, nil
 }

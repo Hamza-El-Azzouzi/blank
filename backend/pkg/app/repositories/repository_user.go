@@ -126,11 +126,11 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 	return allUser, nil
 }
 
-func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) ([]models.User, error) {
+func (r *UserRepository) SearchUsers(searchQuery string) ([]models.User, error) {
 	users := []models.User{}
-	query := "SELECT id, username , first_name, last_name FROM users WHERE username LIKE ? AND id != ?"
+	query := "SELECT id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
 
-	rows, err := r.DB.Query(query, "%"+userName+"%", user_id)
+	rows, err := r.DB.Query(query, "%"+searchQuery+"%", "%"+searchQuery+"%")
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

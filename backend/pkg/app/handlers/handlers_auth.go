@@ -210,43 +210,4 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *AuthHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	var data map[string]string
 
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-	sessionId, err := r.Cookie("sessionId")
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	if sessionId.Value == "" {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	_, existSessions := h.SessionService.CheckSession(sessionId.Value)
-	if !existSessions {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-	users, errUsers := h.AuthService.GetUserByUserName(data["search"], sessionId.Value)
-	if errUsers != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&users)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}

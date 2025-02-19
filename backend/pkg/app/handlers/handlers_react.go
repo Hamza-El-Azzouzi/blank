@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
@@ -13,8 +12,7 @@ import (
 )
 
 type ReactHandler struct {
-	ReactService  *services.ReactService
-	AuthMidlaware *middleware.AuthMiddleware
+	ReactService *services.ReactService
 }
 
 func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
