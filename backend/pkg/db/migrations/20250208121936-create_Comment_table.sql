@@ -6,7 +6,7 @@ CREATE TABLE `Comment` (
   `group_post_id` int,
   `user_id` int,
   `content` text,
-  `created_at` timestamp,
+  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
   FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`),
   FOREIGN KEY (`group_post_id`) REFERENCES `Group_Post` (`group_post_id`),
   FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)

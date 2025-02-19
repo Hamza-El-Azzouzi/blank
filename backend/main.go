@@ -1,16 +1,14 @@
 package main
 
 import (
+	"blank/pkg/app"
+	"blank/pkg/app/middleware"
+	"blank/pkg/app/routes"
+	"blank/pkg/db"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-
-	"blank/pkg/app"
-	"blank/pkg/app/middleware"
-	"blank/pkg/app/routes"
-
-	"blank/pkg/db"
 )
 
 func main() {
@@ -24,11 +22,10 @@ func main() {
 
 	defer database.Close()
 
-	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo := app.InitRepositories(database)
+	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo := app.InitRepositories(database)
 
-	authService, postService, categoryService, commentService, likeService, sessionService, messageService, userService := app.InitServices(userRepo,
+	authService, postService, commentService, likeService, sessionService, messageService, userService := app.InitServices(userRepo,
 		postRepo,
-		categoryRepo,
 		commentRepo,
 		likeRepo,
 		sessionRepo,
@@ -38,7 +35,6 @@ func main() {
 
 	authHandler, postHandler, likeHandler, MessageHandler, userHandler := app.InitHandlers(authService,
 		postService,
-		categoryService,
 		commentService,
 		likeService,
 		sessionService,
@@ -46,10 +42,6 @@ func main() {
 		messageService,
 		userService)
 
-	// cleaner := &utils.Cleaner{SessionService: sessionService}
-
-	// go cleaner.CleanupExpiredSessions()
-	
 	mux := http.NewServeMux()
 	protectedMux := authMiddleware.Protect(mux)
 	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler)

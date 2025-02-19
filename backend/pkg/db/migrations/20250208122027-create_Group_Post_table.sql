@@ -6,7 +6,7 @@ CREATE TABLE `Group_Post` (
   `user_id` text,
   `content` text,
   `image` varchar(255),
-  `created_at` timestamp,
+  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
   FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`),
   FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
 );
