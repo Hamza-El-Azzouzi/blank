@@ -10,6 +10,7 @@ import EventCard from '@/components/groups/cards/eventCard';
 import Post from '@/components/posts/post';
 import { GetCookie } from '@/lib/cookie';
 import './group.css';
+import RequestCard from '@/components/groups/cards/requestCard';
 
 
 const mockGroup = {
@@ -43,6 +44,19 @@ const mockEvents = [
     }
 ];
 
+const mockRequest = [
+    {
+        id: 1,
+        title: "Moka",
+        user_id: 1
+    },
+    {
+        id: 2,
+        title: "hamza",
+        user_id: 2
+    }
+];
+
 const mockPosts = [
     {
         "id": "2",
@@ -70,18 +84,42 @@ const mockPosts = [
             "avatar": "/default-avatar.jpg"
         }
     }
-  ]
+]
 
 const GroupDetailPage = () => {
     const [activeTab, setActiveTab] = useState('posts');
     const [showCreateEvent, setShowCreateEvent] = useState(false);
     const [events, setEvents] = useState(mockEvents);
+    const [request, setRequest] = useState(mockRequest);
     const [groupData, setGroupData] = useState(mockGroup);
-    const { groupID } = useParams(); 
+    const { groupID } = useParams();
     const cookieValue = GetCookie("sessionId")
     console.log(groupID)
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+            .then(response => {
+
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data.data)
+                setGroupData(data.data);
+            }).catch((error) => {
+                console.log(error)
+            })
+    }, []);
+    useEffect(() => {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/request`, {
             method: "GET",
             credentials: "include",
             headers: {
@@ -149,6 +187,12 @@ const GroupDetailPage = () => {
                     <button className={`tab-btn ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
                         Events
                     </button>
+                    {groupData.IsOwner && (
+                        <button className={`tab-btn ${activeTab === 'request' ? 'active' : ''}`} onClick={() => setActiveTab('request')}>
+                            Request
+                        </button>
+                    )}
+
                 </div>
 
                 {activeTab === 'posts' && (
@@ -171,6 +215,19 @@ const GroupDetailPage = () => {
                         <div className="events-list">
                             {events.map(event => (
                                 <EventCard key={event.id} event={event} onResponseChange={handleEventResponse} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {activeTab === 'request' && groupData.IsOwner && (
+                    <div>
+                        <div className="events-header">
+                            <h2>Request</h2>
+                        </div>
+                        <div className="events-list">
+                            {request.map(re => (
+
+                                <RequestCard key={re.id} request={re} onResponseChange={handleEventResponse} />
                             ))}
                         </div>
                     </div>

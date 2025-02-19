@@ -140,4 +140,28 @@ func (g *GroupHandler) GroupDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.SendResponses(w, http.StatusOK, "Created successfully", nil)
 }
-// GroupDelete
+// GroupRequest
+
+func (g *GroupHandler) GroupRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	fmt.Println(pathParts)
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	err := g.GroupService.GroupDelete(pathParts[3])
+	if err != nil {
+		fmt.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "Created successfully", nil)
+}
