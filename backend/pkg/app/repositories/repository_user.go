@@ -161,9 +161,9 @@ func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error
 		COALESCE(u.avatar, ""),
 		u.is_public,
 		(SELECT COUNT(*) FROM Follow WHERE follower_id = u.user_id AND status = 'accepted') AS following_count,
-		(SELECT COUNT(*) FROM Follow WHERE followed_id = u.user_id AND status = 'accepted') AS followers_count
+		(SELECT COUNT(*) FROM Follow WHERE following_id = u.user_id AND status = 'accepted') AS followers_count
 	FROM User u
-	LEFT JOIN Follow f ON u.user_id = f.follower_id OR u.user_id = f.followed_id
+	LEFT JOIN Follow f ON u.user_id = f.follower_id OR u.user_id = f.following_id
 	WHERE u.user_id = ?;
 	`
 

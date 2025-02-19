@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -52,6 +53,7 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 
 	user, err := p.UserService.GetUserInfo(userID)
 	if err != nil {
+		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
