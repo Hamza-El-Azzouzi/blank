@@ -253,3 +253,17 @@ func (r *UserRepository) SaveAvatar(userID uuid.UUID, filename string) error {
 
 	return nil
 }
+
+func (u *UserRepository) UserExist(userID uuid.UUID) bool {
+	var num int
+	query := `SELECT COUNT(*) FROM User WHERE user_id = ?`
+	row := u.DB.QueryRow(query, userID)
+	err := row.Scan(&num)
+	if err != nil {
+		return false
+	}
+	if num == 1 {
+		return true
+	}
+	return false
+}
