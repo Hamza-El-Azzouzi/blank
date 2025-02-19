@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
 import * as cookies from '@/lib/cookie';
 import './posts.css';
+import Comments from '../comments/Comments';
 
 const AVATAR = "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
 const mockComments = [
@@ -145,6 +146,9 @@ const Post = ({ post }) => {
           </div>
         </div>
       )}
+      {showComments &&
+        <Comments postID={post.post_id} onClose={() => setShowComments(false)} />
+      }
     </div>
   );
 };
