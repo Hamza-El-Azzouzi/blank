@@ -1,5 +1,4 @@
 -- +migrate Up
-<<<<<<< HEAD
 CREATE TABLE
   `Group` (
     `group_id` text PRIMARY KEY,
@@ -9,16 +8,6 @@ CREATE TABLE
     `created_at` TIMESTAMP DEFAULT (DATETIME ('now', 'localtime')),
     FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
   );
-=======
-CREATE TABLE `Group` (
-  `group_id` text PRIMARY KEY,
-  `creator_id` text,
-  `title` varchar(255),
-  `description` text,
-  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-  FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`)
-);
->>>>>>> main
 
 CREATE INDEX idx_group_creator_id ON `Group` (`creator_id`);
 

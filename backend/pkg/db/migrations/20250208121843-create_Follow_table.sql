@@ -5,8 +5,8 @@ CREATE TABLE `Follow` (
   `followed_id` text,
   `status` varchar(255),
   PRIMARY KEY (`follower_id`, `followed_id`),
-  FOREIGN KEY (`follower_id`) REFERENCES `User` (`user_id`),
-  FOREIGN KEY (`followed_id`) REFERENCES `User` (`user_id`)
+  FOREIGN KEY (`follower_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`followed_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_follow_follower_id ON `Follow` (`follower_id`);
