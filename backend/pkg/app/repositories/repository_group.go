@@ -11,13 +11,12 @@ type GroupRepository struct {
 	DB *sql.DB
 }
 
-func (g *GroupRepository) CreateGroup(group models.Group, user_id any, group_id string) (models.GroupInfo, error) {
-	fmt.Println(group.GroupTitle, group.GroupDescription)
+func (g *GroupRepository) CreateGroup(group models.Group, user_id any, group_id string) (models.GroupDetails, error) {
 	query := "INSERT INTO `Group` (group_id,creator_id,title,description) VALUES (?,?,?,?)"
-	var groupInfo models.GroupInfo
+	var groupInfo models.GroupDetails
 	_, err := g.DB.Exec(query, group_id, user_id, group.GroupTitle, group.GroupDescription)
 	if err != nil {
-		return models.GroupInfo{}, err
+		return models.GroupDetails{}, err
 	}
 	selectQuery := `SELECT 
 	g.group_id,
@@ -32,14 +31,14 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 `
 	err = g.DB.QueryRow(selectQuery, group_id).Scan(&groupInfo.GroupeId, &groupInfo.Name, &groupInfo.Description, &groupInfo.Member_count)
 	if err != nil {
-		fmt.Println("seconf", err)
-		return models.GroupInfo{}, err
+
+		return models.GroupDetails{}, err
 	}
 	groupInfo.IsOwner = true
 	return groupInfo, nil
 }
 
-func (g *GroupRepository) Groups(user_id string) ([]models.Groups, error) {
+func (g *GroupRepository) Groups(user_id string) ([]models.GroupDetails, error) {
 	selectQuery := `SELECT 
 	g.group_id,
 	u.user_id,
@@ -61,9 +60,9 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 	if err != nil {
 		return nil, err
 	}
-	var groups []models.Groups
+	var groups []models.GroupDetails
 	for rows.Next() {
-		var group models.Groups
+		var group models.GroupDetails
 		err = rows.Scan(
 			&group.GroupeId,
 			&group.UserId,
@@ -84,7 +83,7 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 
 	return groups, nil
 }
-func (g *GroupRepository) GroupsSearch(user_id, term string) ([]models.Groups, error) {
+func (g *GroupRepository) GroupsSearch(user_id, term string) ([]models.GroupDetails, error) {
 	selectQuery := `SELECT 
 	g.group_id,
 	u.user_id,
@@ -107,9 +106,9 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 	if err != nil {
 		return nil, err
 	}
-	var groups []models.Groups
+	var groups []models.GroupDetails
 	for rows.Next() {
-		var group models.Groups
+		var group models.GroupDetails
 		err = rows.Scan(
 			&group.GroupeId,
 			&group.UserId,

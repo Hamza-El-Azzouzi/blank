@@ -87,9 +87,9 @@ const GroupHeader = ({ group }) => {
             },
         })
             .then(response => {
-                console.log(response)
+               
                 if (!response.ok) {
-                    console.log(response)
+                   
                     return response.json().then(error => { throw error; });
                 }
                 return response.json();
@@ -97,7 +97,7 @@ const GroupHeader = ({ group }) => {
             .then((data) => {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/groups")
-                console.log(data.data)
+            
             }).catch((error) => {
                 console.log(error)
                 showToast('error', error.message);

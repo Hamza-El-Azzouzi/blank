@@ -7,25 +7,6 @@ type Group struct{
 	 GroupDescription string `json:"description"`
 }
 
-type GroupInfo struct{
-	GroupeId string
-	UserId string
-	Name string
-	IsOwner bool
-	Member_count int
-	Description string
-}
-
-type Groups struct{
-	GroupeId string
-	UserId string
-	Name string
-	IsOwner bool
-	IsJoined bool
-	IsPending bool
-	Description string
-	Member_count int
- }
 
  type GroupDetails struct{
 	GroupeId string

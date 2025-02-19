@@ -11,15 +11,15 @@ type GroupService struct {
 	GroupRepo *repositories.GroupRepository
 }
 
-func (g *GroupService) CreateGroup(data models.Group, user_id any) (models.GroupInfo, error) {
+func (g *GroupService) CreateGroup(data models.Group, user_id any) (models.GroupDetails, error) {
 	group_id := uuid.Must(uuid.NewV4()).String()
 	return g.GroupRepo.CreateGroup(data, user_id, group_id)
 }
 
-func (g *GroupService) Groups(user_id string) ([]models.Groups, error) {
+func (g *GroupService) Groups(user_id string) ([]models.GroupDetails, error) {
 	groups , err := g.GroupRepo.Groups(user_id)
 	if err != nil{
-		return []models.Groups{},err
+		return []models.GroupDetails{},err
 	}
 	for i:= 0 ; i < len(groups) ;i++{
 		if groups[i].UserId == user_id {
@@ -32,10 +32,10 @@ func (g *GroupService) Groups(user_id string) ([]models.Groups, error) {
 	
 	return groups, nil 
 }
-func (g *GroupService) GroupsSearch(user_id, term string) ([]models.Groups, error) {
+func (g *GroupService) GroupsSearch(user_id, term string) ([]models.GroupDetails, error) {
 	groups , err := g.GroupRepo.GroupsSearch(user_id,term)
 	if err != nil{
-		return []models.Groups{},err
+		return []models.GroupDetails{},err
 	}
 	for i:= 0 ; i < len(groups) ;i++{
 		if groups[i].UserId == user_id {

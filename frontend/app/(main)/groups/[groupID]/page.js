@@ -81,7 +81,6 @@ const GroupDetailPage = () => {
     const [groupData, setGroupData] = useState([]);
     const { groupID } = useParams();
     const cookieValue = GetCookie("sessionId")
-    console.log(groupID)
     
     useEffect(() => {
         const fetchGroupData = async () => {
@@ -182,7 +181,6 @@ const GroupDetailPage = () => {
                 setRequest(prevRequests => 
                     prevRequests.filter(req => req.UserId !== userId)
                 );
-                console.log(groupData)
             }).catch((error) => {
                 console.log(error)
             })
@@ -191,7 +189,6 @@ const GroupDetailPage = () => {
     return (
         <div className="group-detail-page">
             <GroupHeader group={groupData}/>
-            {console.log(groupData)}
             {(groupData.IsJoined || groupData.IsOwner) && (
                    <div className="group-content">
                    <div className="group-tabs">

@@ -33,7 +33,6 @@ const GroupsPage = () => {
                 return response.json();
             })
             .then((data) => {
-                console.log(data.data[0])
                 setGroups([...data.data, ...groups]);
             }).catch((error) => {
                 console.log(error)
@@ -51,7 +50,6 @@ const GroupsPage = () => {
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
-        console.log(term,searchTerm)
         // Fetch filtered results from API
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/groups/search?q=${term}`, {
             method: "GET",
@@ -88,9 +86,8 @@ const GroupsPage = () => {
 
         })
             .then(response => {
-                console.log(response)
                 if (!response.ok) {
-                    console.log(response)
+
                     return response.json().then(error => { throw error; });
                 }
                 return response.json();
@@ -98,7 +95,6 @@ const GroupsPage = () => {
             .then((data) => {
                 showToast('success', 'Success! Operation completed.');
                 setShowCreateGroup(false)
-                console.log(data.data)
                 setGroups([data.data, ...groups]);
             }).catch((error) => {
                 console.log(error)
@@ -116,16 +112,14 @@ const GroupsPage = () => {
             },
         })
             .then(response => {
-                console.log(response)
                 if (!response.ok) {
-                    console.log(response)
+
                     return response.json().then(error => { throw error; });
                 }
                 return response.json();
             })
             .then((data) => {
                 showToast('success', 'Success! Operation completed.');
-                console.log(data.data)
             }).catch((error) => {
                 console.log(error)
                 showToast('error', error.message);
