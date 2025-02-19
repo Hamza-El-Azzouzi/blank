@@ -1,8 +1,8 @@
 // app/(main)/page.js
 'use client'
 import CreatePost from '@/components/posts/createPost';
-import Post from '@/components/posts/post';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import Posts from '@/components/posts/posts';
+import { useState, useEffect } from 'react';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 
@@ -12,18 +12,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [endReached, setEndReached] = useState(false);
-  const observer = useRef();
-  
-  const lastPostElementRef = useCallback(node => {
-    if (loading || endReached) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
-        setPage(prevPage => prevPage + 20);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore, endReached]);
 
   const fetchPosts = async (pageNumber) => {
     if (endReached) return;
@@ -79,26 +67,21 @@ export default function Home() {
     setPosts(prevPosts => [newPost, ...prevPosts]);
   };
 
+  const handleLoadMore = () => {
+    if (hasMore && !loading) {
+      setPage(prevPage => prevPage + 20);
+    }
+  };
+
   return (
     <div className="feed-container">
       <CreatePost onPostCreated={handleNewPost} />
-      <div className="posts-list">
-        {posts.map((post, index) => {
-          if (posts.length === index + 1 && !endReached) {
-            return <div ref={lastPostElementRef} key={`${post.post_id}`}>
-              <Post post={post} />
-            </div>
-          } else {
-            return <Post key={`${post.post_id}`} post={post} />;
-          }
-        })}
-        {loading && (
-          <div className="loading-spinner"></div>
-        )}
-        {endReached && posts.length > 0 && (
-          <div className="end-message">No more posts to load</div>
-        )}
-      </div>
+      <Posts 
+        posts={posts} 
+        loading={loading} 
+        endReached={endReached} 
+        onLoadMore={handleLoadMore} 
+      />
     </div>
   );
 }
