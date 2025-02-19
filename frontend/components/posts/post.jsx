@@ -2,6 +2,7 @@
 "use client"
 import React, { useState } from 'react';
 import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
+import * as cookies from '@/lib/cookie';
 import './posts.css';
 
 const AVATAR = "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
@@ -21,15 +22,38 @@ const mockComments = [
 ];
 
 const Post = ({ post }) => {
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  const [likesCount, setLikesCount] = useState(post.likes);
+  const [isLiked, setIsLiked] = useState(post.has_liked);
+  const [likesCount, setLikesCount] = useState(post.like_count);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState('');
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikesCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1);
+  const handleLike = async () => {
+    const sessionId = cookies.GetCookie("sessionId");
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/reacts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionId}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetId: post.post_id,
+          targetType: "post"
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to like post');
+      }
+
+      const data = await response.json();
+      setIsLiked(!isLiked);
+      setLikesCount(data.like_count);
+
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
   };
 
   const handleSubmitComment = (e) => {
@@ -50,11 +74,10 @@ const Post = ({ post }) => {
   return (
     <div className="post">
       <div className="post-header">
-        <img src={post.user.avatar} alt={`${post.user.name}'s avatar`} className="post-avatar" />
+        <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
         <div className="post-meta">
-          <span className="post-author">{post.user.name}</span>
-          <span className="post-time">{post.timestamp}</span>
-
+          <span className="post-author">{post.author}</span>
+          <span className="post-time">{post.formatted_date}</span>
         </div>
       </div>
 
@@ -63,7 +86,13 @@ const Post = ({ post }) => {
 
         {post.image && (
           <div className="post-image-container">
-            <img src={post.image} alt="Post content" className="post-image" />
+            {post.image !== "" && (
+              <img
+                src={post.image}
+                alt="Post content"
+                className="post-image"
+              />
+            )}
           </div>
         )}
       </div>
@@ -73,7 +102,7 @@ const Post = ({ post }) => {
           {likesCount} likes
         </span>
         <span className="comments-count">
-          {post.comments} comments
+          {post.comment_count} comments
         </span>
       </div>
 

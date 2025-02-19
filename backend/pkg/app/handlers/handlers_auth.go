@@ -81,7 +81,7 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
-	// image, err := utils.SaveAvatar(user.Avatar)
+	
 	status, message := h.AuthService.Register(user)
 	fmt.Println(status, message)
 	utils.SendResponses(w, status, message, nil)
@@ -144,7 +144,7 @@ type SessionData struct {
 
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 

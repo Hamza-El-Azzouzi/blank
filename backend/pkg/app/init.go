@@ -1,6 +1,5 @@
 package app
 
-// backend/pkg/app/handlers/handlers_login.go
 import (
 	"database/sql"
 	"net/http"
@@ -15,7 +14,6 @@ import (
 )
 
 func InitRepositories(db *sql.DB) (*repositories.UserRepository,
-	*repositories.CategoryRepository,
 	*repositories.PostRepository,
 	*repositories.CommentRepositorie,
 	*repositories.ReactReposetorie,
@@ -23,7 +21,6 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 	*repositories.MessageRepository,
 ) {
 	return &repositories.UserRepository{DB: db},
-		&repositories.CategoryRepository{DB: db},
 		&repositories.PostRepository{DB: db},
 		&repositories.CommentRepositorie{DB: db},
 		&repositories.ReactReposetorie{DB: db},
@@ -33,13 +30,11 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 
 func InitServices(userRepo *repositories.UserRepository,
 	postRepo *repositories.PostRepository,
-	categoryRepo *repositories.CategoryRepository,
 	commentRepo *repositories.CommentRepositorie,
 	reactRepo *repositories.ReactReposetorie,
 	sessionRepo *repositories.SessionsRepositorie,
 	messageRepo *repositories.MessageRepository) (*services.AuthService,
 	*services.PostService,
-	*services.CategoryService,
 	*services.CommentService,
 	*services.ReactService,
 	*services.SessionService,
@@ -47,8 +42,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	*services.UserService,
 ) {
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
-		&services.PostService{PostRepo: postRepo, CategoryRepo: categoryRepo},
-		&services.CategoryService{CategorieRepo: categoryRepo},
+		&services.PostService{PostRepo: postRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
 		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
@@ -58,7 +52,6 @@ func InitServices(userRepo *repositories.UserRepository,
 
 func InitHandlers(authService *services.AuthService,
 	postService *services.PostService,
-	categoryService *services.CategoryService,
 	commentService *services.CommentService,
 	reactService *services.ReactService,
 	sessionService *services.SessionService,
@@ -90,7 +83,6 @@ func InitHandlers(authService *services.AuthService,
 	postHandler := &handlers.PostHandler{
 		AuthService:     authService,
 		AuthMidlaware:   authMiddleware,
-		CategoryService: categoryService,
 		PostService:     postService,
 		CommentService:  commentService,
 		AuthHandler:     authHandler,

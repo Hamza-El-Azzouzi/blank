@@ -41,11 +41,11 @@ func (rl *RateLimiter) Allow() bool {
 }
 
 func RateLimitMiddleware(next http.Handler) http.Handler {
-	limiter := NewRateLimiter(100, time.Second) // 5 requests per second per IP
+	limiter := NewRateLimiter(100, time.Second)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if limiter.Allow() {
-			next.ServeHTTP(w, r) // Ensure correct request forwarding
+			next.ServeHTTP(w, r) 
 		} else {
 			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
 		}

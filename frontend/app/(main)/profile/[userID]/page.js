@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import "./profile.css"
-import Post from '@/components/posts/post';
 import ProfileHeader from '@/components/profile/profileHeader/profileHeader';
 import ProfileAbout from '@/components/profile/profileAbout/profileAbout';
+import Posts from '@/components/posts/posts';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 
 export default function ProfilePage({ params }) {
 
   const [cookieValue, setCookieValue] = useState(null);
-  const [userID, setUserID] = useState()
+  const [userID, setUserID] = useState();
   const [profile, setProfile] = useState({
     first_name: "",
     last_name: "",
@@ -26,10 +26,11 @@ export default function ProfilePage({ params }) {
   });
 
   const [posts, setPosts] = useState([]);
-  const [postsPgae, setPostsPage] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [postsPage, setPostsPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [endReached, setEndReached] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
-
 
   useEffect(() => {
     setCookieValue(cookies.GetCookie("sessionId"));
@@ -45,14 +46,13 @@ export default function ProfilePage({ params }) {
 
   useEffect(() => {
     if (!userID) return;
-
     fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-info/${userID}`, {
       method: "GET",
       credentials: "include",
       headers: { 'Authorization': `Bearer ${cookieValue}` }
     })
       .then(res => res.json())
-      .then(async (data) => { 
+      .then(async (data) => {
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
@@ -67,36 +67,61 @@ export default function ProfilePage({ params }) {
       });
   }, [userID, cookieValue]);
 
-
   useEffect(() => {
     if (!profile.first_name) return;
-
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPgae}`, {
+    if (endReached) return;
+    setLoading(true);
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPage}`, {
       method: "GET",
       credentials: "include",
       headers: { 'Authorization': `Bearer ${cookieValue}` }
-
     })
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         const user = {
           name: profile.first_name + " " + profile.last_name,
           avatar: profile.avatar,
         };
-
-        if (data && Array.isArray(data)) {
-          const updatedPosts = data.map(post => ({
-            ...post,
-            user: user
+        if (data && data.length > 0) {
+          const updatedPosts = await Promise.all(data.map(async post => {
+            if (post.image) {
+              post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
+            }
+            return {
+              ...post,
+              author: user.name,
+              avatar: user.avatar
+            };
           }));
-
-          setPosts(updatedPosts);
+          
+          if (postsPage === 0) {
+            setPosts(updatedPosts);
+          } else {
+            setPosts(prevPosts => {
+              const seen = new Set(prevPosts.map(p => p.post_id));
+              const filteredNewPosts = updatedPosts.filter(post => !seen.has(post.post_id));
+              return [...prevPosts, ...filteredNewPosts];
+            });
+          }
+          setHasMore(updatedPosts.length === 20);
+        } else {
+          setHasMore(false);
+          setEndReached(true);
         }
       })
       .catch(err => {
         console.error('Error fetching posts of the user:', err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }, [profile]);
+  }, [profile, postsPage, userID, cookieValue]);
+
+  const handleLoadMore = () => {
+    if (hasMore && !loading) {
+      setPostsPage(prev => prev + 20);
+    }
+  };
 
   return (
     <div className="container">
@@ -110,27 +135,21 @@ export default function ProfilePage({ params }) {
           About
         </button>
       </div>
-      {activeTab === 'about' &&
+      {activeTab === 'about' && 
         <ProfileAbout profile={profile} />
       }
 
       {activeTab === 'posts' && profile.first_name &&
         <>
           <h3>{profile.first_name}'s posts</h3>
-          <div className="posts">
-            {posts.length > 0 ? (
-              posts.map(post => (
-                <Post key={post.id} post={post} />
-              ))
-            ) : (
-              <p>{profile.first_name} {profile.last_name} hasn't posted anything yet!</p>
-            )}
-          </div>
+          <Posts 
+            posts={posts} 
+            loading={loading} 
+            endReached={endReached} 
+            onLoadMore={handleLoadMore} 
+          />
         </>
       }
-
-
-
     </div>
   );
 }

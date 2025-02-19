@@ -7,6 +7,7 @@ CREATE TABLE `Event` (
   `title` varchar(255),
   `description` text,
   `event_datetime` timestamp,
+  `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
   FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`),
   FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`)
 );
