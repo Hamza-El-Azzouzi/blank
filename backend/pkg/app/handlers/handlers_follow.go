@@ -7,10 +7,13 @@ import (
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type FollowHandler struct {
 	FollowService *services.FollowService
+	UserService   *services.UserService
 }
 
 func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
@@ -27,10 +30,25 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
+	followingID, err := uuid.FromString(follow.FollowingId)
+
+	if !f.UserService.UserExist(followingID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
+
+	follow.FollowerId = r.Context().Value("user_id").(string)
+	err = f.FollowService.RequestFollow(follow)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
 func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodPut {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
@@ -43,10 +61,25 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
+	followingID, err := uuid.FromString(follow.FollowingId)
+
+	if !f.UserService.UserExist(followingID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
+
+	follow.FollowerId = r.Context().Value("user_id").(string)
+	err = f.FollowService.AcceptFollow(follow)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
 func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodDelete {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
@@ -59,16 +92,19 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-}
 
-func (f *FollowHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request) {
-}
+	followingID, err := uuid.FromString(follow.FollowingId)
 
-func (f *FollowHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
-}
+	if !f.UserService.UserExist(followingID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
 
-func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
-}
-
-func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
+	follow.FollowerId = r.Context().Value("user_id").(string)
+	err = f.FollowService.RefuseFollow(follow)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }

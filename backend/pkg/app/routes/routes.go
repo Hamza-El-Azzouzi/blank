@@ -45,10 +45,10 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/requestfollow", followHandler.RequestFollow)
 	mux.HandleFunc("/api/acceptfollow", followHandler.AcceptFollow)
 	mux.HandleFunc("/api/refusefollow", followHandler.RefuseFollow)
-	mux.HandleFunc("/api/deletefollowing", followHandler.DeleteFollowing)
-	mux.HandleFunc("/api/deletefollower", followHandler.DeleteFollower)
-	mux.HandleFunc("/api/followerlist", followHandler.FollowerList)
-	mux.HandleFunc("/api/followinglist", followHandler.FollowingList)
+	// mux.HandleFunc("/api/deletefollowing", followHandler.DeleteFollowing)
+	// mux.HandleFunc("/api/deletefollower", followHandler.DeleteFollower)
+	// mux.HandleFunc("/api/followerlist", followHandler.FollowerList)
+	// mux.HandleFunc("/api/followinglist", followHandler.FollowingList)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")

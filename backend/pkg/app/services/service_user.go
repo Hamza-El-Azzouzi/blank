@@ -49,3 +49,7 @@ func (u *UserService) SearchUsers(query string) ([]models.User, error) {
 	}
 	return allUser, nil
 }
+
+func (u *UserService) UserExist(userID uuid.UUID) bool {
+	return u.UserRepo.UserExist(userID)
+}
