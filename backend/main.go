@@ -9,7 +9,6 @@ import (
 	"blank/pkg/app"
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/routes"
-
 	"blank/pkg/db"
 )
 
@@ -24,11 +23,10 @@ func main() {
 
 	defer database.Close()
 
-	userRepo, categoryRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo, groupRepo := app.InitRepositories(database)
+	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo, groupRepo := app.InitRepositories(database)
 
-	authService, postService, categoryService, commentService, likeService, sessionService, messageService, userService , groupService := app.InitServices(userRepo,
+	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService := app.InitServices(userRepo,
 		postRepo,
-		categoryRepo,
 		commentRepo,
 		likeRepo,
 		sessionRepo,
@@ -37,9 +35,8 @@ func main() {
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler, MessageHandler, userHandler ,groupHandler := app.InitHandlers(authService,
+	authHandler, postHandler, likeHandler, MessageHandler, userHandler, groupHandler := app.InitHandlers(authService,
 		postService,
-		categoryService,
 		commentService,
 		likeService,
 		sessionService,
@@ -51,10 +48,10 @@ func main() {
 	// cleaner := &utils.Cleaner{SessionService: sessionService}
 
 	// go cleaner.CleanupExpiredSessions()
-	
+
 	mux := http.NewServeMux()
 	protectedMux := authMiddleware.Protect(mux)
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler ,groupHandler)
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler, groupHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 

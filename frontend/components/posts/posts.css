@@ -69,61 +69,18 @@
     display: none;
 }
 
-.privacy-selector {
-    position: relative;
-}
-
-.privacy-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: var(--bg-tertiary);
-    border: none;
-    border-radius: 4px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-}
-
-.privacy-button:hover {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-}
-
-.privacy-icon,
-.dropdown-icon {
-    font-size: 16px;
-}
-
-.privacy-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    z-index: 10;
-    min-width: 150px;
-}
-
-.privacy-option {
-    width: 100%;
+.privacy-select {
     padding: 8px 12px;
-    border: none;
-    background: none;
-    color: var(--text-secondary);
-    text-align: left;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
-.privacy-option:hover {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
+.privacy-select:hover {
+    border-color: var(--primary);
 }
 
 .post-submit-button {

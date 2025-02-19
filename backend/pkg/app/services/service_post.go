@@ -5,45 +5,49 @@ import (
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
 
 type PostService struct {
-	PostRepo     *repositories.PostRepository
-	CategoryRepo *repositories.CategoryRepository
+	PostRepo *repositories.PostRepository
 }
 
-func (p *PostService) PostSave(userId uuid.UUID, title, content string, category []string) error {
+func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string, image string, selectedFollowers []string) error {
 	postId := uuid.Must(uuid.NewV4())
+
+	imageFilename, err := utils.SaveImage(image)
+	if err != nil {
+		return err
+	}
 
 	post := &models.Post{
 		ID:      postId,
 		UserID:  userId,
-		Title:   title,
 		Content: content,
+		Image:   imageFilename,
+		Privacy: privacy,
 	}
-	for _, id := range category {
-		if p.CategoryRepo.CheckCategorie(id) {
-			postCategory := &models.PostCategory{
-				PostID:     postId,
-				CategoryID: id,
-			}
 
-			err := p.PostRepo.PostCatgorie(postCategory)
+	err = p.PostRepo.Create(post)
+	if err != nil {
+		return err
+	}
+
+	if len(selectedFollowers) > 0 {
+		for _, follower := range selectedFollowers {
+			err = p.PostRepo.PostPrivacy(postId, follower)
 			if err != nil {
-				return fmt.Errorf("error F categorie : %v ", err)
+				return err
 			}
-		} else {
-			return fmt.Errorf("categorie not found")
 		}
 	}
-
-	return p.PostRepo.Create(post)
+	return nil
 }
 
-func (p *PostService) AllPosts(pagination int) ([]models.PostWithUser, error) {
-	posts, err := p.PostRepo.AllPosts(pagination)
+func (p *PostService) AllPosts(pagination int, currentUserID uuid.UUID) ([]models.PostWithUser, error) {
+	posts, err := p.PostRepo.AllPosts(pagination, currentUserID)
 	if err != nil {
 		return nil, fmt.Errorf("error Kayn f All Post service : %v", err)
 	}

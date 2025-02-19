@@ -44,6 +44,12 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	exist := p.UserService.UserExist(userID)
+	if !exist {
+		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
+		return
+	}
+
 	user, err := p.UserService.GetUserInfo(userID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)

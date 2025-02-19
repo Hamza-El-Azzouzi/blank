@@ -3,23 +3,23 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"sync"
 
 	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+	"blank/pkg/app/utils"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type ReactHandler struct {
 	ReactService  *services.ReactService
 	AuthMidlaware *middleware.AuthMiddleware
-	mutex         sync.Mutex
 }
 
 func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
-	rh.mutex.Lock()
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
@@ -27,38 +27,37 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&react)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
 	defer r.Body.Close()
 
-	logeddUser, user := rh.AuthMidlaware.IsUserLoggedIn(w, r)
-	if !logeddUser {
-		w.WriteHeader(http.StatusForbidden)
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 	if react.Target == "post" {
-		err := rh.ReactService.Create(user.ID, react.ID, "", react.Type, react.Target)
+		err := rh.ReactService.Create(userID, react.ID, "", react.Target)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 			return
 		}
 	} else {
-		err := rh.ReactService.Create(user.ID, "", react.ID, react.Type, react.Target)
+		err := rh.ReactService.Create(userID, "", react.ID, react.Target)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 			return
 		}
 	}
 	data, err := rh.ReactService.GetReacts(react.ID, react.Target)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusNotFound, "Internal Server Error", nil)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(data)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusNotFound, "Internal Server Error", nil)
 	}
-	rh.mutex.Unlock()
 }

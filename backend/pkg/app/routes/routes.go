@@ -8,7 +8,6 @@ import (
 	"blank/pkg/app/utils"
 )
 
-
 func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler , groupHandler *handlers.GroupHandler) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
@@ -16,6 +15,8 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/register", authHandler.HandleRegister)
 	mux.HandleFunc("/api/login", authHandler.HandleLogin)
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
+	mux.HandleFunc("/storage/avatars/{avatar}", handlers.ServeImages)
+
 	mux.HandleFunc("/api/users/", authHandler.GetUsers)
 	mux.HandleFunc("/api/searchedusers", authHandler.SearchUsers)
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
@@ -25,10 +26,8 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
-	mux.HandleFunc("/storage/avatars/{avatar}", utils.ServeAvatars)
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
-	mux.HandleFunc("/api/categories", postHandler.GetCategories)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
 	mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
 	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)
@@ -52,5 +51,3 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 		utils.OpenHtml("index.html", w, "")
 	})
 }
-
-

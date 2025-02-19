@@ -81,7 +81,7 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
-	// image, err := utils.SaveAvatar(user.Avatar)
+	
 	status, message := h.AuthService.Register(user)
 	fmt.Println(status, message)
 	utils.SendResponses(w, status, message, nil)
@@ -144,21 +144,20 @@ type SessionData struct {
 
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
 	var session SessionData
-
 	if err := json.NewDecoder(r.Body).Decode(&session); err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
 		return
 	}
-	_, exist := h.SessionService.CheckSession(session.Value)
+	userID, exist := h.SessionService.CheckSession(session.Value)
 	if !exist {
 		utils.SendResponses(w, http.StatusForbidden, "User Not Found", nil)
 	} else {
-		utils.SendResponses(w, http.StatusOK, "success", nil)
+		utils.SendResponses(w, http.StatusOK, "success", userID)
 	}
 }
 

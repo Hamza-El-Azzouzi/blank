@@ -23,7 +23,7 @@ func (r *ReactService) GetReacts(ID, target string) (any, error) {
 	return data, nil
 }
 
-func (r *ReactService) Create(userID uuid.UUID, postID, commentID string, typeOfReact, target string) error {
+func (r *ReactService) Create(userID uuid.UUID, postID, commentID string, target string) error {
 	likeID, err := uuid.NewV4()
 	if err != nil {
 		return fmt.Errorf("failed to generate UUID: %v", err)
@@ -43,7 +43,6 @@ func (r *ReactService) Create(userID uuid.UUID, postID, commentID string, typeOf
 		UserID:    userID,
 		PostID:    postIDPtr,
 		CommentID: commentIDPtr,
-		ReactType: typeOfReact,
 	}
 
 	r.ReactRepo.CreateReact(react, target)
