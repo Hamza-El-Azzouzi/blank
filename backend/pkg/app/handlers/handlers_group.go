@@ -40,7 +40,6 @@ func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	fmt.Println("hhhhhh")
 	utils.SendResponses(w, http.StatusOK, "Created successfully", groupCreation)
 }
 
@@ -62,7 +61,26 @@ func (g *GroupHandler) Groups(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(groups)
 	utils.SendResponses(w, http.StatusOK, "Created successfully", groups)
 }
-
+func (g *GroupHandler) GroupSearch(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+	user_id := r.Context().Value("user_id").(string)
+	term :=  r.URL.Query().Get("q")
+	fmt.Println(term)
+	groups, err := g.GroupService.GroupsSearch(user_id,term)
+	if err != nil {
+		fmt.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	fmt.Println(groups)
+	utils.SendResponses(w, http.StatusOK, "Created successfully", groups)
+}
 func (g *GroupHandler) GroupDerails(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
@@ -140,7 +158,7 @@ func (g *GroupHandler) GroupDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.SendResponses(w, http.StatusOK, "Created successfully", nil)
 }
-// GroupRequest
+
 
 func (g *GroupHandler) GroupRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -152,14 +170,69 @@ func (g *GroupHandler) GroupRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pathParts := strings.Split(r.URL.Path, "/")
-	fmt.Println(pathParts)
 	if len(pathParts) != 5 {
 		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
-	err := g.GroupService.GroupDelete(pathParts[3])
+	groupRequest,err := g.GroupService.GroupRequest(pathParts[3])
 	if err != nil {
 		fmt.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "Created successfully", groupRequest)
+}
+
+func (g *GroupHandler) GroupResponse(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	var groupResponse models.GroupResponse
+	err := json.NewDecoder(r.Body).Decode(&groupResponse)
+	fmt.Println(err)
+	if err != nil {
+
+		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		return
+	}
+	memberCount,err := g.GroupService.GroupResponse(pathParts[3],groupResponse)
+	if err != nil {
+		fmt.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "Created successfully", memberCount)
+}
+
+func (g *GroupHandler) GroupeLeave(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	user_id := r.Context().Value("user_id").(string)
+	_,err := g.GroupService.GroupLeave(pathParts[3],user_id)
+	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}

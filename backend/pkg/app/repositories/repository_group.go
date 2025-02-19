@@ -57,7 +57,53 @@ JOIN ` + "`User`" + ` u ON g.creator_id = u.user_id
 LEFT JOIN ` + "`Group_Membership`" + ` gm ON g.group_id = gm.group_id
 GROUP BY g.group_id, g.title, g.description, u.nickname;
 `
-	rows, err := g.DB.Query(selectQuery, user_id) // Note: you'll need to pass user_id as parameter
+	rows, err := g.DB.Query(selectQuery, user_id)
+	if err != nil {
+		return nil, err
+	}
+	var groups []models.Groups
+	for rows.Next() {
+		var group models.Groups
+		err = rows.Scan(
+			&group.GroupeId,
+			&group.UserId,
+			&group.Name,
+			&group.Description,
+			&group.Member_count,
+			&group.IsPending,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning post with user info: %v", err)
+		}
+		groups = append(groups, group)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("error iterating posts with user info: %v", err)
+	}
+
+	return groups, nil
+}
+func (g *GroupRepository) GroupsSearch(user_id, term string) ([]models.Groups, error) {
+	selectQuery := `SELECT 
+	g.group_id,
+	u.user_id,
+	g.title AS group_name,
+	g.description,
+	COUNT(CASE WHEN gm.status = 'accepted' THEN gm.user_id END) AS member_count,
+	EXISTS (
+		SELECT 1 FROM Group_Membership 
+		WHERE group_id = g.group_id 
+		AND user_id = ? 
+		AND status = 'requested'
+	) as is_pending
+FROM ` + "`Group`" + ` g
+JOIN ` + "`User`" + ` u ON g.creator_id = u.user_id
+LEFT JOIN ` + "`Group_Membership`" + ` gm ON g.group_id = gm.group_id
+WHERE g.title LIKE ?
+GROUP BY g.group_id, g.title, g.description, u.nickname;
+`
+	rows, err := g.DB.Query(selectQuery, user_id, "%"+term+"%")
 	if err != nil {
 		return nil, err
 	}
@@ -157,3 +203,62 @@ func (g *GroupRepository) GroupDelete(group_id string) error {
 	}
 	return nil
 }
+
+func (g *GroupRepository) GroupRequest(group_id string) ([]models.GroupRequest, error) {
+	query := `SELECT group_id,u.user_id, u.first_name, u.last_name FROM User u 
+			  JOIN Group_Membership gm ON u.user_id = gm.user_id 
+			  WHERE gm.group_id = ? AND gm.status = 'requested'`
+	var groupRequests []models.GroupRequest
+	rows, err := g.DB.Query(query, group_id)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var groupRequest models.GroupRequest
+		err = rows.Scan(
+			&groupRequest.GroupId,
+			&groupRequest.UserId,
+			&groupRequest.First_Name,
+			&groupRequest.Last_Name,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning post with user info: %v", err)
+		}
+		groupRequests = append(groupRequests, groupRequest)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("error iterating posts with user info: %v", err)
+	}
+
+	return groupRequests, nil
+}
+
+func (g *GroupRepository) GroupResponseAccepted(group_id, user_id string) (int,error) {
+	query := "UPDATE `Group_Membership` SET status = 'accepted' WHERE group_id = ? AND user_id =?"
+	var memberCount int
+	_, err := g.DB.Exec(query, group_id,user_id)
+	if err != nil {
+		return 0,err
+	}
+	query = `SELECT count(*) FROM Group_Membership WHERE group_id = ? AND status = 'accepted'`
+	err = g.DB.QueryRow(query, group_id).Scan(&memberCount)
+	if err != nil {
+		return 0,err
+	}
+	return memberCount,nil
+}
+
+func (g *GroupRepository) GroupResponseDeclined(group_id, user_id string) (int,error) {
+	query := "DELETE FROM `Group_Membership` WHERE group_id = ? AND user_id =?"
+
+	_, err := g.DB.Exec(query, group_id,user_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return 0,nil
+}
+
+

@@ -41,3 +41,15 @@ type Groups struct{
 	Created_at time.Time
 	FormatedDate string
  }
+
+ type GroupRequest struct{
+	GroupId string
+	UserId string
+	Last_Name string
+	First_Name string
+	
+}
+type GroupResponse struct {
+	User_id string `json:"user_id"`
+	Respose string `json:"response"`
+}

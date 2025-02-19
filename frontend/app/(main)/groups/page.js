@@ -47,11 +47,34 @@ const GroupsPage = () => {
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };
+  
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
+        console.log(term,searchTerm)
+        // Fetch filtered results from API
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/groups/search?q=${term}`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => { throw error; });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            setGroups(data.data);
+        })
+        .catch((error) => {
+            console.log(error);
+            showToast('error', 'Failed to search groups');
+        });
     };
-
     const handleCreateGroup = (groupData) => {
         // api/createGroup
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/createGroup`, {
@@ -109,11 +132,6 @@ const GroupsPage = () => {
             })
     };
 
-    // const filteredGroups = groups.filter(group => {
-    //     if (group) group.Name.toLowerCase().includes(searchTerm.toLowerCase())
-    // }
-
-    // );
 
     return (
         <div className="groups-page">
@@ -138,7 +156,7 @@ const GroupsPage = () => {
             </div>
 
             <div className="groups-grid">
-                {groups.map(group => (
+                {groups && groups.map(group => (
                     <GroupCard key={group.GroupeId} group={group} onJoinClick={handleJoinGroup} />
                 ))}
             </div>

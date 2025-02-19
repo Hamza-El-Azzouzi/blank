@@ -5,26 +5,26 @@ import { FiCalendar, FiUsers } from 'react-icons/fi';
 import './eventCard.css';
 
 const RequestCard = ({ request, onResponseChange }) => {
-    console.log(request)
-    const handleResponse = (response) => {
-        onResponseChange(request.id, response);
+
+    const handleResponse = (response,userId) => {
+        onResponseChange(request.GroupId, response,userId);
     };
 
     return (
         <div className="event-card">
             <div className="event-info">
-                <h3>{request.title}</h3>
+                <h3>{request.Last_Name} {request.First_Name}</h3>
             </div>
             <div className="event-response-buttons">
                 <button
                     className={`response-button`}
-                    onClick={() => handleResponse('going')}
+                    onClick={() => handleResponse('accepted',request.UserId)}
                 >
                     Accepte
                 </button>
                 <button
                     className={`response-button`}
-                    onClick={() => handleResponse('not-going')}
+                    onClick={() => handleResponse('declined',request.UserId)}
                 >
                     Decline
                 </button>

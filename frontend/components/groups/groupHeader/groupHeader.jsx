@@ -9,14 +9,36 @@ import { useParams, useRouter } from 'next/navigation';
 
 
 
-const GroupHeader = ({ group, onMembershipUpdate }) => {
+const GroupHeader = ({ group }) => {
     const { groupID } = useParams();
     const router = useRouter()
     const cookieValue = GetCookie("sessionId")
     const [toasts, setToasts] = useState([]);
-    console.log("cookie", cookieValue)
-    const handleMembershipClick = () => {
-        onMembershipUpdate(!group.isJoined);
+    const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
+    const handleLeaveGroup = (e) => {
+        e.preventDefault()
+        e.preventDefault()
+            fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    'content-type': 'application/json',
+                    'Authorization': `Bearer ${cookieValue}`
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(error => { throw error; });
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    showToast('success', 'Success! Operation completed.');
+                    router.push("/groups")
+                }).catch((error) => {
+                    console.log(error)
+                    showToast('error', error.message);
+                })
     };
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
@@ -29,6 +51,31 @@ const GroupHeader = ({ group, onMembershipUpdate }) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
     };
+    const handleJoinGroup = (e) => {
+        e.preventDefault()
+            fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/requested`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    'content-type': 'application/json',
+                    'Authorization': `Bearer ${cookieValue}`
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(error => { throw error; });
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    showToast('success', 'Success! Operation completed.');
+                    setIsDisabled(true);
+                    group.IsPending = true
+                }).catch((error) => {
+                    console.log(error)
+                    showToast('error', error.message);
+                })
+        };
     const handleDestoryCommunity = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/delete`, {
@@ -85,7 +132,9 @@ const GroupHeader = ({ group, onMembershipUpdate }) => {
                 {group.IsJoined ? (
                     <button
                         className="leave-group-btn"
-                        onClick={handleMembershipClick}
+                        onClick={(e)=>{
+                            handleLeaveGroup(e)
+                        }}
                     >
                         Leave Group
                     </button>
@@ -96,19 +145,21 @@ const GroupHeader = ({ group, onMembershipUpdate }) => {
                     >
                         Destroy the Community
                     </button>
-                ) : group.Pendding ? (
+                ) : group.IsPending ? (
                     <button
                         className="join-group-btn"
                         disabled
                     >
-                        Join Group
+                        Pending
+                        
                     </button>
                 ) : (
                     <button
                         className="join-group-btn"
-                        onClick={handleMembershipClick}
+                        disabled={isDisabled}
+                        onClick={(e)=>{handleJoinGroup(e)}}
                     >
-                        Pending
+                        Join Group
                     </button>
                 )}
             </div>
