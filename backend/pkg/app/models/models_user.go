@@ -40,13 +40,13 @@ type LoginData struct {
 type UserInfo struct {
 	FirstName   string `json:"first_name"`
 	LastName    string `json:"last_name"`
-	Nickname    string `json:"nickname"`
-	Email       string `json:"email"`
-	About       string `json:"about"`
-	DateOfBirth string `json:"date_of_birth"`
-	Avatar      string `json:"avatar"`
-	IsPublic    bool   `json:"is_public"`
-	IsOwner     bool   `json:"is_owner"`
-	Following   int    `json:"following"`
-	Followers   int    `json:"followers"`
+	Nickname    string `json:"nickname,omitempty"`
+	Email       string `json:"email,omitempty"`
+	About       string `json:"about,omitempty"`
+	DateOfBirth string `json:"date_of_birth,omitempty"`
+	Avatar      string `json:"avatar,omitempty"`
+	IsPublic    bool   `json:"is_public,omitempty"`
+	IsOwner     bool   `json:"is_owner,omitempty"`
+	Following   int    `json:"following,omitempty"`
+	Followers   int    `json:"followers,omitempty"`
 }

@@ -7,9 +7,18 @@ import (
 )
 
 type Comment struct {
-	ID        uuid.UUID 
+	ID        uuid.UUID
 	UserID    uuid.UUID
 	PostID    string
 	Content   string
 	CreatedAt time.Time
+}
+
+type CommentDetails struct {
+	User          User      `json:"user"`
+	CommentID     uuid.UUID `json:"comment_id"`
+	Content       string    `json:"content"`
+	LikeCount     int       `json:"like_count"`
+	FormattedDate string    `json:"formatted_date"`
+	CreatedAt     time.Time `json:"created_at"`
 }

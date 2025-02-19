@@ -14,6 +14,10 @@ type CommentService struct {
 	PostRepo    *repositories.PostRepository
 }
 
+func (c *CommentService) CommentsByPost(postID string, page int) ([]models.CommentDetails, error) {
+	return c.CommentRepo.GetCommentByPost(postID, page)
+}
+
 func (c *CommentService) SaveComment(userID uuid.UUID, postID, content string) error {
 	if !c.PostRepo.PostExist(postID) {
 		return fmt.Errorf("post does not exist")
@@ -25,12 +29,4 @@ func (c *CommentService) SaveComment(userID uuid.UUID, postID, content string) e
 		Content: content,
 	}
 	return c.CommentRepo.Create(comment)
-}
-
-func (c *CommentService) GetCommentByPost(postID string, pagination int) ([]models.CommentDetails, error) {
-	comment, err := c.CommentRepo.GetCommentByPost(postID, pagination)
-	if err != nil {
-		return nil, err
-	}
-	return comment, nil
 }

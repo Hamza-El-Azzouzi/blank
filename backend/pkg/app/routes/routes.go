@@ -8,7 +8,8 @@ import (
 	"blank/pkg/app/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler , groupHandler *handlers.GroupHandler) {
+func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler , groupHandler *handlers.GroupHandler, commentHandler *handlers.CommentHandler) {
+  
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
@@ -29,8 +30,10 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
-	mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
-	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)
+
+	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)
+	// mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
+
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
 
