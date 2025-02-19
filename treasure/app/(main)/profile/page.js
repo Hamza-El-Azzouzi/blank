@@ -45,7 +45,7 @@ export default function ProfilePage() {
       .then(res => {
         const data = res.data;
         // setProfile(data);
-        console.log(data);
+       
 
       })
       .catch(err => {
@@ -60,7 +60,7 @@ export default function ProfilePage() {
       .then(res => {
         const data = res.data;
         // setProfile(data);
-        console.log(data);
+       
 
       })
       .catch(err => {

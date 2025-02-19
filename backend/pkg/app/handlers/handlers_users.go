@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -44,8 +45,21 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	exist := u.UserService.UserExist(userID)
+	if !exist {
+		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
+		return
+	}
+
+	exist = u.UserService.UserExist(userID)
+	if !exist {
+		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
+		return
+	}
+
 	user, err := u.UserService.GetUserInfo(userID)
 	if err != nil {
+		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
