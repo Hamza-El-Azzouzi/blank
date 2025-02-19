@@ -1,26 +1,33 @@
 // components/sidebars/navSidebar.jsx
-import React,{useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
 import { BiSearch } from 'react-icons/bi';
 import './sidebar.css';
 import * as cookies from '@/lib/cookie';
-
 import { useRouter } from 'next/navigation';
 
 const NavSidebar = () => {
+  const router = useRouter()
   const [cookieValue, setCookieValue] = useState(null);
+  const [profilePath, setProfilePath] = useState('#');
+
   useEffect(() => {
     setCookieValue(cookies.GetCookie("sessionId"));
-}, [cookieValue]);
-  const router = useRouter()
-  const handleLogOut = () => {
+  }, [cookieValue]);
 
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/logout`,{
-      method :"GET",
-      credentials:"include",
-      headers :{'Authorization':`Bearer ${cookieValue}`}
-      
+  useEffect(() => {
+    if (cookieValue) {
+      getProfilePath();
+    }
+  }, [cookieValue]);
+
+  const handleLogOut = () => {
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/logout`, {
+      method: "GET",
+      credentials: "include",
+      headers: { 'Authorization': `Bearer ${cookieValue}` }
+
     })
       .then(response => {
         if (!response.ok) {
@@ -30,11 +37,36 @@ const NavSidebar = () => {
       })
       .then(() => {
         cookies.DeleteCookie("sessionId")
-        router.push("/signin");
       }).catch(() => {
         router.push("/");
       })
   }
+
+  const getProfilePath = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          'Content-Type': "application/json"
+        },
+        body: JSON.stringify({
+          name: "token",
+          value: cookieValue
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch user ID');
+      }
+
+      setProfilePath(`/profile/${data.data}`);
+    } catch (error) {
+      console.error('Error fetching profile path:', error);
+    }
+  };
 
   return (
     <>
@@ -72,7 +104,7 @@ const NavSidebar = () => {
             </Link>
           </li>
           <li className="nav-item">
-            <Link href="/my-profile" className="nav-link">
+            <Link href={profilePath} className="nav-link" >
               <FiUser className="nav-icon" />
               <span>Profile</span>
             </Link>
@@ -81,10 +113,10 @@ const NavSidebar = () => {
       </nav>
 
       <div className="nav-footer">
-        <button onClick={handleLogOut} className="nav-link logout">
+        <Link href="/signin" onClick={handleLogOut} className="nav-link logout">
           <FiLogOut className="nav-icon" />
           <span>Log out</span>
-        </button>
+        </Link>
       </div>
     </>
   );
