@@ -25,7 +25,7 @@ const mockComments = [
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState('');
 

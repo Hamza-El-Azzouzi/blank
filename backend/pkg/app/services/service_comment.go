@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
 
@@ -19,9 +17,6 @@ func (c *CommentService) CommentsByPost(postID string, page int) ([]models.Comme
 }
 
 func (c *CommentService) SaveComment(userID uuid.UUID, postID, content string) error {
-	if !c.PostRepo.PostExist(postID) {
-		return fmt.Errorf("post does not exist")
-	}
 	comment := &models.Comment{
 		ID:      uuid.Must(uuid.NewV4()),
 		UserID:  userID,

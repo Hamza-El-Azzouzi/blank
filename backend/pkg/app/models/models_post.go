@@ -44,10 +44,6 @@ type PostByUser struct {
 	HasLiked      bool      `json:"has_liked"`
 }
 
-type CommentData struct {
-	Comment string `json:"content"`
-	PostId  string `json:"postId"`
-}
 
 type PostData struct {
 	Content           string   `json:"content"`

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"html"
 	"log"
 	"net/http"
 	"strconv"
@@ -53,15 +54,14 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
 		return
 	}
-	
+
 	postExist = c.PostService.PostExist(postID)
 	if !postExist {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
 	}
-	
+
 	comments, err = c.CommentService.CommentsByPost(postID, page)
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
@@ -71,4 +71,48 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 	}
+}
+
+func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method)
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed "+r.Method, nil)
+		return
+	}
+	var commentData models.CommentData
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&commentData)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad Request", nil)
+		return
+	}
+	defer r.Body.Close()
+
+	postExist := c.PostService.PostExist(commentData.PostID)
+	if !postExist {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
+		return
+	}
+
+	commentData.Content = html.EscapeString(strings.TrimSpace(commentData.Content))
+	if commentData.Content == "" || len(commentData.Content) > 200 {
+		utils.SendResponses(w, http.StatusBadRequest, "Comment can't be empty or longer than  200 characters", nil)
+		return
+	}
+
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	err = c.CommentService.SaveComment(userID, commentData.PostID, commentData.Content)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }

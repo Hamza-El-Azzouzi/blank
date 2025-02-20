@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"html"
 
 	"blank/pkg/app/models"
 )
@@ -12,21 +11,20 @@ type CommentRepositorie struct {
 }
 
 func (c *CommentRepositorie) Create(comment *models.Comment) error {
-	query := "INSERT INTO comments (id, user_id, post_id, content) VALUES (?, ?, ?, ?)"
-	prp, prepareErr := c.DB.Prepare(query)
-	if prepareErr != nil {
-		return prepareErr
+	query := `INSERT INTO Comment (comment_id, user_id, post_id, content) VALUES (?, ?, ?, ?)`
+	prp, err := c.DB.Prepare(query)
+	if err != nil {
+		return err
 	}
 	defer prp.Close()
-	comment.Content = html.EscapeString(comment.Content)
-	_, execErr := prp.Exec(
+	_, err = prp.Exec(
 		comment.ID,
 		comment.UserID,
 		comment.PostID,
 		comment.Content,
 	)
-	if execErr != nil {
-		return execErr
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -59,7 +57,6 @@ func (c *CommentRepositorie) GetCommentByPost(postID string, pagination int) ([]
 				WHERE
 					l.comment_id = c.comment_id
 			) AS LikeCount,
-			u.user_id,
 			u.first_name,
 			u.last_name,
 			u.avatar
@@ -86,7 +83,6 @@ func (c *CommentRepositorie) GetCommentByPost(postID string, pagination int) ([]
 			&comment.Content,
 			&comment.CreatedAt,
 			&comment.LikeCount,
-			&comment.User.ID,
 			&comment.User.FirstName,
 			&comment.User.LastName,
 			&comment.User.Avatar,
