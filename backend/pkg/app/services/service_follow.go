@@ -10,9 +10,17 @@ type FollowService struct {
 }
 
 func (f *FollowService) GetFollowers(userId string, offset int) (*models.FollowListResponse, error) {
-    return f.FollowRepo.GetFollowers(userId, offset)
+	return f.FollowRepo.GetFollowers(userId, offset)
 }
 
 func (f *FollowService) GetFollowing(userId string, offset int) (*models.FollowListResponse, error) {
-    return f.FollowRepo.GetFollowing(userId, offset)
+	return f.FollowRepo.GetFollowing(userId, offset)
+}
+
+func (f *FollowService) DeleteFollowing(followData models.FollowRequest) (int, string) {
+	if !f.FollowRepo.IsUserExists(followData.FollowingId) {
+		return 404, "following user not found"
+	}
+
+	return f.FollowRepo.DeleteFollowing(followData)
 }

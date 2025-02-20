@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
 )
@@ -22,6 +24,26 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (f *FollowHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	var followData models.FollowRequest
+	if err := json.NewDecoder(r.Body).Decode(&followData); err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid request body", nil)
+		return
+	}
+	defer r.Body.Close()
+	
+	if followData.FollowingId == "" {
+		utils.SendResponses(w, http.StatusBadRequest, "Following ID is required", nil)
+		return
+	}
+	followData.FollowerId = r.Context().Value("user_id").(string)
+
+	status, message := f.FollowService.DeleteFollowing(followData)
+	utils.SendResponses(w, status, message, nil)
 }
 
 func (f *FollowHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
