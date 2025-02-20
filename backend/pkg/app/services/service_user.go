@@ -45,7 +45,7 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 	return nil
 }
 
-func (u *UserService) SearchUsers(query string) ([]models.User, error) {
+func (u *UserService) SearchUsers(query string) ([]models.UserInfo, error) {
 	allUser, errUser := u.UserRepo.SearchUsers(query)
 	if errUser != nil {
 		return nil, errUser

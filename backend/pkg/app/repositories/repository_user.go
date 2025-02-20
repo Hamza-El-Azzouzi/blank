@@ -126,9 +126,9 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 	return allUser, nil
 }
 
-func (r *UserRepository) SearchUsers(searchQuery string) ([]models.User, error) {
-	users := []models.User{}
-	query := "SELECT id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
+func (r *UserRepository) SearchUsers(searchQuery string) ([]models.UserInfo, error) {
+	users := []models.UserInfo{}
+	query := "SELECT user_id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
 
 	rows, err := r.DB.Query(query, "%"+searchQuery+"%", "%"+searchQuery+"%")
 	if err != nil {
@@ -138,8 +138,8 @@ func (r *UserRepository) SearchUsers(searchQuery string) ([]models.User, error) 
 		return nil, err
 	}
 	for rows.Next() {
-		user := models.User{}
-		err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
+		user := models.UserInfo{}
+		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar)
 		if err != nil {
 			return nil, err
 		}

@@ -6,11 +6,16 @@ import { BiSearch } from 'react-icons/bi';
 import './sidebar.css';
 import * as cookies from '@/lib/cookie';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { fetchBlob } from '@/lib/fetch_blob'; 
 
 const NavSidebar = () => {
   const router = useRouter()
   const [cookieValue, setCookieValue] = useState(null);
   const [profilePath, setProfilePath] = useState('#');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setCookieValue(cookies.GetCookie("sessionId"));
@@ -68,13 +73,88 @@ const NavSidebar = () => {
     }
   };
 
+  const handleSearch = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length < 1) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchusers?q=${query}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${cookieValue}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+
+      const data = await response.json(); 
+      if (data.data && data.data.length > 0) {
+        const users = await Promise.all(data.data.map(async (user) => {
+          user.avatar = user.avatar
+            ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
+            : '/default-avatar.jpg';
+          return user;
+        }));
+        setSearchResults(users || []);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="search-container">
         <div className="search-input-wrapper">
           <BiSearch className="search-icon" />
-          <input type="text" placeholder="Search..." className="search-input" />
+          <input
+            type="text"
+            placeholder="Search users..."
+            className="search-input"
+            value={searchQuery}
+            onChange={handleSearch}
+          />
         </div>
+        {searchQuery && (
+          <div className="search-results">
+            {isLoading ? (
+              <div className="search-result-item">Loading...</div>
+            ) : searchResults.length > 0 ? (
+              searchResults.map((user) => (
+                <Link
+                  key={user.user_id}
+                  href={`/profile/${user.user_id}`}
+                  className="search-result-item"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <div className="search-result-avatar">
+                    <Image
+                      src={user.avatar}
+                      alt={`${user.first_name} ${user.last_name}`}
+                      width={32}
+                      height={32}
+                    />
+                  </div>
+                  <span>{user.first_name} {user.last_name}</span>
+                </Link>
+              ))
+            ) : (
+              <div className="search-result-item">No results found</div>
+            )}
+          </div>
+        )}
       </div>
 
       <nav className="nav-menu">

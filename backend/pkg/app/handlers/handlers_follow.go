@@ -154,7 +154,7 @@ func (f *FollowHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request) 
 
 	followData.FollowerId = r.Context().Value("user_id").(string)
 
-	err = f.FollowService.DeleteFollowing(followData)
+	err = f.FollowService.DeleteFollow(followData)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
@@ -195,7 +195,7 @@ func (f *FollowHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
 
 	followData.FollowingId = r.Context().Value("user_id").(string)
 
-	err = f.FollowService.DeleteFollower(followData)
+	err = f.FollowService.DeleteFollow(followData)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return

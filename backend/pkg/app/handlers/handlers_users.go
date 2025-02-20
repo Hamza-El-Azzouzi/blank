@@ -148,20 +148,13 @@ func (u *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
-	var data map[string]string
+	query := r.URL.Query().Get("q")
 
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "bad request", nil)
-		return
-	}
-	defer r.Body.Close()
-
-	users, errUsers := u.UserService.SearchUsers(data["search"])
+	users, errUsers := u.UserService.SearchUsers(query)
 	if errUsers != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return

@@ -138,16 +138,7 @@ func (f *FollowRepositorie) GetFollowing(userId string, offset int) (*models.Fol
 	return &response, nil
 }
 
-func (f *FollowRepositorie) DeleteFollowing(followData models.FollowRequest) error {
-	preparedQuery, err := f.DB.Prepare("DELETE FROM Follow WHERE follower_id = ? AND following_id = ?")
-	if err != nil {
-		return err
-	}
-	_, err = preparedQuery.Exec(followData.FollowerId, followData.FollowingId)
-	return err
-}
-
-func (f *FollowRepositorie) DeleteFollower(followData models.FollowRequest) error {
+func (f *FollowRepositorie) DeleteFollow(followData models.FollowRequest) error {
 	preparedQuery, err := f.DB.Prepare("DELETE FROM Follow WHERE follower_id = ? AND following_id = ?")
 	if err != nil {
 		return err

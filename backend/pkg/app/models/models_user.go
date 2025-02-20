@@ -38,6 +38,7 @@ type LoginData struct {
 }
 
 type UserInfo struct {
+	UserID       string `json:"user_id"`
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	Nickname     string `json:"nickname"`
