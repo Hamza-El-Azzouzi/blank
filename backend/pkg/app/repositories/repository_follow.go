@@ -9,7 +9,7 @@ type FollowRepositorie struct {
 	DB *sql.DB
 }
 
-func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.FollowerResponse, error) {
+func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.FollowListResponse, error) {
 	query := `
         SELECT 
             u.user_id,
@@ -19,7 +19,7 @@ func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.Fol
             COUNT(*) OVER() as total_count
         FROM Follow f
         JOIN User u ON f.follower_id = u.user_id
-        WHERE f.following_id = ?
+        WHERE f.following_id = ? AND f.status = "accepted"
         ORDER BY u.first_name ASC
         LIMIT 20 OFFSET ?`
 
@@ -29,18 +29,13 @@ func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.Fol
 	}
 	defer rows.Close()
 
-	var response models.FollowerResponse
-	var followers []models.FollowerList
+	var response models.FollowListResponse
+	var followers []models.FollowList
 	var totalCount int
 
 	for rows.Next() {
-		var follower models.FollowerList
-		err := rows.Scan(
-			&follower.UserId,
-			&follower.FirstName,
-			&follower.LastName,
-			&follower.Avatar,
-			&totalCount)
+		var follower models.FollowList
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar, &totalCount)
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +46,49 @@ func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.Fol
 		return nil, err
 	}
 
-	response.Followers = followers
+	response.FollowList = followers
+	response.TotalCount = totalCount
+	return &response, nil
+}
+
+func (f *FollowRepositorie) GetFollowing(userId string, offset int) (*models.FollowListResponse, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar,
+            COUNT(*) OVER() as total_count
+        FROM Follow f
+        JOIN User u ON f.following_id = u.user_id
+        WHERE f.follower_id = ? AND f.status = "accepted"
+        ORDER BY u.first_name ASC
+        LIMIT 20 OFFSET ?`
+
+	rows, err := f.DB.Query(query, userId, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var response models.FollowListResponse
+	var following []models.FollowList
+	var totalCount int
+
+	for rows.Next() {
+		var follower models.FollowList
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar, &totalCount)
+		if err != nil {
+			return nil, err
+		}
+		following = append(following, follower)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	response.FollowList = following
 	response.TotalCount = totalCount
 	return &response, nil
 }
