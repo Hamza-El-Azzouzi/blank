@@ -45,3 +45,11 @@ func (f *FollowRepositorie) RefuseFollow(follow models.FollowRequest) error {
 	_, err = preparedQuery.Exec(follow.FollowerId, follow.FollowingId)
 	return err
 }
+
+func (f *FollowRepositorie) GetFollowStatus(follow models.FollowRequest) (string, error) {
+	status := ""
+	query := `SELECT status FROM Follow WHERE follower_id = ? AND following_id = ?`
+	row := f.DB.QueryRow(query, follow.FollowerId, follow.FollowingId)
+	err := row.Scan(&status)
+	return status, err
+}

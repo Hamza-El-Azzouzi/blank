@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
@@ -15,11 +13,8 @@ import (
 )
 
 type UserHandler struct {
-	AuthService   *services.AuthService
-	AuthMidlaware *middleware.AuthMiddleware
-	PostService   *services.PostService
 	UserService   *services.UserService
-	AuthHandler   *AuthHandler
+	FollowService *services.FollowService
 }
 
 func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
@@ -51,20 +46,22 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exist = u.UserService.UserExist(userID)
-	if !exist {
-		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
-		return
-	}
-
 	user, err := u.UserService.GetUserInfo(userID)
 	if err != nil {
-		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
 	user.IsOwner = userID == AuthUserID
+
+	if !user.IsOwner {
+		follow := models.FollowRequest{FollowerId: AuthUserID.String(), FollowingId: userID.String()}
+		user.FollowStatus, err = u.FollowService.GetFollowStatus(follow)
+		if err != nil {
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(user)

@@ -28,7 +28,7 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 		&repositories.ReactReposetorie{DB: db},
 		&repositories.SessionsRepositorie{DB: db},
 		&repositories.MessageRepository{DB: db},
-		&repositories.GroupRepository{DB:db},
+		&repositories.GroupRepository{DB: db},
 		&repositories.FollowRepositorie{DB: db}
 }
 
@@ -103,15 +103,16 @@ func InitHandlers(authService *services.AuthService,
 		ReactService: reactService,
 	}
 	userHandler := &handlers.UserHandler{
-		UserService: userService,
+		UserService:   userService,
+		FollowService: followService,
 	}
-	groupHandler :=  &handlers.GroupHandler{
-		GroupService : groupService,
+	groupHandler := &handlers.GroupHandler{
+		GroupService: groupService,
 	}
 
 	followHandler := &handlers.FollowHandler{
 		FollowService: followService,
 		UserService:   userService,
 	}
-	return authHandler, postHandler, reactHandler, MessageHandler, userHandler,groupHandler, followHandler
+	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, followHandler
 }

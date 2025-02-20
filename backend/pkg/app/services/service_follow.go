@@ -1,6 +1,8 @@
 package services
 
 import (
+	"database/sql"
+
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
 )
@@ -23,4 +25,17 @@ func (f *FollowService) AcceptFollow(follow models.FollowRequest) error {
 
 func (f *FollowService) RefuseFollow(follow models.FollowRequest) error {
 	return f.FollowRepo.RefuseFollow(follow)
+}
+
+func (f *FollowService) GetFollowStatus(follow models.FollowRequest) (string, error) {
+	status, err := f.FollowRepo.GetFollowStatus(follow)
+	if status == "accepted" {
+		status = "Following"
+	} else if status == "pending" {
+		status = "Pending"
+	}
+	if err == sql.ErrNoRows {
+		return "Follow", nil
+	}
+	return status, err
 }

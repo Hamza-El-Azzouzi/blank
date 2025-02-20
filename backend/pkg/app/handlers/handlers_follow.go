@@ -18,7 +18,7 @@ type FollowHandler struct {
 
 func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed hhhh", nil)
 		return
 	}
 
@@ -44,7 +44,13 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
-	utils.SendResponses(w, http.StatusOK, "success", nil)
+	followStatus := make(map[string]string)
+	followStatus["follow_status"], err = f.FollowService.GetFollowStatus(follow)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", followStatus)
 }
 
 func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {

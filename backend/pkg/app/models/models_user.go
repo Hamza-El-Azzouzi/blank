@@ -29,7 +29,7 @@ type RegisterData struct {
 	Avatar      string `json:"avatar,omitempty"`
 	Nickname    string `json:"nickname,omitempty"`
 	AboutMe     string `json:"aboutMe,omitempty"`
-	AccountType    string   `json:"accountType"`
+	AccountType string `json:"accountType"`
 }
 
 type LoginData struct {
@@ -38,15 +38,16 @@ type LoginData struct {
 }
 
 type UserInfo struct {
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Nickname    string `json:"nickname"`
-	Email       string `json:"email"`
-	About       string `json:"about"`
-	DateOfBirth string `json:"date_of_birth"`
-	Avatar      string `json:"avatar"`
-	IsPublic    bool   `json:"is_public"`
-	IsOwner     bool   `json:"is_owner"`
-	Following   int    `json:"following"`
-	Followers   int    `json:"followers"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Nickname     string `json:"nickname"`
+	Email        string `json:"email"`
+	About        string `json:"about"`
+	DateOfBirth  string `json:"date_of_birth"`
+	Avatar       string `json:"avatar"`
+	IsPublic     bool   `json:"is_public"`
+	IsOwner      bool   `json:"is_owner"`
+	Following    int    `json:"following"`
+	Followers    int    `json:"followers"`
+	FollowStatus string `json:"follow_status"`
 }

@@ -23,7 +23,8 @@ export default function ProfilePage({ params }) {
     followers: 0,
     about: "",
     is_owner: false,
-    nickname: ""
+    nickname: "",
+    follow_status: ""
   });
 
   const [posts, setPosts] = useState([]);
@@ -59,7 +60,6 @@ export default function ProfilePage({ params }) {
           setNotFound(true);
           return;
         }
-
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
@@ -134,7 +134,7 @@ export default function ProfilePage({ params }) {
     <div className="container">
       {!notFound ?
         <>
-          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} />
+          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID}/>
 
           <div className="profile-tabs">
             <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
