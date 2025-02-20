@@ -46,6 +46,10 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/requestfollow", followHandler.RequestFollow)
 	mux.HandleFunc("/api/acceptfollow", followHandler.AcceptFollow)
 	mux.HandleFunc("/api/refusefollow", followHandler.RefuseFollow)
+	mux.HandleFunc("/api/deletefollowing", followHandler.DeleteFollowing)
+	mux.HandleFunc("/api/deletefollower", followHandler.DeleteFollower)
+	mux.HandleFunc("/api/followerlist", followHandler.FollowerList)
+	mux.HandleFunc("/api/followinglist", followHandler.FollowingList)
 
 	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)
 	mux.HandleFunc("/api/groups", groupHandler.Groups)
@@ -54,7 +58,7 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/delete", groupHandler.GroupDelete)
 	mux.HandleFunc("/api/group/{group_id}/request", groupHandler.GroupRequest)
 	mux.HandleFunc("/api/group/{group_id}/response", groupHandler.GroupResponse)
-	
+
 	mux.HandleFunc("/api/group/{group_id}/leave", groupHandler.GroupeLeave)
 
 	mux.HandleFunc("/api/join/{group_id}/", groupHandler.JoinGroup)

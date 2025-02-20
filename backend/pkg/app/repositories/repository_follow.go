@@ -138,50 +138,20 @@ func (f *FollowRepositorie) GetFollowing(userId string, offset int) (*models.Fol
 	return &response, nil
 }
 
-func (f *FollowRepositorie) DeleteFollowing(followData models.FollowRequest) (int, string) {
-	query := `DELETE FROM Follow 
-              WHERE follower_id = ? AND following_id = ?`
-	result, err := f.DB.Exec(query, followData.FollowerId, followData.FollowingId)
+func (f *FollowRepositorie) DeleteFollowing(followData models.FollowRequest) error {
+	preparedQuery, err := f.DB.Prepare("DELETE FROM Follow WHERE follower_id = ? AND following_id = ?")
 	if err != nil {
-		return 500, "error exec query: delete following"
+		return err
 	}
-
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return 500, "internal server error in deletingFollowing db"
-	}
-	if rows == 0 {
-		return 400, "user not following the other user"
-	}
-
-	return 200, "success"
+	_, err = preparedQuery.Exec(followData.FollowerId, followData.FollowingId)
+	return err
 }
 
-func (f *FollowRepositorie) DeleteFollower(followData models.FollowRequest) (int, string) {
-    query := `DELETE FROM Follow 
-              WHERE follower_id = ? AND following_id = ?`
-    result, err := f.DB.Exec(query, followData.FollowerId, followData.FollowingId)
-    if err != nil {
-        return 500, "error exec query: delete follower"
-    }
-
-    rows, err := result.RowsAffected()
-    if err != nil {
-        return 500, "internal server error in deletingFollower db"
-    }
-    if rows == 0 {
-        return 400, "user is not your follower"
-    }
-
-    return 200, "success"
-}
-
-func (f *FollowRepositorie) IsUserExists(userID string) bool {
-	var exists bool
-	query := "SELECT EXISTS(SELECT 1 FROM User WHERE user_id = ?)"
-	err := f.DB.QueryRow(query, userID).Scan(&exists)
+func (f *FollowRepositorie) DeleteFollower(followData models.FollowRequest) error {
+	preparedQuery, err := f.DB.Prepare("DELETE FROM Follow WHERE follower_id = ? AND following_id = ?")
 	if err != nil {
-		return false
+		return err
 	}
-	return exists
+	_, err = preparedQuery.Exec(followData.FollowerId, followData.FollowingId)
+	return err
 }

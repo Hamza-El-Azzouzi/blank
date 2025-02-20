@@ -37,6 +37,30 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
         }
     };
 
+    const handleDeleteFollow = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/deletefollowing`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${cookieValue}`
+                },
+                body: JSON.stringify({ following_id: userID })
+            });
+
+            if (response.ok) {
+                setFollowStatus("Follow");
+                setProfile(prev => ({
+                    ...prev,
+                    followers: prev.followers - (prev.follow_status === "Following" ? 1 : 0),
+                    follow_status: "Follow"
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to delete/cancel follow:', error);
+        }
+    };
+
     return (
         <div className="profile-header">
             <div className="avatar">
@@ -67,9 +91,9 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
             ) : (
                 <button
                     className="follow-btn"
-                    onClick={handleFollow}
+                    onClick={followStatus === "Follow" ? handleFollow : handleDeleteFollow}
                 >
-                    {followStatus}
+                    {followStatus === "Following" ? "Unfollow" : followStatus === "Pending" ? "Cancel Request" : "Follow"}
                 </button>
             )}
 

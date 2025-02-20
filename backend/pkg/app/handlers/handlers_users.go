@@ -149,36 +149,22 @@ func (u *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 
 func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 	var data map[string]string
 
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		utils.SendResponses(w, http.StatusBadRequest, "bad request", nil)
 		return
 	}
 	defer r.Body.Close()
-	sessionId, err := r.Cookie("sessionId")
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	if sessionId.Value == "" {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
 
 	users, errUsers := u.UserService.SearchUsers(data["search"])
 	if errUsers != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&users)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }

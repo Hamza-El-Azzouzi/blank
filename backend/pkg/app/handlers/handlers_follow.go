@@ -33,6 +33,10 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	followingID, err := uuid.FromString(follow.FollowingId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
 
 	if !f.UserService.UserExist(followingID) {
 		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
@@ -70,6 +74,10 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	followingID, err := uuid.FromString(follow.FollowingId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
 
 	if !f.UserService.UserExist(followingID) {
 		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
@@ -101,6 +109,10 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	followingID, err := uuid.FromString(follow.FollowingId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
 
 	if !f.UserService.UserExist(followingID) {
 		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
@@ -128,41 +140,75 @@ func (f *FollowHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	defer r.Body.Close()
-	
-	if followData.FollowingId == "" {
-		utils.SendResponses(w, http.StatusBadRequest, "Following ID is required", nil)
+
+	followingID, err := uuid.FromString(followData.FollowingId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
 		return
 	}
+
+	if !f.UserService.UserExist(followingID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
+
 	followData.FollowerId = r.Context().Value("user_id").(string)
 
-	status, message := f.FollowService.DeleteFollowing(followData)
-	utils.SendResponses(w, status, message, nil)
+	err = f.FollowService.DeleteFollowing(followData)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	followStatus := make(map[string]string)
+	followStatus["follow_status"], err = f.FollowService.GetFollowStatus(followData)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", followStatus)
 }
 
 func (f *FollowHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodDelete {
-        utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
-        return
-    }
+	if r.Method != http.MethodDelete {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
 
-    var followData models.FollowRequest
-    if err := json.NewDecoder(r.Body).Decode(&followData); err != nil {
-        utils.SendResponses(w, http.StatusBadRequest, "Invalid request body", nil)
-        return
-    }
-    defer r.Body.Close()
-    
-    if followData.FollowerId == "" {
-        utils.SendResponses(w, http.StatusBadRequest, "Follower ID is required", nil)
-        return
-    }
-    // Set the current user as the one being followed
-    followData.FollowingId = r.Context().Value("user_id").(string)
+	var followData models.FollowRequest
+	if err := json.NewDecoder(r.Body).Decode(&followData); err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid request body", nil)
+		return
+	}
+	defer r.Body.Close()
 
-    status, message := f.FollowService.DeleteFollower(followData)
-    utils.SendResponses(w, status, message, nil)
+	followingID, err := uuid.FromString(followData.FollowingId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(followingID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		return
+	}
+
+	followData.FollowingId = r.Context().Value("user_id").(string)
+
+	err = f.FollowService.DeleteFollower(followData)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	followStatus := make(map[string]string)
+	followStatus["follow_status"], err = f.FollowService.GetFollowStatus(followData)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", followStatus)
 }
-
 
 func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
