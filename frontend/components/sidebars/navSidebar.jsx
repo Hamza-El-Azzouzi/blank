@@ -1,5 +1,5 @@
 // components/sidebars/navSidebar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
 import { BiSearch } from 'react-icons/bi';
@@ -10,16 +10,13 @@ import Image from 'next/image';
 import { fetchBlob } from '@/lib/fetch_blob'; 
 
 const NavSidebar = () => {
+  const cookieValue = cookies.GetCookie("sessionId");
   const router = useRouter()
-  const [cookieValue, setCookieValue] = useState(null);
   const [profilePath, setProfilePath] = useState('#');
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    setCookieValue(cookies.GetCookie("sessionId"));
-  }, [cookieValue]);
+  const debounceTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (cookieValue) {
@@ -73,15 +70,21 @@ const NavSidebar = () => {
     }
   };
 
-  const handleSearch = async (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
+  const debouncedSearch = useCallback((query) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
 
+    debounceTimeoutRef.current = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  }, []);
+
+  const performSearch = async (query) => {
     if (query.length < 1) {
       setSearchResults([]);
       return;
     }
-
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchusers?q=${query}`, {
@@ -105,6 +108,8 @@ const NavSidebar = () => {
           return user;
         }));
         setSearchResults(users || []);
+      } else {
+        setSearchResults([]);
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -112,6 +117,25 @@ const NavSidebar = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.length < 1) {
+      setSearchResults([]);
+      return;
+    }
+    setIsLoading(true);
+    debouncedSearch(query);
   };
 
   return (
