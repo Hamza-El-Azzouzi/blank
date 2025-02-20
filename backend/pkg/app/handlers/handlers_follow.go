@@ -47,7 +47,29 @@ func (f *FollowHandler) DeleteFollowing(w http.ResponseWriter, r *http.Request) 
 }
 
 func (f *FollowHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodDelete {
+        utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+        return
+    }
+
+    var followData models.FollowRequest
+    if err := json.NewDecoder(r.Body).Decode(&followData); err != nil {
+        utils.SendResponses(w, http.StatusBadRequest, "Invalid request body", nil)
+        return
+    }
+    defer r.Body.Close()
+    
+    if followData.FollowerId == "" {
+        utils.SendResponses(w, http.StatusBadRequest, "Follower ID is required", nil)
+        return
+    }
+    // Set the current user as the one being followed
+    followData.FollowingId = r.Context().Value("user_id").(string)
+
+    status, message := f.FollowService.DeleteFollower(followData)
+    utils.SendResponses(w, status, message, nil)
 }
+
 
 func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

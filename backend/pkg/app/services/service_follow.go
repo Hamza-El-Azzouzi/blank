@@ -24,3 +24,11 @@ func (f *FollowService) DeleteFollowing(followData models.FollowRequest) (int, s
 
 	return f.FollowRepo.DeleteFollowing(followData)
 }
+
+func (f *FollowService) DeleteFollower(followData models.FollowRequest) (int, string) {
+    if !f.FollowRepo.IsUserExists(followData.FollowerId) {
+        return 404, "follower user not found"
+    }
+
+    return f.FollowRepo.DeleteFollower(followData)
+}
