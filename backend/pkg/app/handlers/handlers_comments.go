@@ -38,12 +38,12 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		postExist bool
 		err       error
 	)
-	pagination := pathParts[4]
-	if pagination == "" {
+	strPage := pathParts[4]
+	if strPage == "" {
 		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
 		return
 	}
-	page, err = strconv.Atoi(pagination)
+	page, err = strconv.Atoi(strPage)
 	if err != nil {
 		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
 		return
@@ -74,7 +74,6 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 }
 
 func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method)
 	if r.Method != http.MethodPost {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed "+r.Method, nil)
 		return

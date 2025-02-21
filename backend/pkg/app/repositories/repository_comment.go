@@ -43,7 +43,7 @@ func (c *CommentRepositorie) CommentExist(commentID string) bool {
 	return false
 }
 
-func (c *CommentRepositorie) GetCommentByPost(postID string, pagination int) ([]models.CommentDetails, error) {
+func (c *CommentRepositorie) GetCommentByPost(postID string, offset, limit int) ([]models.CommentDetails, error) {
 	querySelect := `
 		SELECT
 			c.comment_id,
@@ -67,10 +67,10 @@ func (c *CommentRepositorie) GetCommentByPost(postID string, pagination int) ([]
 			c.post_id = ?
 		ORDER BY
 			c.created_at DESC
-		LIMIT 20
+		LIMIT ?
 		OFFSET ?;`
 
-	rows, queryErr := c.DB.Query(querySelect, postID, pagination)
+	rows, queryErr := c.DB.Query(querySelect, postID, limit, offset)
 	if queryErr != nil {
 		return nil, queryErr
 	}

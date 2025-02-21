@@ -13,7 +13,9 @@ type CommentService struct {
 }
 
 func (c *CommentService) CommentsByPost(postID string, page int) ([]models.CommentDetails, error) {
-	return c.CommentRepo.GetCommentByPost(postID, page)
+	limit := 20
+	offset := page * limit
+	return c.CommentRepo.GetCommentByPost(postID, offset, limit)
 }
 
 func (c *CommentService) SaveComment(userID uuid.UUID, postID, content string) error {
