@@ -10,7 +10,7 @@ import { fetchBlob } from '@/lib/fetch_blob'
 import { BiLoaderCircle } from 'react-icons/bi'
 import Comment from './Comment'
 
-export default function Comments({ postID, onClose }) {
+export default function Comments({ postID, setCommentsCount, onClose }) {
     const [comments, setComments] = useState([])
     const [user, setUser] = useState({})
     const [toasts, setToasts] = useState([]);
@@ -102,6 +102,7 @@ export default function Comments({ postID, onClose }) {
                         newComment.comment_id = data.data;
                         setComments(data => [newComment, ...data])
                         setCommentContent("")
+                        setCommentsCount(comments.length + 1)
                     } else {
                         throw new Error(data.message)
                     }

@@ -25,9 +25,8 @@ const mockComments = [
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
+  const [commentsCount, setCommentsCount] = useState(post.comment_count || 0);
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState(mockComments);
-  const [newComment, setNewComment] = useState('');
 
   const handleLike = async () => {
     const sessionId = cookies.GetCookie("sessionId");
@@ -57,21 +56,6 @@ const Post = ({ post }) => {
     }
   };
 
-  const handleSubmitComment = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-
-    const comment = {
-      id: comments.length + 1,
-      author: "Current User",
-      avatar: AVATAR,
-      content: newComment,
-      time: "Just now"
-    };
-
-    setComments(prev => [comment, ...prev]);
-    setNewComment('');
-  };
   return (
     <div className="post">
       <div className="post-header">
@@ -103,7 +87,7 @@ const Post = ({ post }) => {
           {likesCount} likes
         </span>
         <span className="comments-count">
-          {post.comment_count} comments
+          {commentsCount} comments
         </span>
       </div>
 
@@ -118,9 +102,9 @@ const Post = ({ post }) => {
           <span>Comment</span>
         </button>
       </div>
-      
+
       {showComments &&
-        <Comments postID={post.post_id} onClose={() => setShowComments(false)} />
+        <Comments postID={post.post_id} setCommentsCount={setCommentsCount} onClose={() => setShowComments(false)} />
       }
     </div>
   );
