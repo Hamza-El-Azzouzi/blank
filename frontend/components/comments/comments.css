@@ -1,4 +1,4 @@
-.dialog-overlay {
+.comments-dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -12,7 +12,7 @@
     backdrop-filter: blur(4px);
 }
 
-.dialog-content {
+.comments-dialog-content {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 12px;

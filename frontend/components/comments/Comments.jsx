@@ -169,8 +169,8 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
     }
 
     return (
-        <div className="dialog-overlay">
-            <div className="dialog-content">
+        <div className="comments-dialog-overlay">
+            <div className="comments-dialog-content">
                 <button onClick={onClose} className='comments-close'><RiCloseLargeLine /></button>
                 <h2>Comments</h2>
                 <div className="comments" id='comments'>
