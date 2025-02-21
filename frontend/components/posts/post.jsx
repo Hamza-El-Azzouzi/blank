@@ -25,7 +25,7 @@ const mockComments = [
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
-  const [showComments, setShowComments] = useState(true);
+  const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(mockComments);
   const [newComment, setNewComment] = useState('');
 
@@ -118,34 +118,7 @@ const Post = ({ post }) => {
           <span>Comment</span>
         </button>
       </div>
-
-      {showComments && (
-        <div className="comments-section">
-          <form onSubmit={handleSubmitComment} className="comment-form">
-            <img src="/default-avatar.jpg" alt="Your avatar" className="comment-avatar" />
-            <div className="comment-input-container">
-              <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..." className="comment-input" />
-              <button type="submit" className="send-comment-button">
-                <FiSend />
-              </button>
-            </div>
-          </form>
-
-          <div className="comments-list">
-            {comments.map(comment => (
-              <div key={comment.id} className="comment">
-                <img src="/default-avatar.jpg" alt={`${comment.author}'s avatar`} className="comment-avatar" />
-                <div className="comment-content">
-                  <div className="comment-author">{comment.author}</div>
-                  <p className="comment-text">{comment.content}</p>
-                  <span className="comment-time">{comment.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      
       {showComments &&
         <Comments postID={post.post_id} onClose={() => setShowComments(false)} />
       }

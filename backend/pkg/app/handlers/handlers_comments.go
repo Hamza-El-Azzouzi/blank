@@ -60,8 +60,15 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
 	}
 
-	comments, err = c.CommentService.CommentsByPost(postID, page)
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	comments, err = c.CommentService.CommentsByPost(userID, postID, page)
+	if err != nil {
+		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
@@ -106,7 +113,47 @@ func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.CommentService.SaveComment(userID, commentData.PostID, commentData.Content)
+	insertedID, err := c.CommentService.SaveComment(userID, commentData.PostID, commentData.Content)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "success", insertedID)
+}
+
+func (c *CommentHandler) CommentLiker(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed "+r.Method, nil)
+		return
+	}
+
+	var (
+		userID    uuid.UUID
+		commentID string
+		err       error
+	)
+
+	commentID = r.PathValue("comment_id")
+	_, err = uuid.FromString(commentID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid comment ID", nil)
+		return
+	}
+
+	commentExist := c.CommentService.CommentExist(commentID)
+	if !commentExist {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid comment ID", nil)
+		return
+	}
+
+	userID, err = uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	err = c.CommentService.LikeComment(userID, commentID)
 	if err != nil {
 		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)

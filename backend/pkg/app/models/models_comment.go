@@ -19,6 +19,7 @@ type CommentDetails struct {
 	CommentID     uuid.UUID `json:"comment_id"`
 	Content       string    `json:"content"`
 	LikeCount     int       `json:"like_count"`
+	HasLiked      bool      `json:"has_liked"`
 	FormattedDate string    `json:"formatted_date"`
 	CreatedAt     time.Time `json:"created_at"`
 }

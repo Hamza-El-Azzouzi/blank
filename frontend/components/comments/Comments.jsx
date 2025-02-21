@@ -8,17 +8,19 @@ import Toast from '../toast/Toast'
 import Loading from '../loading/Loading'
 import { fetchBlob } from '@/lib/fetch_blob'
 import { BiLoaderCircle } from 'react-icons/bi'
+import Comment from './Comment'
 
 export default function Comments({ postID, onClose }) {
     const [comments, setComments] = useState([])
     const [user, setUser] = useState({})
+    const [toasts, setToasts] = useState([]);
     const [isChanged, setIsChanged] = useState(false)
     const [commentContent, setCommentContent] = useState("")
     const [page, setpage] = useState(0)
     const [noMore, setNoMore] = useState(false)
     const [cookieValue, setCookieValue] = useState(null)
     const [loading, setLoading] = useState(true)
-
+    const [loadingMore, setLoadingMore] = useState(false)
 
     useEffect(function getSessionID() {
         setCookieValue(cookies.GetCookie("sessionId"))
@@ -46,12 +48,13 @@ export default function Comments({ postID, onClose }) {
                 setUser(data)
             })
             .catch(err => {
-                console.error('Error fetching user info:', err)
+                showToast('error', 'Error fetching user info: ' + err);
             })
     }, [cookieValue])
 
     useEffect(function fetchComments() {
         if (!postID || !cookieValue || noMore) return
+        if (page > 0) setLoadingMore(true)
         handleFetchComments()
     }, [postID, page, cookieValue])
 
@@ -60,13 +63,17 @@ export default function Comments({ postID, onClose }) {
         return () => document.getElementById('comments')?.removeEventListener("scroll", handleScroll)
     }, [])
 
+    const handleChange = async (e) => {
+        if (commentContent.length >= 200) return
+        setCommentContent(e.target.value)
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!isChanged || !cookieValue) return
 
         if (commentContent.length > 200) {
-            // return <Toast message={"comment is too long"} type={'error'} />
-            alert("comment is too long")
+            showToast('warning', 'Comment size should be less than 200 characters');
             return
         }
 
@@ -92,6 +99,7 @@ export default function Comments({ postID, onClose }) {
             .then(async (data) => {
                 if (data.status) {
                     if (data.status == 200) {
+                        newComment.comment_id = data.data;
                         setComments(data => [newComment, ...data])
                         setCommentContent("")
                     } else {
@@ -100,7 +108,7 @@ export default function Comments({ postID, onClose }) {
                 }
             })
             .catch(err => {
-                console.error('Error fetching commenting:', err)
+                showToast('error', 'Error saving the comment: ' + err);
             })
     }
 
@@ -135,10 +143,20 @@ export default function Comments({ postID, onClose }) {
                 });
             }
         } catch (err) {
-            console.error('Error fetching comments:', err)
+            showToast('error', err);
         } finally {
             setLoading(false)
+            setLoadingMore(false)
         }
+    }
+
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    }
+
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     }
 
     const handleScroll = () => {
@@ -157,27 +175,36 @@ export default function Comments({ postID, onClose }) {
                 <div className="comments" id='comments'>
                     {!loading ? (
                         comments.length > 0 ?
-                            comments.map((comment, idx) => (
-                                <div key={idx} className="comment">
-                                    <img src={comment.user.avatar} alt={`${comment.user.first_name}'s avatar`} className="comment-avatar" />
-                                    <div className="comment-content">
-                                        <div className="comment-author">{comment.user.first_name} {comment.user.last_name}</div>
-                                        <p className="comment-text">{comment.content}</p>
-                                        <span className="comment-time">{comment.formatted_date}</span>
-                                    </div>
-                                </div>
+                            comments.map((comment) => (
+                                <Comment
+                                    key={comment.comment_id}
+                                    comment={comment}
+                                    cookieValue={cookieValue}
+                                />
                             ))
-                            : <p>no comments</p>
+                            : <span className='no-comments'>No comments to display!</span>
                     )
                         : <Loading />
                     }
-                    {!noMore && !loading ? <span className='comments-loading-more'><BiLoaderCircle className='loader' /></span> : ""}
+                    {!noMore && !loading && loadingMore ?
+                        <span className='comments-loading-more'><BiLoaderCircle className='loader' /></span>
+                        : ""
+                    }
                 </div>
                 <form onSubmit={handleSubmit} className="comments-form" method='POST'>
-                    <input max={200} value={commentContent} onChange={(e) => setCommentContent(e.target.value)} type="text" placeholder="Write a comment..." />
+                    <input max={200} value={commentContent} onChange={handleChange} type="text" placeholder="Write a comment..." />
                     <button type="submit">Comment</button>
                 </form>
             </div>
+
+            {toasts.map((toast) => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => removeToast(toast.id)}
+                />
+            ))}
         </div>
     )
 }

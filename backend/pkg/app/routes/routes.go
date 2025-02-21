@@ -23,16 +23,19 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
 
+	// user routes
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
 	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 
-	mux.HandleFunc("/api/posts/", postHandler.Posts)
-	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
-
+	// comments routes
 	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)
 	mux.HandleFunc("/api/comment/create", commentHandler.CommentSaver)
+	mux.HandleFunc("/api/comment/{comment_id}/like", commentHandler.CommentLiker)
+
+	mux.HandleFunc("/api/posts/", postHandler.Posts)
+	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
 
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
