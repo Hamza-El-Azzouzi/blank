@@ -98,7 +98,7 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 </button>
             ) : (
                 <button
-                    className="follow-btn"
+                    className={`follow-btn ${followStatus.toLowerCase()}`}
                     onClick={followStatus === "Follow" ? handleFollow : handleDeleteFollow}
                 >
                     {followStatus === "Following" ? "Unfollow" : followStatus === "Pending" ? "Cancel Request" : "Follow"}
