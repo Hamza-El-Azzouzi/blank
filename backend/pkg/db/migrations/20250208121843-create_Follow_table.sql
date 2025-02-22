@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Follow` (
   `follower_id` text,
   `following_id` text,

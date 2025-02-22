@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Notification` (
   `notification_id` text PRIMARY KEY,
   `user_id` text,

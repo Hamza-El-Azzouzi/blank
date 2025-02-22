@@ -7,82 +7,57 @@ import CreatePost from '@/components/groups/create/createPost';
 import CreateEvent from '@/components/groups/create/createEvent';
 import GroupHeader from '@/components/groups/groupHeader/groupHeader';
 import EventCard from '@/components/groups/cards/eventCard';
-import Post from '@/components/posts/post';
 import { GetCookie } from '@/lib/cookie';
 import './group.css';
 import RequestCard from '@/components/groups/cards/requestCard';
-
-
-const mockGroup = {
-    id: 1,
-    name: "Tech Enthusiasts",
-    description: "A community for technology lovers and innovators. Share your tech insights, discuss latest trends, and connect with fellow enthusiasts.",
-    memberCount: 1234,
-    isJoined: true,
-    admin: "Emma Watson",
-    created: "January 2024"
-};
-
-const mockEvents = [
-    {
-        id: 1,
-        title: "Tech Meetup 2024",
-        description: "Join us for our annual tech meetup!",
-        date: "2024-03-25",
-        time: "18:00",
-        attendees: 45,
-        going: true
-    },
-    {
-        id: 2,
-        title: "Web Development Workshop",
-        description: "Learn the basics of web development",
-        date: "2024-04-01",
-        time: "14:00",
-        attendees: 30,
-        going: false
-    }
-];
-
-const mockPosts = [
-    {
-        "id": "2",
-        "content": "My first post!",
-        "created_at": "2025-02-17T11:18:40Z",
-        "timestamp": "02/17/2025, 11:18 AM",
-        "likes": 0,
-        "comments": 0,
-        "privacy": "public",
-        "user": {
-            "name": "Hamza Maach",
-            "avatar": "/default-avatar.jpg"
-        }
-    },
-    {
-        "id": "1",
-        "content": "Hello World!",
-        "created_at": "2025-02-17T11:18:40Z",
-        "timestamp": "02/17/2025, 11:18 AM",
-        "likes": 0,
-        "comments": 0,
-        "privacy": "public",
-        "user": {
-            "name": "Hamza Maach",
-            "avatar": "/default-avatar.jpg"
-        }
-    }
-]
+import { fetchBlob } from '@/lib/fetch_blob';
+import Posts from '@/components/posts/posts';
 
 const GroupDetailPage = () => {
     const [activeTab, setActiveTab] = useState('posts');
     const [showCreateEvent, setShowCreateEvent] = useState(false);
-    const [events, setEvents] = useState(mockEvents);
+    const [events, setEvents] = useState([]);
     const [request, setRequest] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [page, setPage] = useState(0);
+    const [endReached, setEndReached] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const handleNewPost = (newPost) => {
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+    };
+    const handleLoadMore = () => {
+        if (hasMore && !loading) {
+            setPage(prevPage => prevPage + 20);
+        }
+    };
     const [groupData, setGroupData] = useState([]);
     const { groupID } = useParams();
     const cookieValue = GetCookie("sessionId")
-    
+
     useEffect(() => {
+        const fetchEvent = async () => {
+            try {
+                //api/group/{group_id}/event
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/event`, {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': `Bearer ${cookieValue}`
+                    },
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw error;
+                }
+                const data = await response.json();
+                console.log(data.data)
+                setEvents(data.data);
+            } catch (error) {
+                console.log(error);
+            }
+        };
         const fetchGroupData = async () => {
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}`, {
@@ -104,6 +79,7 @@ const GroupDetailPage = () => {
             }
         };
         fetchGroupData();
+        fetchEvent();
     }, [cookieValue, groupID]);
     useEffect(() => {
         const fetchRequests = async () => {
@@ -128,31 +104,127 @@ const GroupDetailPage = () => {
         };
         fetchRequests();
     }, [cookieValue, groupID]);
+    // api/group/event/
+    useEffect(() => {
 
+    }, [cookieValue, groupID]);
+    const fetchPosts = async (group_id, pageNumber) => {
+        if (endReached) return;
+
+        try {
+            setLoading(true);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${group_id}/post/${pageNumber}`, {
+                method: 'GET',
+                headers: {
+                    'content-type': 'application/json',
+                    'Authorization': `Bearer ${cookieValue}`,
+                },
+            });
+            if (!response.ok) throw new Error('Failed to fetch posts');
+            const data = await response.json();
+            if (data.data && data.data.length > 0) {
+                const newPosts = await Promise.all(data.data.map(async (post) => {
+                    post.avatar = post.avatar
+                        ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar)
+                        : '/default-avatar.jpg';
+                    if (post.image) {
+                        post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
+                    }
+                    post.author = `${post.first_name} ${post.last_name}`
+                    return post;
+                }));
+
+                if (pageNumber === 0) {
+                    setPosts(newPosts);
+                } else {
+                    setPosts(prevPosts => {
+                        const seen = new Set(prevPosts.map(p => p.post_id));
+                        const filteredNewPosts = newPosts.filter(post => !seen.has(post.post_id));
+                        return [...prevPosts, ...filteredNewPosts];
+                    });
+                }
+                setHasMore(newPosts.length === 20);
+            } else {
+                setHasMore(false);
+                setEndReached(true);
+            }
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchPosts(groupID, page)
+    }, [page])
     const handleCreateEvent = (eventData) => {
-        const newEvent = {
-            id: events.length + 1,
-            ...eventData,
-            attendees: 0,
-            going: false
-        };
-        setEvents([newEvent, ...events]);
+        eventData["group_id"] = groupID
+        // api/group/createEvent
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/createEvent`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+            body: JSON.stringify(eventData)
+        })
+            .then(response => {
+
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                const newEvent = {
+                    ...data.data,
+                    going_count: 0,
+                    is_going: false
+                };
+                setEvents([newEvent, ...events]);
+            }).catch((error) => {
+                console.log(error)
+            })
+
+
     };
 
     const handleEventResponse = (eventId, response) => {
-        setEvents(events.map(event => {
-            if (event.id === eventId) {
-                const wasGoing = event.going;
-                return {
-                    ...event,
-                    going: response === 'going',
-                    attendees: response === 'going'
-                        ? (wasGoing ? event.attendees : event.attendees + 1)
-                        : (wasGoing ? event.attendees - 1 : event.attendees)
-                };
-            }
-            return event;
-        }));
+        //api/group/{group_id}/event/response
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/event/response`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+            body: JSON.stringify({ event_id: eventId, response })
+        })
+            .then(response => {
+
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setEvents(prevEvents => 
+                    prevEvents.map(prevEvent => {
+                        if (prevEvent.event_id === eventId) {
+                            return {
+                                ...prevEvent,
+                                going_count: data.data.going_count,
+                                is_going: data.data.is_going
+                            };
+                        }
+                        return prevEvent;
+                    })
+                );
+            
+            }).catch((error) => {
+                console.log(error)
+            })
     };
     const handleRequesttResponse = (requestId, response, userId) => {
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${requestId}/response`, {
@@ -178,7 +250,7 @@ const GroupDetailPage = () => {
                 }));
 
                 // Remove the handled request from the requests list
-                setRequest(prevRequests => 
+                setRequest(prevRequests =>
                     prevRequests.filter(req => req.UserId !== userId)
                 );
             }).catch((error) => {
@@ -188,64 +260,68 @@ const GroupDetailPage = () => {
 
     return (
         <div className="group-detail-page">
-            <GroupHeader group={groupData}/>
+            <GroupHeader group={groupData} />
             {(groupData.IsJoined || groupData.IsOwner) && (
-                   <div className="group-content">
-                   <div className="group-tabs">
-                       <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
-                           Posts
-                       </button>
-                       <button className={`tab-btn ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
-                           Events
-                       </button>
-                       {groupData.IsOwner && (
-                           <button className={`tab-btn ${activeTab === 'request' ? 'active' : ''}`} onClick={() => setActiveTab('request')}>
-                               Request
-                           </button>
-                       )}
-   
-                   </div>
-   
-                   {activeTab === 'posts' && (
-                       <div className="posts-section">
-                           <CreatePost />
-                           {mockPosts.map(post => (
-                               <Post key={post.id} post={post} />
-                           ))}
-                       </div>
-                   )}
-   
-                   {activeTab === 'events' && (
-                       <div>
-                           <div className="events-header">
-                               <h2>Upcoming Events</h2>
-                               <button className="create-event-btn" onClick={() => setShowCreateEvent(true)} >
-                                   <FiPlus /> Create Event
-                               </button>
-                           </div>
-                           <div className="events-list">
-                               {events.map(event => (
-                                   <EventCard key={event.id} event={event} onResponseChange={handleEventResponse} />
-                               ))}
-                           </div>
-                       </div>
-                   )}
-                   {activeTab === 'request' && groupData.IsOwner && (
-                       <div>
-                           <div className="events-header">
-                               <h2>Request</h2>
-                           </div>
-                           <div className="events-list">
-                               {request && request.map(re => (
-   
-                                   <RequestCard key={re.UserId} request={re} onResponseChange={handleRequesttResponse} />
-                               ))}
-                           </div>
-                       </div>
-                   )}
-               </div>
+                <div className="group-content">
+                    <div className="group-tabs">
+                        <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+                            Posts
+                        </button>
+                        <button className={`tab-btn ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
+                            Events
+                        </button>
+                        {groupData.IsOwner && (
+                            <button className={`tab-btn ${activeTab === 'request' ? 'active' : ''}`} onClick={() => setActiveTab('request')}>
+                                Request
+                            </button>
+                        )}
+
+                    </div>
+
+                    {activeTab === 'posts' && (
+                        <div className="posts-section">
+                            <CreatePost onPostCreated={handleNewPost} groupID={groupID} />
+                            <Posts
+                                posts={posts}
+                                loading={loading}
+                                endReached={endReached}
+                                onLoadMore={handleLoadMore}
+                            />
+                        </div>
+                    )}
+
+                    {activeTab === 'events' && (
+                        <div>
+                            <div className="events-header">
+                                <h2>Upcoming Events</h2>
+                                <button className="create-event-btn" onClick={() => setShowCreateEvent(true)} >
+                                    <FiPlus /> Create Event
+                                </button>
+                            </div>
+                            <div className="events-list">
+                                {events && events.length > 0 && events.map(event => (
+                                    // console.log(event)
+                                    <EventCard key={event.event_id} event={event} onResponseChange={handleEventResponse} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'request' && groupData.IsOwner && (
+                        <div>
+                            <div className="events-header">
+                                <h2>Request</h2>
+                            </div>
+                            <div className="events-list">
+                                {request && request.map(re => (
+
+                                    <RequestCard key={re.UserId} request={re} onResponseChange={handleRequesttResponse} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             )}
-         
+
 
             {showCreateEvent && (
                 <CreateEvent onClose={() => setShowCreateEvent(false)} onSubmit={handleCreateEvent} />

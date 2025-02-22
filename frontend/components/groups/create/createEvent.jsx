@@ -10,7 +10,6 @@ const CreateEvent = ({ onClose, onSubmit }) => {
         description: '',
         date: '',
         time: '',
-        privacy: 'Public'
     });
 
     const handleSubmit = (e) => {

@@ -39,7 +39,7 @@ const Post = ({ post }) => {
         },
         body: JSON.stringify({
           targetId: post.post_id,
-          targetType: "post"
+          targetType: "Post"
         })
       });
 

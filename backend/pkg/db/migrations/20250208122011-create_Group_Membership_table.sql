@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Group_Membership` (
   `group_id` text,
   `user_id` text,

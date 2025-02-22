@@ -41,7 +41,7 @@ func (rl *RateLimiter) Allow() bool {
 }
 
 func RateLimitMiddleware(next http.Handler) http.Handler {
-	limiter := NewRateLimiter(100, time.Second)
+	limiter := NewRateLimiter(500, time.Second)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if limiter.Allow() {

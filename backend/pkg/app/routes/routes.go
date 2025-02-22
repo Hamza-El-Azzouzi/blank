@@ -38,14 +38,21 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)
 	mux.HandleFunc("/api/groups", groupHandler.Groups)
 	mux.HandleFunc("/api/groups/search", groupHandler.GroupSearch)
-	mux.HandleFunc("/api/group/{group_id}", groupHandler.GroupDerails)
+	mux.HandleFunc("/api/group/{group_id}", groupHandler.GroupDetails)
+	mux.HandleFunc("/api/group/create/post", groupHandler.GroupCreatePost)
+	mux.HandleFunc("/api/group/{group_id}/post/", groupHandler.GroupPosts)
 	mux.HandleFunc("/api/group/{group_id}/delete", groupHandler.GroupDelete)
 	mux.HandleFunc("/api/group/{group_id}/request", groupHandler.GroupRequest)
 	mux.HandleFunc("/api/group/{group_id}/response", groupHandler.GroupResponse)
-	
 	mux.HandleFunc("/api/group/{group_id}/leave", groupHandler.GroupeLeave)
-
 	mux.HandleFunc("/api/join/{group_id}/", groupHandler.JoinGroup)
+
+	mux.HandleFunc("/api/group/createEvent", groupHandler.CreateEvent)
+	mux.HandleFunc("/api/group/{group_id}/event", groupHandler.Event)
+	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
+
+
+
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")

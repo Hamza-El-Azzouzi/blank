@@ -38,16 +38,16 @@ func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]mo
    			WHEN comment_counts.comment_count > 100 THEN '+100'
     		ELSE IFNULL(CAST(comment_counts.comment_count AS TEXT), '0')
 		END AS comment_count,
-		(SELECT COUNT(*) FROM Like WHERE Like.post_id = Post.post_id) AS like_count,
-		EXISTS(SELECT 1 FROM Like WHERE Like.post_id = Post.post_id AND Like.user_id = ?) AS has_liked,
+		(SELECT COUNT(*) FROM Like WHERE Like.likeable_id = Post.post_id AND Like.likeable_type = "Post")  AS like_count,
+		EXISTS(SELECT 1 FROM Like WHERE Like.likeable_id = Post.post_id AND Like.user_id = ? AND Like.likeable_type = "Post") AS has_liked,
 		COUNT(*) OVER() AS total_count
 		FROM 
    			Post
 		JOIN 
 			User ON Post.user_id = User.user_id
 		LEFT JOIN 
-			(SELECT post_id, COUNT(*) AS comment_count FROM Comment GROUP BY post_id) AS comment_counts
-			ON Post.post_id = comment_counts.post_id
+			(SELECT commentable_id, COUNT(*) AS comment_count FROM Comment WHERE Comment.commentable_type = "Post" GROUP BY commentable_id) AS comment_counts
+			ON Post.post_id = comment_counts.commentable_id
 		GROUP BY 
 			Post.post_id
 		ORDER BY 
@@ -55,6 +55,7 @@ func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]mo
 		LIMIT 20 OFFSET ?;`
 	rows, err := r.DB.Query(query, currentUserID, pagination)
 	if err != nil {
+		fmt.Println(err)
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
 	defer rows.Close()

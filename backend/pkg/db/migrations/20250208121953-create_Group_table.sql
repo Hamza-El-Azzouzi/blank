@@ -1,4 +1,5 @@
 -- +migrate Up
+
 CREATE TABLE
   `Group` (
     `group_id` text PRIMARY KEY,
