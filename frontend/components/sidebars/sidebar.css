@@ -34,7 +34,7 @@
 
 .search-results {
     position: absolute;
-    top: 45px; 
+    top: 50px; 
     left: 0;
     right: 0;
     background-color: var(--bg-secondary);
