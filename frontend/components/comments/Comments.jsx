@@ -39,6 +39,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
         })
             .then(res => res.json())
             .then(async (data) => {
+                data = data.data
                 if (data.status && data.status != 200) {
                     throw new Error(data.message)
                 }
@@ -120,6 +121,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                 headers: { 'Authorization': `Bearer ${cookieValue}` }
             })
             let data = await res.json()
+            data = data.data
 
             if (Array.isArray(data) && data.length > 0) {
                 if (data.length < 20) {

@@ -72,12 +72,8 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(comments)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	
+	utils.SendResponses(w, http.StatusOK, "", comments)
 }
 
 func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {

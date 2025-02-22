@@ -60,11 +60,7 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 
 	user.IsOwner = userID == AuthUserID
 
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(user)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "", user)
 }
 
 func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -168,9 +164,5 @@ func (p *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(user)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "", user)	
 }
