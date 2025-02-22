@@ -1,0 +1,99 @@
+.follow-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.follow-dialog {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    padding: 20px;
+}
+
+.follow-dialog h3 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.follow-list {
+    overflow-y: auto;
+    max-height: calc(80vh - 140px);
+}
+
+.follow-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.follow-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.follow-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.follow-name {
+    color: var(--text-primary);
+}
+
+.follow-remove-btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--error);
+    border: 1px solid var(--error);
+    cursor: pointer;
+}
+
+.follow-remove-btn:hover {
+    background-color: var(--error);
+    color: white;
+}
+
+.follow-close-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.follow-close-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+.follow-loading {
+    text-align: center;
+    padding: 10px;
+    color: var(--text-secondary);
+}
+
+.follow-observer {
+    height: 20px;
+}

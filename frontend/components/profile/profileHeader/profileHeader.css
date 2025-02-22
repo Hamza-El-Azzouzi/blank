@@ -12,7 +12,6 @@
     position: relative;
 }
 
-
 .profile-info h1 {
     color: var(--text-primary);
     font-size: 24px;
@@ -37,6 +36,12 @@
     gap: 6px;
     color: var(--text-tertiary);
     font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.profile-stat:hover {
+    color: var(--text-primary);
 }
 
 .join-profile-btn,

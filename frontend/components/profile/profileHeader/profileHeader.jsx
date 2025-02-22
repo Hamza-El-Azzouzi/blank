@@ -3,10 +3,18 @@ import React, { useState, useEffect } from 'react';
 import './profileHeader.css';
 import UpdateInfoDialog from '../UpdateInfoDialog';
 import { FaUserEdit } from "react-icons/fa";
+import FollowDialog from '../followDialog/followDialog';
 
 const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
     const [updateInfo, setUpdateInfo] = useState(false);
     const [followStatus, setFollowStatus] = useState("");
+    const [showFollowDialog, setShowFollowDialog] = useState(false);
+    const [dialogType, setDialogType] = useState(null);
+
+    const handleOpenDialog = (type) => {
+        setDialogType(type);
+        setShowFollowDialog(true);
+    };
 
     useEffect(() => {
         setFollowStatus(profile.follow_status);
@@ -72,10 +80,10 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
             <div className="profile-info">
                 <h1>{profile.first_name} {profile.last_name}</h1>
                 <div className="profile-meta">
-                    <span className="profile-stat">
+                    <span className="profile-stat" onClick={() => handleOpenDialog('followers')}>
                         {profile.followers} Followers
                     </span>
-                    <span className="profile-stat">
+                    <span className="profile-stat" onClick={() => handleOpenDialog('Following')}>
                         {profile.following} Following
                     </span>
 
@@ -95,6 +103,15 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 >
                     {followStatus === "Following" ? "Unfollow" : followStatus === "Pending" ? "Cancel Request" : "Follow"}
                 </button>
+            )}
+
+            {showFollowDialog && profile.is_owner && (
+                <FollowDialog
+                    type={dialogType}
+                    onClose={() => setShowFollowDialog(false)}
+                    cookieValue={cookieValue}
+                    setProfile={setProfile}
+                />
             )}
 
             {updateInfo && (
