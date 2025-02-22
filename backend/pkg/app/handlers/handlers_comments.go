@@ -18,7 +18,7 @@ import (
 type CommentHandler struct {
 	CommentService *services.CommentService
 	PostService    *services.PostService
-	UserHandler    *services.UserService
+	UserService    *services.UserService
 }
 
 func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) {

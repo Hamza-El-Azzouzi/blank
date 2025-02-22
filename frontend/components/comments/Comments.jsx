@@ -64,7 +64,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
     }, [])
 
     const handleChange = async (e) => {
-        if (commentContent.length >= 200) return
+        if (commentContent.length >= 200 && e.nativeEvent.inputType !== "deleteContentBackward") return
         setCommentContent(e.target.value)
     }
 

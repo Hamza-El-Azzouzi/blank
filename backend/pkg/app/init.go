@@ -99,7 +99,7 @@ func InitHandlers(authService *services.AuthService,
 	commentHandler := &handlers.CommentHandler{
 		CommentService: commentService,
 		PostService:    postService,
-		UserHandler:    userService,
+		UserService:    userService,
 	}
 	reactHandler := &handlers.ReactHandler{
 		ReactService:  reactService,
