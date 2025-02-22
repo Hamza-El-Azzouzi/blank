@@ -1,6 +1,7 @@
 // components/posts/post.jsx
 "use client"
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
 import * as cookies from '@/lib/cookie';
 import './posts.css';
@@ -74,9 +75,21 @@ const Post = ({ post }) => {
   return (
     <div className="post">
       <div className="post-header">
-        <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
+        <Link
+          key={post.user_id}
+          href={`/profile/${post.user_id}`}
+        >
+          <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
+        </Link>
+        <a href={`/profile/${post.user_id}`}>
+        </a>
         <div className="post-meta">
-          <span className="post-author">{post.author}</span>
+          <Link
+            key={post.user_id}
+            href={`/profile/${post.user_id}`}
+          >
+            <span className="post-author">{post.author}</span>
+          </Link>
           <span className="post-time">{post.formatted_date}</span>
         </div>
       </div>

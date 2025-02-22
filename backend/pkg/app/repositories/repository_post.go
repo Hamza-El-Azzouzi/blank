@@ -108,7 +108,8 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 				WHERE
 					c.post_id = p.post_id
 			) AS comments_count,
-			EXISTS(SELECT 1 FROM Like WHERE Like.post_id = p.post_id AND Like.user_id = ?) AS has_liked
+			EXISTS(SELECT 1 FROM Like WHERE Like.post_id = p.post_id AND Like.user_id = ?) AS has_liked,
+			p.user_id
 		FROM
 			Post p
 			JOIN User u ON p.user_id = u.user_id
@@ -138,6 +139,7 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 			&post.LikeCount,
 			&post.CommentCount,
 			&post.HasLiked,
+			&post.UserID,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
