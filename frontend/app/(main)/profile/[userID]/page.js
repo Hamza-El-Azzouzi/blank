@@ -24,7 +24,7 @@ export default function ProfilePage({ params }) {
     about: "",
     is_owner: false,
     nickname: "",
-    follow_status: ""
+    follow_status: "",
   });
 
   const [posts, setPosts] = useState([]);

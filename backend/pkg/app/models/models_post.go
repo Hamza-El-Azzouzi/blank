@@ -42,6 +42,7 @@ type PostByUser struct {
 	CommentCount  int       `json:"comment_count"`
 	Privacy       string    `json:"privacy"`
 	HasLiked      bool      `json:"has_liked"`
+	UserID        string    `json:"user_id"`
 }
 
 type CommentDetails struct {
