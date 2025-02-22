@@ -35,11 +35,6 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                             : '/default-avatar.jpg'
                     }))
                 );
-                setProfile(prev => ({
-                    ...prev,
-                    followers: prev.followers - (prev.follow_status === "Following" ? 1 : 0),
-                    follow_status: "Follow"
-                }));
 
                 setUsers(prev => [...prev, ...newUsers]);
                 setHasMore(newUsers.length === 20);
@@ -90,7 +85,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                     fetchUsers();
                 }
             },
-            { threshold: 1.0 }
+            { threshold: 0.1 }
         );
 
         if (observerRef.current) {
@@ -118,9 +113,14 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                         </div>
                     ))}
 
-                    {loading && <div className="follow-loading"></div>}
-                    <div ref={observerRef} className="follow-observer" style={{ height: '20px' }}></div>
+                    {loading && <div className="follow-loading">loading...</div>}
+                    <div ref={observerRef} className="follow-observer"></div>
                 </div>
+                {!hasMore && users.length === 0 && (
+                    <div className="follow-empty-message">
+                        No {type} found
+                    </div>
+                )}
 
                 <button className="follow-close-btn" onClick={onClose}>Close</button>
             </div>

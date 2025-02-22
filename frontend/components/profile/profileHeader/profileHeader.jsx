@@ -83,7 +83,7 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                     <span className="profile-stat" onClick={() => handleOpenDialog('followers')}>
                         {profile.followers} Followers
                     </span>
-                    <span className="profile-stat" onClick={() => handleOpenDialog('Following')}>
+                    <span className="profile-stat" onClick={() => handleOpenDialog('following')}>
                         {profile.following} Following
                     </span>
 
