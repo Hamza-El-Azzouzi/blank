@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"html"
 	"net/http"
 	"strconv"
@@ -81,9 +80,8 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
 		return
 	}
-	
+
 	status, message := h.AuthService.Register(user)
-	fmt.Println(status, message)
 	utils.SendResponses(w, status, message, nil)
 }
 
@@ -122,13 +120,12 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
-
 	authHeader := r.Header.Get("Authorization")
 	tokenParts := strings.Split(authHeader, " ")
 	sessionID := tokenParts[1]
 	err := h.SessionService.DeleteSession(sessionID)
 	if err != nil {
-		fmt.Println(err)
+
 		utils.SendResponses(w, http.StatusInternalServerError, "internal server error", nil)
 		return
 	}
@@ -149,16 +146,15 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var session SessionData
-
 	if err := json.NewDecoder(r.Body).Decode(&session); err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
 		return
 	}
-	_, exist := h.SessionService.CheckSession(session.Value)
+	userID, exist := h.SessionService.CheckSession(session.Value)
 	if !exist {
 		utils.SendResponses(w, http.StatusForbidden, "User Not Found", nil)
 	} else {
-		utils.SendResponses(w, http.StatusOK, "success", nil)
+		utils.SendResponses(w, http.StatusOK, "success", userID)
 	}
 }
 

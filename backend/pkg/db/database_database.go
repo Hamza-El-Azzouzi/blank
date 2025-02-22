@@ -17,7 +17,15 @@ func InitDB(dataSourceName string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		return nil, err
+	}
+	var foreignKeysEnabled int
+	err = db.QueryRow("PRAGMA foreign_keys;").Scan(&foreignKeysEnabled)
+	if err != nil {
+		panic(err)
+	}
 	migrations := &migrate.FileMigrationSource{
 		Dir: "./pkg/db/migrations",
 	}

@@ -7,7 +7,7 @@ CREATE TABLE `Notification` (
   `related_id` text,
   `unread` boolean,
   `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-  FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
+  FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_notification_user_id ON `Notification` (`user_id`);

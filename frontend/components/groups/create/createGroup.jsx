@@ -8,8 +8,6 @@ const CreateGroup = ({ onClose, onSubmit }) => {
     const [groupData, setGroupData] = useState({
         name: '',
         description: '',
-        privacy: 'Public',
-        image: null
     });
 
     const handleChange = (e) => {
@@ -23,7 +21,7 @@ const CreateGroup = ({ onClose, onSubmit }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(groupData);
-        onClose();
+        // onClose();
     };
 
     return (

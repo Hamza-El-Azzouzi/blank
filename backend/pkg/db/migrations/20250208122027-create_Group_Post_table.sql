@@ -7,8 +7,8 @@ CREATE TABLE `Group_Post` (
   `content` text,
   `image` varchar(255),
   `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-  FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`),
-  FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
+  FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_group_post_group_id ON `Group_Post` (`group_id`);

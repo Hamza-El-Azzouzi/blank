@@ -6,8 +6,8 @@ type FollowRequest struct {
 }
 
 type FollowListResponse struct {
-	FollowList  []FollowList `json:"follow_list"`
-	TotalCount int            `json:"total_count"`
+	FollowList []FollowList `json:"follow_list"`
+	TotalCount int          `json:"total_count"`
 }
 
 type FollowList struct {

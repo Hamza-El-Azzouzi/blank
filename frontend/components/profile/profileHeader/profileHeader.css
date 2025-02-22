@@ -129,6 +129,24 @@
     background-color: var(--primary-hover);
 }
 
+.follow-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background-color: #0095f6;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.follow-btn:disabled {
+    background-color: #ccc;
+    cursor: default;
+}
+
+.follow-btn:hover:not(:disabled) {
+    background-color: #0074cc;
+}
 
 @media (max-width: 640px) {
     .profile-header {

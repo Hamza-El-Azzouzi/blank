@@ -126,9 +126,9 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 	return allUser, nil
 }
 
-func (r *UserRepository) SearchUsers(searchQuery string) ([]models.User, error) {
-	users := []models.User{}
-	query := "SELECT id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
+func (r *UserRepository) SearchUsers(searchQuery string) ([]models.UserInfo, error) {
+	users := []models.UserInfo{}
+	query := "SELECT user_id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
 
 	rows, err := r.DB.Query(query, "%"+searchQuery+"%", "%"+searchQuery+"%")
 	if err != nil {
@@ -138,8 +138,8 @@ func (r *UserRepository) SearchUsers(searchQuery string) ([]models.User, error) 
 		return nil, err
 	}
 	for rows.Next() {
-		user := models.User{}
-		err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
+		user := models.UserInfo{}
+		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar)
 		if err != nil {
 			return nil, err
 		}
@@ -161,9 +161,9 @@ func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error
 		COALESCE(u.avatar, ""),
 		u.is_public,
 		(SELECT COUNT(*) FROM Follow WHERE follower_id = u.user_id AND status = 'accepted') AS following_count,
-		(SELECT COUNT(*) FROM Follow WHERE followed_id = u.user_id AND status = 'accepted') AS followers_count
+		(SELECT COUNT(*) FROM Follow WHERE following_id = u.user_id AND status = 'accepted') AS followers_count
 	FROM User u
-	LEFT JOIN Follow f ON u.user_id = f.follower_id OR u.user_id = f.followed_id
+	LEFT JOIN Follow f ON u.user_id = f.follower_id OR u.user_id = f.following_id
 	WHERE u.user_id = ?;
 	`
 
@@ -251,4 +251,26 @@ func (r *UserRepository) SaveAvatar(userID uuid.UUID, filename string) error {
 	}
 
 	return nil
+}
+
+func (u *UserRepository) UserExist(userID uuid.UUID) bool {
+	var num int
+	query := `SELECT COUNT(*) FROM User WHERE user_id = ?`
+	row := u.DB.QueryRow(query, userID)
+	err := row.Scan(&num)
+	if err != nil {
+		return false
+	}
+	if num == 1 {
+		return true
+	}
+	return false
+}
+
+func (u *UserRepository) IsProfilePublic(userID string) bool {
+	isPublic := false
+	query := `SELECT is_public FROM User WHERE user_id = ?`
+	row := u.DB.QueryRow(query, userID)
+	row.Scan(&isPublic)
+	return isPublic
 }

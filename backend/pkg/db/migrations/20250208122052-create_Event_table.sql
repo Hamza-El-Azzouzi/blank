@@ -8,8 +8,8 @@ CREATE TABLE `Event` (
   `description` text,
   `event_datetime` timestamp,
   `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-  FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`),
-  FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`)
+  FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`creator_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE INDEX idx_event_group_id ON `Event` (`group_id`);
 CREATE INDEX idx_event_creator_id ON `Event` (`creator_id`);

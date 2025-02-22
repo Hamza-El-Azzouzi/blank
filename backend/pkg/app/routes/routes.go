@@ -15,6 +15,7 @@ func SetupRoutes(mux *http.ServeMux,
 	authMiddleware *middleware.AuthMiddleware,
 	messageHnadler *handlers.MessageHandler,
 	userHandler *handlers.UserHandler,
+	groupHandler *handlers.GroupHandler,
 	followHandler *handlers.FollowHandler,
 ) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
@@ -49,6 +50,18 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/deletefollower", followHandler.DeleteFollower)
 	mux.HandleFunc("/api/followerlist", followHandler.FollowerList)
 	mux.HandleFunc("/api/followinglist", followHandler.FollowingList)
+
+	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)
+	mux.HandleFunc("/api/groups", groupHandler.Groups)
+	mux.HandleFunc("/api/groups/search", groupHandler.GroupSearch)
+	mux.HandleFunc("/api/group/{group_id}", groupHandler.GroupDerails)
+	mux.HandleFunc("/api/group/{group_id}/delete", groupHandler.GroupDelete)
+	mux.HandleFunc("/api/group/{group_id}/request", groupHandler.GroupRequest)
+	mux.HandleFunc("/api/group/{group_id}/response", groupHandler.GroupResponse)
+
+	mux.HandleFunc("/api/group/{group_id}/leave", groupHandler.GroupeLeave)
+
+	mux.HandleFunc("/api/join/{group_id}/", groupHandler.JoinGroup)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		utils.OpenHtml("index.html", w, "")

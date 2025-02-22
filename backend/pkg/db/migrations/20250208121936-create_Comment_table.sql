@@ -7,9 +7,9 @@ CREATE TABLE `Comment` (
   `user_id` int,
   `content` text,
   `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-  FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`),
-  FOREIGN KEY (`group_post_id`) REFERENCES `Group_Post` (`group_post_id`),
-  FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`)
+  FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`group_post_id`) REFERENCES `Group_Post` (`group_post_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_comment_post_id ON `Comment` (`post_id`);

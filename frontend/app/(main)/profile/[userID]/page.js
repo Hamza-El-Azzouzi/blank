@@ -7,6 +7,7 @@ import ProfileAbout from '@/components/profile/profileAbout/profileAbout';
 import Posts from '@/components/posts/posts';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
+import UserNotFound from '@/components/profile/NotFound';
 
 export default function ProfilePage({ params }) {
 
@@ -22,7 +23,8 @@ export default function ProfilePage({ params }) {
     followers: 0,
     about: "",
     is_owner: false,
-    nickname: ""
+    nickname: "",
+    follow_status: ""
   });
 
   const [posts, setPosts] = useState([]);
@@ -31,6 +33,7 @@ export default function ProfilePage({ params }) {
   const [hasMore, setHasMore] = useState(true);
   const [endReached, setEndReached] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     setCookieValue(cookies.GetCookie("sessionId"));
@@ -53,6 +56,10 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async (data) => {
+        if (data.status == 400 || data.status == 404) {
+          setNotFound(true);
+          return;
+        }
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
@@ -93,7 +100,7 @@ export default function ProfilePage({ params }) {
               avatar: user.avatar
             };
           }));
-          
+
           if (postsPage === 0) {
             setPosts(updatedPosts);
           } else {
@@ -125,30 +132,36 @@ export default function ProfilePage({ params }) {
 
   return (
     <div className="container">
-      <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} />
-
-      <div className="profile-tabs">
-        <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
-          Posts
-        </button>
-        <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
-          About
-        </button>
-      </div>
-      {activeTab === 'about' && 
-        <ProfileAbout profile={profile} />
-      }
-
-      {activeTab === 'posts' && profile.first_name &&
+      {!notFound ?
         <>
-          <h3>{profile.first_name}'s posts</h3>
-          <Posts 
-            posts={posts} 
-            loading={loading} 
-            endReached={endReached} 
-            onLoadMore={handleLoadMore} 
-          />
+          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID}/>
+
+          <div className="profile-tabs">
+            <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+              Posts
+            </button>
+            <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+              About
+            </button>
+          </div>
+          {activeTab === 'about' &&
+            <ProfileAbout profile={profile} />
+          }
+
+          {activeTab === 'posts' && profile.first_name &&
+            <>
+              <h3>{profile.first_name}&lsquo;s posts</h3>
+              <Posts
+                posts={posts}
+                loading={loading}
+                endReached={endReached}
+                onLoadMore={handleLoadMore}
+              />
+            </>
+          }
         </>
+
+        : <UserNotFound />
       }
     </div>
   );

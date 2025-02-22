@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
@@ -14,11 +13,8 @@ import (
 )
 
 type UserHandler struct {
-	AuthService   *services.AuthService
-	AuthMidlaware *middleware.AuthMiddleware
-	PostService   *services.PostService
 	UserService   *services.UserService
-	AuthHandler   *AuthHandler
+	FollowService *services.FollowService
 }
 
 func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +40,12 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	exist := u.UserService.UserExist(userID)
+	if !exist {
+		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
+		return
+	}
+
 	user, err := u.UserService.GetUserInfo(userID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
@@ -51,6 +53,15 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.IsOwner = userID == AuthUserID
+
+	if !user.IsOwner {
+		follow := models.FollowRequest{FollowerId: AuthUserID.String(), FollowingId: userID.String()}
+		user.FollowStatus, err = u.FollowService.GetFollowStatus(follow)
+		if err != nil {
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(user)
@@ -137,37 +148,16 @@ func (u *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
-	var data map[string]string
+	query := r.URL.Query().Get("q")
 
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-	sessionId, err := r.Cookie("sessionId")
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	if sessionId.Value == "" {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	users, errUsers := u.UserService.SearchUsers(data["search"])
+	users, errUsers := u.UserService.SearchUsers(query)
 	if errUsers != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&users)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }

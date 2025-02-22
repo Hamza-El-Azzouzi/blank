@@ -15,6 +15,7 @@ type UserService struct {
 	UserRepo *repositories.UserRepository
 }
 
+
 func (u *UserService) GetUserInfo(userID uuid.UUID) (*models.UserInfo, error) {
 	user, err := u.UserRepo.GetUserInfo(userID)
 	if err != nil {
@@ -22,6 +23,7 @@ func (u *UserService) GetUserInfo(userID uuid.UUID) (*models.UserInfo, error) {
 	}
 	return user, nil
 }
+
 
 func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo) error {
 	err := u.UserRepo.UpdateUserInfo(userID, userInfo)
@@ -34,6 +36,7 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 			return fmt.Errorf("invalid image")
 		}
 		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
+		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
 		if err != nil {
 			return err
 		}
@@ -42,10 +45,14 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 	return nil
 }
 
-func (u *UserService) SearchUsers(query string) ([]models.User, error) {
+func (u *UserService) SearchUsers(query string) ([]models.UserInfo, error) {
 	allUser, errUser := u.UserRepo.SearchUsers(query)
 	if errUser != nil {
 		return nil, errUser
 	}
 	return allUser, nil
+}
+
+func (u *UserService) UserExist(userID uuid.UUID) bool {
+	return u.UserRepo.UserExist(userID)
 }
