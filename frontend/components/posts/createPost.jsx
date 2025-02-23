@@ -1,4 +1,3 @@
-// components/posts/createPost.jsx
 "use client"
 import React, { useState, useEffect } from 'react';
 import { FiImage, FiSearch } from 'react-icons/fi';
@@ -14,7 +13,7 @@ const allFollowers = Array.from({ length: 100 }, (_, i) => ({
     avatar: `https://source.unsplash.com/random/40x40?portrait=${i + 1}`
 }));
 
-const CreatePost = ({ onPostCreated }) => {  // Add this prop
+const CreatePost = ({ onPostCreated }) => {
     const [cookieValue, setCookieValue] = useState(null);
     useEffect(() => {
         setCookieValue(cookies.GetCookie("sessionId"));
@@ -115,13 +114,13 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
             const newPost = {
                 post_id: post.post_id,
                 author: post.author,
-                avatar: post.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar): '/default-avatar.jpg',
+                avatar: post.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar) : '/default-avatar.jpg',
                 content: post.content,
-                image: post.image ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image): null,
+                image: post.image ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image) : null,
                 formatted_date: post.formatted_date,
                 like_count: post.like_count,
                 comment_count: post.comment_count,
-                isLiked:post.HasLiked,
+                isLiked: post.HasLiked,
             };
 
             if (onPostCreated) onPostCreated(newPost);

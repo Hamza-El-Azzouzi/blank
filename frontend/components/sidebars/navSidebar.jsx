@@ -1,4 +1,3 @@
-// components/sidebars/navSidebar.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
@@ -7,7 +6,7 @@ import './sidebar.css';
 import * as cookies from '@/lib/cookie';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { fetchBlob } from '@/lib/fetch_blob'; 
+import { fetchBlob } from '@/lib/fetch_blob';
 
 const NavSidebar = () => {
   const cookieValue = cookies.GetCookie("sessionId");
@@ -99,7 +98,7 @@ const NavSidebar = () => {
         throw new Error('Search failed');
       }
 
-      const data = await response.json(); 
+      const data = await response.json();
       if (data.data && data.data.length > 0) {
         const users = await Promise.all(data.data.map(async (user) => {
           user.avatar = user.avatar
@@ -199,12 +198,6 @@ const NavSidebar = () => {
             <Link href="/notifications" className="nav-link">
               <FiBell className="nav-icon" />
               <span>Notifications</span>
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/messages" className="nav-link">
-              <FiMessageSquare className="nav-icon" />
-              <span>Messages</span>
             </Link>
           </li>
           <li className="nav-item">

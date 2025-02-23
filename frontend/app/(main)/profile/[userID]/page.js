@@ -10,7 +10,6 @@ import { fetchBlob } from '@/lib/fetch_blob';
 import UserNotFound from '@/components/profile/NotFound';
 
 export default function ProfilePage({ params }) {
-
   const [cookieValue, setCookieValue] = useState(null);
   const [userID, setUserID] = useState();
   const [profile, setProfile] = useState({
@@ -132,10 +131,10 @@ export default function ProfilePage({ params }) {
   };
 
   return (
-    <div className="container">
+    <div className="profile-container">
       {!notFound ?
         <>
-          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID}/>
+          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />
 
           <div className="profile-tabs">
             <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>

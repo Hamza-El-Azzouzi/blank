@@ -1,4 +1,3 @@
-// app/(main)/page.js
 'use client'
 import CreatePost from '@/components/posts/createPost';
 import Posts from '@/components/posts/posts';
@@ -15,7 +14,7 @@ export default function Home() {
 
   const fetchPosts = async (pageNumber) => {
     if (endReached) return;
-    
+
     const sessionId = cookies.GetCookie("sessionId");
     try {
       setLoading(true);
@@ -37,7 +36,7 @@ export default function Home() {
           }
           return post;
         }));
-        
+
         if (pageNumber === 0) {
           setPosts(newPosts);
         } else {
@@ -76,11 +75,11 @@ export default function Home() {
   return (
     <div className="feed-container">
       <CreatePost onPostCreated={handleNewPost} />
-      <Posts 
-        posts={posts} 
-        loading={loading} 
-        endReached={endReached} 
-        onLoadMore={handleLoadMore} 
+      <Posts
+        posts={posts}
+        loading={loading}
+        endReached={endReached}
+        onLoadMore={handleLoadMore}
       />
     </div>
   );

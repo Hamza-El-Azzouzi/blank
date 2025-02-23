@@ -1,8 +1,7 @@
-/* components/sidebars/sidebar.css */
 .search-container {
     margin-bottom: 30px;
-    position: relative; /* Add this */
-    z-index: 1000; /* Add this */
+    position: relative;
+    z-index: 1000;
 }
 
 .search-input-wrapper {
@@ -34,7 +33,7 @@
 
 .search-results {
     position: absolute;
-    top: 50px; 
+    top: 50px;
     left: 0;
     right: 0;
     background-color: var(--bg-secondary);
@@ -120,7 +119,6 @@
     color: var(--text-secondary);
     margin-bottom: 10px;
     padding-bottom: 10px;
-    /* border-bottom: 1px solid var(--border); */
 }
 
 .contacts-list {
@@ -132,7 +130,7 @@
 }
 
 .contact-item {
-    margin-left: 10px;  
+    margin-left: 10px;
     display: flex;
     align-items: center;
     padding: 8px;
