@@ -182,14 +182,14 @@ func (f *FollowHandler) DeleteFollower(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	followingID, err := uuid.FromString(followData.FollowingId)
+	followerID, err := uuid.FromString(followData.FollowerId)
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to unfollow doesn't exist", nil)
 		return
 	}
 
-	if !f.UserService.UserExist(followingID) {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+	if !f.UserService.UserExist(followerID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to unfollow doesn't exist", nil)
 		return
 	}
 

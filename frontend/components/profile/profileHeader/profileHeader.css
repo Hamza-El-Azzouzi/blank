@@ -12,7 +12,6 @@
     position: relative;
 }
 
-
 .profile-info h1 {
     color: var(--text-primary);
     font-size: 24px;
@@ -37,6 +36,12 @@
     gap: 6px;
     color: var(--text-tertiary);
     font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.profile-stat:hover {
+    color: var(--text-primary);
 }
 
 .join-profile-btn,
@@ -131,22 +136,51 @@
 
 .follow-btn {
     padding: 8px 16px;
-    border-radius: 20px;
-    background-color: #0095f6;
-    color: white;
+    min-width: 100px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
     font-weight: 600;
 }
 
-.follow-btn:disabled {
+.follow-btn.follow {
+    background-color: var(--primary);
+    color: var(--text-primary);
+}
+
+.follow-btn.follow:hover {
+    background-color: var(--primary-hover);
+}
+
+.follow-btn.following {
+    border: solid 1px var(--border);
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+}
+
+.follow-btn.following:hover {
+    border: solid 1px var(--error);
+    color: var(--error);
+}
+
+.follow-btn.pending {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.follow-btn.pending:hover {
+    border: solid 1px var(--error);
+    color: var(--error);
+}
+
+/* .follow-btn:disabled {
     background-color: #ccc;
     cursor: default;
 }
 
 .follow-btn:hover:not(:disabled) {
     background-color: #0074cc;
-}
+} */
 
 @media (max-width: 640px) {
     .profile-header {
