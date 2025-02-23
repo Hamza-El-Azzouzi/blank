@@ -45,7 +45,6 @@ const CreatePost = ({ onPostCreated }) => {
                 if (followersData.length < 20) {
                     setHasMore(false);
                 }
-                console.log(followersData)
                 if (page === 1) {
                     setFollowers(followersData);
                     setDisplayedFollowers(followersData);
@@ -147,7 +146,8 @@ const CreatePost = ({ onPostCreated }) => {
                 throw new Error('Failed to create post');
             }
 
-            const post = await response.json();
+            const data = await response.json();
+            const post = data.data;
             const newPost = {
                 post_id: post.post_id,
                 author: post.author,
@@ -158,6 +158,7 @@ const CreatePost = ({ onPostCreated }) => {
                 like_count: post.like_count,
                 comment_count: post.comment_count,
                 isLiked: post.HasLiked,
+                privacy: post.privacy,
             };
 
             if (onPostCreated) onPostCreated(newPost);

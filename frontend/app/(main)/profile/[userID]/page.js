@@ -86,12 +86,13 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async data => {
+        const posts = data.data
         const user = {
           name: profile.first_name + " " + profile.last_name,
           avatar: profile.avatar,
         };
-        if (data && data.length > 0) {
-          const updatedPosts = await Promise.all(data.map(async post => {
+        if (posts && posts.length > 0) {
+          const updatedPosts = await Promise.all(posts.map(async post => {
             if (post.image) {
               post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
             }
