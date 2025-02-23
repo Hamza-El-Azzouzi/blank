@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
@@ -27,7 +28,7 @@ func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string,
 		UserID:  userId,
 		Content: content,
 		Image:   imageFilename,
-		Privacy: privacy,
+		Privacy: strings.ToLower(privacy),
 	}
 
 	err = p.PostRepo.Create(post)

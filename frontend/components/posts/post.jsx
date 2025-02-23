@@ -2,26 +2,10 @@
 "use client"
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
+import { FiHeart, FiMessageSquare, FiGlobe, FiUsers, FiLock } from 'react-icons/fi';
 import * as cookies from '@/lib/cookie';
 import './posts.css';
 import Comments from '../comments/Comments';
-
-const AVATAR = "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
-const mockComments = [
-  {
-    id: 1,
-    author: "Alex Turner",
-    content: "This is amazing! 👏",
-    time: "15m ago"
-  },
-  {
-    id: 2,
-    author: "Sara Wilson",
-    content: "Great progress! Keep it up",
-    time: "1h ago"
-  }
-];
 
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
@@ -75,7 +59,12 @@ const Post = ({ post }) => {
           >
             <span className="post-author">{post.author}</span>
           </Link>
-          <span className="post-time">{post.formatted_date}</span>
+          <span className="post-time">
+            {post.privacy === 'public' && <FiGlobe className="privacy-icon" />}
+            {post.privacy === 'almost private' && <FiUsers className="privacy-icon" />}
+            {post.privacy === 'private' && <FiLock className="privacy-icon" />}
+            {post.formatted_date}
+          </span>
         </div>
       </div>
 
