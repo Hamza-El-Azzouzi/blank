@@ -17,6 +17,7 @@ func SetupRoutes(mux *http.ServeMux,
 	userHandler *handlers.UserHandler,
 	groupHandler *handlers.GroupHandler,
 	followHandler *handlers.FollowHandler,
+	commentHandler *handlers.CommentHandler,
 ) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
@@ -31,15 +32,21 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
 
+	// user routes
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
+	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 
+	// comments routes
+	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)
+	mux.HandleFunc("/api/comment/create", commentHandler.CommentSaver)
+	mux.HandleFunc("/api/comment/{comment_id}/like", commentHandler.CommentLiker)
+
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
-	mux.HandleFunc("/api/sendcomment", postHandler.CommentSaver)
-	mux.HandleFunc("/api/comment/", postHandler.CommentGetter)
+
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
 
@@ -64,6 +71,10 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/join/{group_id}/", groupHandler.JoinGroup)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
+			return
+		}
 		utils.OpenHtml("index.html", w, "")
 	})
 }

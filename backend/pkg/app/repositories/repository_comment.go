@@ -5,6 +5,8 @@ import (
 	"html"
 
 	"blank/pkg/app/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type CommentRepositorie struct {
@@ -12,28 +14,27 @@ type CommentRepositorie struct {
 }
 
 func (c *CommentRepositorie) Create(comment *models.Comment) error {
-	query := "INSERT INTO comments (id, user_id, post_id, content) VALUES (?, ?, ?, ?)"
-	prp, prepareErr := c.DB.Prepare(query)
-	if prepareErr != nil {
-		return prepareErr
+	query := `INSERT INTO Comment (comment_id, user_id, post_id, content) VALUES (?, ?, ?, ?)`
+	prp, err := c.DB.Prepare(query)
+	if err != nil {
+		return err
 	}
 	defer prp.Close()
-	comment.Content = html.EscapeString(comment.Content)
-	_, execErr := prp.Exec(
+	_, err = prp.Exec(
 		comment.ID,
 		comment.UserID,
 		comment.PostID,
 		comment.Content,
 	)
-	if execErr != nil {
-		return execErr
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 func (c *CommentRepositorie) CommentExist(commentID string) bool {
 	var num int
-	query := `SELECT COUNT(*) FROM comments WHERE id = ?`
+	query := `SELECT COUNT(*) FROM Comment WHERE comment_id = ?`
 	row := c.DB.QueryRow(query, commentID)
 	err := row.Scan(&num)
 	if err != nil {
@@ -45,50 +46,107 @@ func (c *CommentRepositorie) CommentExist(commentID string) bool {
 	return false
 }
 
-func (c *CommentRepositorie) GetCommentByPost(postID string, pagination int) ([]models.CommentDetails, error) {
+func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, offset, limit int) ([]models.CommentDetails, error) {
 	querySelect := `
-	SELECT
-	 comments.id AS comment_id,
-	 comments.content,
-	 comments.created_at,
-	 users.id AS user_id,
-	 users.username,
-	 (SELECT COUNT(*) FROM likes WHERE likes.comment_id = comments.id AND likes.react_type = 'like') AS LikeCount,
-	 (SELECT COUNT(*) FROM likes WHERE likes.comment_id = comments.id AND likes.react_type = 'dislike') AS DisLikeCount,
-	 COUNT(*) OVER() AS total_count
-	FROM 
-	 comments
-	JOIN
-	 users ON comments.user_id = users.id
-	WHERE
-	 comments.post_id = ?
-	ORDER BY
-	 comments.created_at DESC
-	 LIMIT 5 OFFSET ?;`
+		SELECT
+			c.comment_id,
+			c.content,
+			c.created_at,
+			(
+				SELECT
+					COUNT(like_id)
+				FROM
+					Like l
+				WHERE
+					l.comment_id = c.comment_id
+			) AS LikeCount,
+			EXISTS(SELECT 1 FROM Like l WHERE l.comment_id = c.comment_id AND l.user_id = ?) AS has_liked,
+			u.first_name,
+			u.last_name,
+			u.avatar
+		FROM
+			Comment c
+			JOIN User u ON c.user_id = u.user_id
+		WHERE
+			c.post_id = ?
+		ORDER BY
+			c.created_at DESC
+		LIMIT ?
+		OFFSET ?;`
 
-	rows, queryErr := c.DB.Query(querySelect, postID, pagination)
+	rows, queryErr := c.DB.Query(querySelect, userID, postID, limit, offset)
 	if queryErr != nil {
 		return nil, queryErr
 	}
 	defer rows.Close()
 	var comments []models.CommentDetails
 	for rows.Next() {
-		var currentComment models.CommentDetails
+		var comment models.CommentDetails
 		scanErr := rows.Scan(
-			&currentComment.CommentID,
-			&currentComment.Content,
-			&currentComment.CreatedAt,
-			&currentComment.UserID,
-			&currentComment.Username,
-			&currentComment.LikeCount,
-			&currentComment.DisLikeCount,
-			&currentComment.TotalCount,
+			&comment.CommentID,
+			&comment.Content,
+			&comment.CreatedAt,
+			&comment.LikeCount,
+			&comment.HasLiked,
+			&comment.User.FirstName,
+			&comment.User.LastName,
+			&comment.User.Avatar,
 		)
 		if scanErr != nil {
 			return nil, scanErr
 		}
-		currentComment.FormattedDate = currentComment.CreatedAt.Format("01/02/2006, 3:04:05 PM")
-		comments = append(comments, currentComment)
+		comment.FormattedDate = comment.CreatedAt.Format("01/02/2006, 3:04:05 PM")
+		comment.Content = html.UnescapeString(comment.Content)
+		comments = append(comments, comment)
 	}
 	return comments, nil
+}
+
+func (c *CommentRepositorie) CheckLike(user_id uuid.UUID, commentID string) (string, error) {
+	query := `SELECT like_id FROM LIKE WHERE user_id = ? AND comment_id = ?`
+	prp, err := c.DB.Prepare(query)
+	if err != nil {
+		return "", err
+	}
+	defer prp.Close()
+	var like_id string
+	err = prp.QueryRow(user_id, commentID).Scan(&like_id)
+	if err != nil {
+		return "", err
+	}
+	return like_id, nil
+}
+
+func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID string) error {
+	query := `INSERT INTO Like (like_id, user_id, comment_id) VALUES (?,?,?)`
+	prp, err := c.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer prp.Close()
+
+	_, err = prp.Exec(
+		likeID,
+		user_id,
+		commentID,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *CommentRepositorie) RemoveLike(likeID string) error {
+	query := `DELETE FROM Like WHERE like_id = ?`
+	prp, err := c.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer prp.Close()
+
+	_, err = prp.Exec(likeID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

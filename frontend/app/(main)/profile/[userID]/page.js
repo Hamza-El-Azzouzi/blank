@@ -56,6 +56,7 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async (data) => {
+        data = data.data
         if (data.status == 400 || data.status == 404) {
           setNotFound(true);
           return;
