@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { fetchBlob } from '@/lib/fetch_blob';
 import './followDialog.css';
 
-
 const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
     const [users, setUsers] = useState([]);
-    const [page, setPage] = useState(1);
+    const [userId, setLastUserId] = useState('');
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observerRef = useRef();
@@ -17,7 +16,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
         try {
             const endpoint = type === 'followers' ? 'followerlist' : 'followinglist';
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?page=${page}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?offset=${userId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -36,9 +35,24 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                     }))
                 );
 
-                setUsers(prev => [...prev, ...newUsers]);
+                setUsers(prev => {
+                    const uniqueUsers = [...prev];
+                    newUsers.forEach(newUser => {
+                        if (!uniqueUsers.some(u => u.user_id === newUser.user_id)) {
+                            uniqueUsers.push(newUser);
+                        }
+                    });
+                    return uniqueUsers;
+                });
+
+                if (data.data.last_user_id) {
+                    setLastUserId(data.data.last_user_id);
+                    setHasMore(true);
+                } else {
+                    setHasMore(false);
+                }
+
                 setHasMore(newUsers.length === 20);
-                setPage(prev => prev + 1);
             } else {
                 setHasMore(false);
             }
@@ -70,13 +84,19 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                 setUsers(prev => prev.filter(user => user.user_id !== userId));
                 setProfile(prev => ({
                     ...prev,
-                    [type.toLowerCase()]: prev[type.toLowerCase()] - 1
+                    [type]: prev[type] - 1
                 }));
             }
         } catch (error) {
             console.error('Error removing user:', error);
         }
     };
+
+    useEffect(() => {
+        setUsers([]);
+        setLastUserId('');
+        setHasMore(true);
+    }, [type]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -93,7 +113,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
         }
 
         return () => observer.disconnect();
-    }, [hasMore, loading, page]);
+    }, [hasMore, loading, userId]);
 
     return (
         <div className="follow-dialog-overlay" onClick={onClose}>
@@ -116,6 +136,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                     {loading && <div className="follow-loading">loading...</div>}
                     <div ref={observerRef} className="follow-observer"></div>
                 </div>
+
                 {!hasMore && users.length === 0 && (
                     <div className="follow-empty-message">
                         No {type} found

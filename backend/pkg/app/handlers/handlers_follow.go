@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -216,15 +215,21 @@ func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := r.URL.Query().Get("page")
-	offset, err := strconv.Atoi(page)
-	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid page value", nil)
-		return
-	}
-
-	offset = offset*20 - 20
+	offset := r.URL.Query().Get("offset")
 	userId := r.Context().Value("user_id").(string)
+	
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to unfollow doesn't exist", nil)
+			return
+		}
+
+		if !f.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
 
 	followers, err := f.FollowService.GetFollowers(userId, offset)
 	if err != nil {
@@ -242,15 +247,21 @@ func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := r.URL.Query().Get("page")
-	offset, err := strconv.Atoi(page)
-	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid page value", nil)
-		return
-	}
-
-	offset = offset*20 - 20
+	offset := r.URL.Query().Get("offset")
 	userId := r.Context().Value("user_id").(string)
+
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to unfollow doesn't exist", nil)
+			return
+		}
+
+		if !f.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
 
 	following, err := f.FollowService.GetFollowing(userId, offset)
 	if err != nil {
