@@ -61,3 +61,7 @@ func (p *PostService) PostsByUser(userID uuid.UUID, pagination int) ([]models.Po
 	}
 	return posts, nil
 }
+
+func (p *PostService) PostExist(postID string) bool {
+	return p.PostRepo.PostExist(postID)
+}

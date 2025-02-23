@@ -55,6 +55,7 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async (data) => {
+        data = data.data
         if (data.status == 400 || data.status == 404) {
           setNotFound(true);
           return;
@@ -100,7 +101,7 @@ export default function ProfilePage({ params }) {
               avatar: user.avatar
             };
           }));
-          
+
           if (postsPage === 0) {
             setPosts(updatedPosts);
           } else {
@@ -150,16 +151,13 @@ export default function ProfilePage({ params }) {
 
           {activeTab === 'posts' && profile.first_name &&
             <>
-              <h3>{profile.first_name}'s posts</h3>
-              <div className="posts">
-                {posts.length > 0 ? (
-                  posts.map(post => (
-                    <Post key={post.id} post={post} />
-                  ))
-                ) : (
-                  <p>{profile.first_name} {profile.last_name} hasn't posted anything yet!</p>
-                )}
-              </div>
+              <h3>{profile.first_name}&lsquo;s posts</h3>
+              <Posts
+                posts={posts}
+                loading={loading}
+                endReached={endReached}
+                onLoadMore={handleLoadMore}
+              />
             </>
           }
         </>

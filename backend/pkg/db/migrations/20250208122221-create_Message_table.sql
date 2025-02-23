@@ -8,9 +8,9 @@ CREATE TABLE `Message` (
   `content` text,
   `unread` boolean,
   `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-  FOREIGN KEY (`sender_id`) REFERENCES `User` (`user_id`),
-  FOREIGN KEY (`receiver_id`) REFERENCES `User` (`user_id`),
-  FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`)
+  FOREIGN KEY (`sender_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`receiver_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`) on DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE INDEX idx_message_sender_id ON `Message` (`sender_id`);
 CREATE INDEX idx_message_receiver_id ON `Message` (`receiver_id`);

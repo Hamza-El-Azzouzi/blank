@@ -105,18 +105,6 @@
     white-space: pre-wrap;
 }
 
-.posts {
-    margin-top: 20px;
-}
-
-.post {
-    background: var(--bg-tertiary);
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-}
-
 .user-not-found {
     display: flex;
     align-items: center;
@@ -147,18 +135,6 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
-}
-
-.dialog-content {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem 2rem 0;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-
 }
 
 .dialog-content h3 {
@@ -230,12 +206,6 @@
     color: var(--text-tertiary);
 }
 
-.dialog-content div {
-    display: flex;
-    gap: 1.5rem;
-    margin: 0.5rem 0;
-}
-
 .dialog-content label {
     display: flex;
     align-items: center;
@@ -260,7 +230,7 @@
     justify-content: space-between;
 }
 
-.dialog-content button {
+.form-action > button {
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;

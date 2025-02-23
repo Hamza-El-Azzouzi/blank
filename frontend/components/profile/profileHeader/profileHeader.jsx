@@ -8,7 +8,6 @@ const ProfileHeader = ({ profile, setProfile, cookieValue }) => {
 
     const [updateInfo, setUpdateInfo] = useState(false);
 
-
     return (
         <div className="profile-header">
             <div className="avatar">
@@ -21,10 +20,10 @@ const ProfileHeader = ({ profile, setProfile, cookieValue }) => {
                 <h1>{profile.first_name} {profile.last_name}</h1>
                 <div className="profile-meta">
                     <span className="profile-stat">
-                        {profile.followers} Followers
+                        {profile.followers || 0} Followers
                     </span>
                     <span className="profile-stat">
-                        {profile.following} Following
+                        {profile.following || 0} Following
                     </span>
 
                 </div>
