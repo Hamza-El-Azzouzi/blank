@@ -75,6 +75,7 @@ func InitHandlers(authService *services.AuthService,
 	*handlers.MessageHandler,
 	*handlers.UserHandler,
 	*handlers.GroupHandler,
+	*handlers.CommentHandler,
 	*handlers.FollowHandler,
 ) {
 	MessageHandler := &handlers.MessageHandler{
@@ -99,6 +100,11 @@ func InitHandlers(authService *services.AuthService,
 		PostService:    postService,
 		CommentService: commentService,
 	}
+	commentHandler := &handlers.CommentHandler{
+		CommentService: commentService,
+		PostService:    postService,
+		UserService:    userService,
+	}
 	reactHandler := &handlers.ReactHandler{
 		ReactService: reactService,
 	}
@@ -114,5 +120,5 @@ func InitHandlers(authService *services.AuthService,
 		FollowService: followService,
 		UserService:   userService,
 	}
-	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, followHandler
+	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler
 }
