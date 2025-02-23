@@ -21,7 +21,8 @@ const mockComments = [
   }
 ];
 
-const Post = ({ post }) => {
+const Post = ({ post, target}) => {
+  console.log(target)
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
   const [showComments, setShowComments] = useState(false);
@@ -39,7 +40,7 @@ const Post = ({ post }) => {
         },
         body: JSON.stringify({
           targetId: post.post_id,
-          targetType: "Post"
+          targetType: target  
         })
       });
 

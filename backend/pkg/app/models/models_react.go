@@ -7,14 +7,13 @@ import (
 )
 
 type Reacts struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	PostID    *string
-	CommentID *string
-	CreatedAt time.Time
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Likeable_id string
+	CreatedAt   time.Time
 }
 
 type React struct {
-	ID        string `json:"targetId"`
-	Target    string `json:"targetType"`
+	ID     string `json:"targetId"`
+	Target string `json:"targetType"`
 }

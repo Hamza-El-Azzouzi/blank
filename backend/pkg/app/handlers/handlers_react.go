@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"blank/pkg/app/middleware"
@@ -37,19 +38,13 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
-	if react.Target == "post" {
-		err := rh.ReactService.Create(userID, react.ID, "", react.Target)
-		if err != nil {
-			utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
-			return
-		}
-	} else {
-		err := rh.ReactService.Create(userID, "", react.ID, react.Target)
-		if err != nil {
-			utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
-			return
-		}
+	err = rh.ReactService.Create(userID, react.ID, react.Target)
+	fmt.Println("create", err)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
 	}
+
 	data, err := rh.ReactService.GetReacts(react.ID, react.Target)
 	if err != nil {
 		utils.SendResponses(w, http.StatusNotFound, "Internal Server Error", nil)

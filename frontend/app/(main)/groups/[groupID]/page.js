@@ -1,8 +1,7 @@
-// app/(main)/groups/[id]/page.js
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { FiCalendar, FiUsers, FiPlus } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
 import CreatePost from '@/components/groups/create/createPost';
 import CreateEvent from '@/components/groups/create/createEvent';
 import GroupHeader from '@/components/groups/groupHeader/groupHeader';
@@ -13,16 +12,36 @@ import RequestCard from '@/components/groups/cards/requestCard';
 import { fetchBlob } from '@/lib/fetch_blob';
 import Posts from '@/components/posts/posts';
 
+const ITEMS_PER_PAGE = 20;
+
 const GroupDetailPage = () => {
     const [activeTab, setActiveTab] = useState('posts');
     const [showCreateEvent, setShowCreateEvent] = useState(false);
+
+    // Pagination states
     const [events, setEvents] = useState([]);
-    const [request, setRequest] = useState([]);
+    const [eventPage, setEventPage] = useState(0);
+    const [loadingEvents, setLoadingEvents] = useState(false);
+    const [hasMoreEvents, setHasMoreEvents] = useState(true);
+
+    const [requests, setRequests] = useState([]);
+    // const [request, setRequest] = useState([]);
+    const [requestPage, setRequestPage] = useState(0);
+    const [loadingRequests, setLoadingRequests] = useState(false);
+    const [hasMoreRequests, setHasMoreRequests] = useState(true);
+
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(0);
     const [endReached, setEndReached] = useState(false);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+
+    const observerRef = useRef(null);
+    const loadMoreRef = useRef(null);
+
+    const [groupData, setGroupData] = useState([]);
+    const { groupID } = useParams();
+    const cookieValue = GetCookie("sessionId");
     const handleNewPost = (newPost) => {
         setPosts(prevPosts => [newPost, ...prevPosts]);
     };
@@ -31,33 +50,7 @@ const GroupDetailPage = () => {
             setPage(prevPage => prevPage + 20);
         }
     };
-    const [groupData, setGroupData] = useState([]);
-    const { groupID } = useParams();
-    const cookieValue = GetCookie("sessionId")
-
     useEffect(() => {
-        const fetchEvent = async () => {
-            try {
-                //api/group/{group_id}/event
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/event`, {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': `Bearer ${cookieValue}`
-                    },
-                });
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw error;
-                }
-                const data = await response.json();
-                console.log(data.data)
-                setEvents(data.data);
-            } catch (error) {
-                console.log(error);
-            }
-        };
         const fetchGroupData = async () => {
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}`, {
@@ -68,23 +61,25 @@ const GroupDetailPage = () => {
                         'Authorization': `Bearer ${cookieValue}`
                     },
                 });
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw error;
-                }
+                if (!response.ok) throw new Error("Failed to fetch group data");
+
                 const data = await response.json();
                 setGroupData(data.data);
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         };
         fetchGroupData();
-        fetchEvent();
     }, [cookieValue, groupID]);
+
+    // Fetch events with pagination (only when "Events" tab is active)
     useEffect(() => {
-        const fetchRequests = async () => {
+        if (activeTab !== 'events' || loadingEvents || !hasMoreEvents) return;
+
+        const fetchEvents = async () => {
+            setLoadingEvents(true);
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/request`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/event/${eventPage}`, {
                     method: "GET",
                     credentials: "include",
                     headers: {
@@ -92,22 +87,149 @@ const GroupDetailPage = () => {
                         'Authorization': `Bearer ${cookieValue}`
                     },
                 });
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw error;
-                }
+                if (!response.ok) throw new Error("Failed to fetch events");
+
                 const data = await response.json();
-                setRequest(data.data);
+
+                if (data.data && data.data[0].TotalCount < ITEMS_PER_PAGE) {
+                    setHasMoreEvents(false);
+                }
+                if (data.data) setEvents(prevEvents => [...prevEvents, ...data.data]);
             } catch (error) {
-                console.log(error);
+                console.error(error);
+            } finally {
+                setLoadingEvents(false);
             }
         };
-        fetchRequests();
-    }, [cookieValue, groupID]);
-    // api/group/event/
-    useEffect(() => {
 
-    }, [cookieValue, groupID]);
+        fetchEvents();
+    }, [eventPage, activeTab]);
+
+    // Fetch requests with pagination (only when "Requests" tab is active)
+    useEffect(() => {
+        if (activeTab !== 'request' || loadingRequests || !hasMoreRequests) return;
+
+        const fetchRequests = async () => {
+            setLoadingRequests(true);
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/request/${requestPage}`, {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': `Bearer ${cookieValue}`
+                    },
+                });
+                if (!response.ok) throw new Error("Failed to fetch requests");
+
+                const data = await response.json();
+
+                if (data.data && data.data[0].TotalCount < ITEMS_PER_PAGE) {
+                    setHasMoreRequests(false);
+                }
+                console.log(data.data)
+                if (data.data) setRequests(prevRequests => [...prevRequests, ...data.data]);
+
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoadingRequests(false);
+            }
+        };
+
+        fetchRequests();
+    }, [requestPage, activeTab]);
+
+    // Intersection Observer for infinite scrolling (only when the right tab is active)
+    useEffect(() => {
+        if (!loadMoreRef.current) return;
+
+        observerRef.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    if (activeTab === 'events' && hasMoreEvents && !loadingEvents) {
+                        setEventPage(prevPage => prevPage + 1);
+                    }
+                    if (activeTab === 'request' && hasMoreRequests && !loadingRequests) {
+                        setRequestPage(prevPage => prevPage + 1);
+                    }
+                }
+            },
+            { threshold: 1.0 }
+        );
+
+        observerRef.current.observe(loadMoreRef.current);
+
+        return () => {
+            if (observerRef.current) observerRef.current.disconnect();
+        };
+    }, [loadingEvents, loadingRequests, hasMoreEvents, hasMoreRequests, activeTab]);
+
+    const handleEventResponse = (eventId, response) => {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/event/response`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+            body: JSON.stringify({ event_id: eventId, response })
+        })
+            .then(response => {
+
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setEvents(prevEvents =>
+                    prevEvents.map(prevEvent => {
+                        if (prevEvent.event_id === eventId) {
+                            return {
+                                ...prevEvent,
+                                going_count: data.data.going_count,
+                                is_going: data.data.is_going
+                            };
+                        }
+                        return prevEvent;
+                    })
+                );
+
+            }).catch((error) => {
+                console.log(error)
+            })
+    };
+    const handleRequesttResponse = (requestId, response, userId) => {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${requestId}/response`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+            body: JSON.stringify({ user_id: userId, response })
+        })
+            .then(response => {
+
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setGroupData(prevData => ({
+                    ...prevData,
+                    Member_count: data.data
+                }));
+
+                setRequests(prevRequests =>
+                    prevRequests.filter(req => req.UserId !== userId)
+                );
+            }).catch((error) => {
+                console.log(error)
+            })
+    };
     const fetchPosts = async (group_id, pageNumber) => {
         if (endReached) return;
 
@@ -157,6 +279,7 @@ const GroupDetailPage = () => {
     useEffect(() => {
         fetchPosts(groupID, page)
     }, [page])
+
     const handleCreateEvent = (eventData) => {
         eventData["group_id"] = groupID
         // api/group/createEvent
@@ -177,90 +300,23 @@ const GroupDetailPage = () => {
                 return response.json();
             })
             .then((data) => {
+                console.log(data.data)
                 const newEvent = {
                     ...data.data,
                     going_count: 0,
                     is_going: false
                 };
-                setEvents([newEvent, ...events]);
+                setEvents(prevEvents => [newEvent, ...(prevEvents || [])]);
             }).catch((error) => {
                 console.log(error)
             })
 
 
     };
-
-    const handleEventResponse = (eventId, response) => {
-        //api/group/{group_id}/event/response
-        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/event/response`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                'content-type': 'application/json',
-                'Authorization': `Bearer ${cookieValue}`
-            },
-            body: JSON.stringify({ event_id: eventId, response })
-        })
-            .then(response => {
-
-                if (!response.ok) {
-                    return response.json().then(error => { throw error; });
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setEvents(prevEvents => 
-                    prevEvents.map(prevEvent => {
-                        if (prevEvent.event_id === eventId) {
-                            return {
-                                ...prevEvent,
-                                going_count: data.data.going_count,
-                                is_going: data.data.is_going
-                            };
-                        }
-                        return prevEvent;
-                    })
-                );
-            
-            }).catch((error) => {
-                console.log(error)
-            })
-    };
-    const handleRequesttResponse = (requestId, response, userId) => {
-        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${requestId}/response`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                'content-type': 'application/json',
-                'Authorization': `Bearer ${cookieValue}`
-            },
-            body: JSON.stringify({ user_id: userId, response })
-        })
-            .then(response => {
-
-                if (!response.ok) {
-                    return response.json().then(error => { throw error; });
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setGroupData(prevData => ({
-                    ...prevData,
-                    Member_count: data.data // Accessing the member count from the nested data property
-                }));
-
-                // Remove the handled request from the requests list
-                setRequest(prevRequests =>
-                    prevRequests.filter(req => req.UserId !== userId)
-                );
-            }).catch((error) => {
-                console.log(error)
-            })
-    };
-
     return (
         <div className="group-detail-page">
             <GroupHeader group={groupData} />
+
             {(groupData.IsJoined || groupData.IsOwner) && (
                 <div className="group-content">
                     <div className="group-tabs">
@@ -272,12 +328,10 @@ const GroupDetailPage = () => {
                         </button>
                         {groupData.IsOwner && (
                             <button className={`tab-btn ${activeTab === 'request' ? 'active' : ''}`} onClick={() => setActiveTab('request')}>
-                                Request
+                                Requests
                             </button>
                         )}
-
                     </div>
-
                     {activeTab === 'posts' && (
                         <div className="posts-section">
                             <CreatePost onPostCreated={handleNewPost} groupID={groupID} />
@@ -286,35 +340,34 @@ const GroupDetailPage = () => {
                                 loading={loading}
                                 endReached={endReached}
                                 onLoadMore={handleLoadMore}
+                                target="Group_Post"
                             />
                         </div>
                     )}
-
                     {activeTab === 'events' && (
                         <div>
                             <div className="events-header">
                                 <h2>Upcoming Events</h2>
-                                <button className="create-event-btn" onClick={() => setShowCreateEvent(true)} >
+                                <button className="create-event-btn" onClick={() => setShowCreateEvent(true)}>
                                     <FiPlus /> Create Event
                                 </button>
                             </div>
                             <div className="events-list">
-                                {events && events.length > 0 && events.map(event => (
-                                    // console.log(event)
+                                {events.map(event => (
                                     <EventCard key={event.event_id} event={event} onResponseChange={handleEventResponse} />
                                 ))}
                             </div>
                         </div>
                     )}
+
                     {activeTab === 'request' && groupData.IsOwner && (
                         <div>
                             <div className="events-header">
-                                <h2>Request</h2>
+                                <h2>Requests</h2>
                             </div>
                             <div className="events-list">
-                                {request && request.map(re => (
-
-                                    <RequestCard key={re.UserId} request={re} onResponseChange={handleRequesttResponse} />
+                                {requests.map(req => (
+                                    <RequestCard key={req.UserId} request={req} onResponseChange={handleRequesttResponse} />
                                 ))}
                             </div>
                         </div>
@@ -322,6 +375,10 @@ const GroupDetailPage = () => {
                 </div>
             )}
 
+            {/* Infinite scrolling trigger (works only on Events or Requests tab) */}
+            {loadingEvents || loadingRequests && (
+                <div ref={loadMoreRef} style={{ height: '1px' }}></div>
+            )}
 
             {showCreateEvent && (
                 <CreateEvent onClose={() => setShowCreateEvent(false)} onSubmit={handleCreateEvent} />

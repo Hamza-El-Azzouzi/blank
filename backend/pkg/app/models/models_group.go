@@ -20,6 +20,7 @@ type GroupDetails struct {
 	Member_count int
 	Created_at   time.Time
 	FormatedDate string
+	TotalCount   int
 }
 
 type GroupRequest struct {
@@ -27,6 +28,7 @@ type GroupRequest struct {
 	UserId     string
 	Last_Name  string
 	First_Name string
+	TotalCount int
 }
 type GroupResponse struct {
 	User_id string `json:"user_id"`
@@ -60,4 +62,5 @@ type Event struct {
 	Is_going    bool   `json:"is_going"`
 	Going_count int    `json:"going_count"`
 	Respose     string `json:"response"`
+	TotalCount int
 }

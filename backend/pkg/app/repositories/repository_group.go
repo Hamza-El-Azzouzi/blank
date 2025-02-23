@@ -38,7 +38,7 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 	return groupInfo, nil
 }
 
-func (g *GroupRepository) Groups(user_id string) ([]models.GroupDetails, error) {
+func (g *GroupRepository) Groups(user_id string, page int) ([]models.GroupDetails, error) {
 	selectQuery := `SELECT 
 	g.group_id,
 	u.user_id,
@@ -50,13 +50,16 @@ func (g *GroupRepository) Groups(user_id string) ([]models.GroupDetails, error) 
 		WHERE group_id = g.group_id 
 		AND user_id = ? 
 		AND status = 'requested'
-	) as is_pending
+	) as is_pending,
+	COUNT(*) OVER() AS total_count
 FROM ` + "`Group`" + ` g
 JOIN ` + "`User`" + ` u ON g.creator_id = u.user_id
 LEFT JOIN ` + "`Group_Membership`" + ` gm ON g.group_id = gm.group_id
-GROUP BY g.group_id, g.title, g.description, u.nickname;
+GROUP BY g.group_id, g.title, g.description, u.nickname
+ORDER BY g.created_at
+LIMIT 20 OFFSET ?;
 `
-	rows, err := g.DB.Query(selectQuery, user_id)
+	rows, err := g.DB.Query(selectQuery, user_id, page)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +73,7 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 			&group.Description,
 			&group.Member_count,
 			&group.IsPending,
+			&group.TotalCount,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
@@ -186,6 +190,18 @@ func (g *GroupRepository) IsGroupMember(group_id, user_id string) (bool, error) 
 	return false, nil
 }
 
+func (g *GroupRepository) PostGroupExist(post_id string) bool {
+	exist := 0
+	query := `SELECT count(*) FROM Group_Post WHERE group_post_id = ?`
+	err := g.DB.QueryRow(query, post_id, ).Scan(&exist)
+	if err != nil {
+		return false
+	}
+	if exist == 1 {
+		return true
+	}
+	return false
+}
 func (g *GroupRepository) IsOwner(group_id, user_id string) (bool, error) {
 	exist := 0
 	query := "SELECT count(*) FROM `Group` WHERE group_id = ? AND creator_id = ?"
@@ -219,12 +235,13 @@ func (g *GroupRepository) GroupDelete(group_id string) error {
 	return nil
 }
 
-func (g *GroupRepository) GroupRequest(group_id string) ([]models.GroupRequest, error) {
-	query := `SELECT group_id,u.user_id, u.first_name, u.last_name FROM User u 
+func (g *GroupRepository) GroupRequest(group_id string, page int) ([]models.GroupRequest, error) {
+	query := `SELECT group_id,u.user_id, u.first_name, u.last_name,COUNT(*) OVER() AS total_count FROM User u 
 			  JOIN Group_Membership gm ON u.user_id = gm.user_id 
-			  WHERE gm.group_id = ? AND gm.status = 'requested'`
+			  WHERE gm.group_id = ? AND gm.status = 'requested'
+			  LIMIT 20 OFFSET ?;`
 	var groupRequests []models.GroupRequest
-	rows, err := g.DB.Query(query, group_id)
+	rows, err := g.DB.Query(query, group_id, page)
 	if err != nil {
 		return nil, err
 	}
@@ -236,6 +253,7 @@ func (g *GroupRepository) GroupRequest(group_id string) ([]models.GroupRequest, 
 			&groupRequest.UserId,
 			&groupRequest.First_Name,
 			&groupRequest.Last_Name,
+			&groupRequest.TotalCount,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
@@ -441,7 +459,8 @@ func (g *GroupRepository) CreateEvent(event models.Event, event_id, group_id, us
 	return event, nil
 }
 
-func (g *GroupRepository) Event(group_id, user_id string) ([]models.Event, error) {
+// TODO: khas tzad l count
+func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Event, error) {
 	selectQuery := `
 	SELECT 
 		e.event_id,
@@ -456,15 +475,17 @@ func (g *GroupRepository) Event(group_id, user_id string) ([]models.Event, error
 			WHERE event_id = e.event_id 
 			AND user_id = ? 
 			AND response = 'going'
-		) THEN TRUE ELSE FALSE END as is_going
+		) THEN TRUE ELSE FALSE END as is_going,
+		 COUNT(*) OVER() AS total_count
 	FROM Event e
 	LEFT JOIN Event_Response er ON e.event_id = er.event_id
 	WHERE e.group_id = ?
 	GROUP BY e.event_id
 	ORDER BY e.event_datetime ASC
+	LIMIT 20 OFFSET ?;
 	`
 
-	rows, err := g.DB.Query(selectQuery, user_id, group_id)
+	rows, err := g.DB.Query(selectQuery, user_id, group_id, page)
 	if err != nil {
 		return nil, err
 	}
@@ -483,6 +504,7 @@ func (g *GroupRepository) Event(group_id, user_id string) ([]models.Event, error
 			&event.User_id,
 			&event.Going_count,
 			&event.Is_going,
+			&event.TotalCount,
 		)
 		if err != nil {
 			return nil, err
@@ -534,3 +556,4 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 
 	return event, nil
 }
+

@@ -13,6 +13,7 @@ type ReactService struct {
 	ReactRepo   *repositories.ReactReposetorie
 	PostRepo    *repositories.PostRepository
 	CommentRepo *repositories.CommentRepositorie
+	GroupRepo   *repositories.GroupRepository
 }
 
 func (r *ReactService) GetReacts(ID, target string) (any, error) {
@@ -23,26 +24,31 @@ func (r *ReactService) GetReacts(ID, target string) (any, error) {
 	return data, nil
 }
 
-func (r *ReactService) Create(userID uuid.UUID, postID, commentID string, target string) error {
+func (r *ReactService) Create(userID uuid.UUID, likeable_id, target string) error {
 	likeID, err := uuid.NewV4()
 	if err != nil {
 		return fmt.Errorf("failed to generate UUID: %v", err)
 	}
-	var postIDPtr, commentIDPtr *string
-	if postID != "" && r.PostRepo.PostExist(postID) {
-		postIDPtr = &postID
-	}
-	if commentID != "" && r.CommentRepo.CommentExist(commentID) {
-		commentIDPtr = &commentID
-	}
-	if postIDPtr == nil && commentIDPtr == nil {
-		return fmt.Errorf("post or comment doesn't exist")
+	switch target {
+	case "Post":
+		if !r.PostRepo.PostExist(likeable_id) {
+			return fmt.Errorf("post with ID %s does not exist", likeable_id)
+		}
+	case "Comment":
+		if !r.CommentRepo.CommentExist(likeable_id) {
+			return fmt.Errorf("comment with ID %s does not exist", likeable_id)
+		}
+	case "Group_Post":
+		if !r.GroupRepo.PostGroupExist(likeable_id) {
+			return fmt.Errorf("group post with ID %s does not exist", likeable_id)
+		}
+	default:
+		return fmt.Errorf("invalid target type: %s", target)
 	}
 	react := &models.Reacts{
-		ID:        likeID,
-		UserID:    userID,
-		PostID:    postIDPtr,
-		CommentID: commentIDPtr,
+		ID:          likeID,
+		UserID:      userID,
+		Likeable_id: likeable_id,
 	}
 
 	r.ReactRepo.CreateReact(react, target)

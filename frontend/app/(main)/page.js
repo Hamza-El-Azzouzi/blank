@@ -81,6 +81,7 @@ export default function Home() {
         loading={loading} 
         endReached={endReached} 
         onLoadMore={handleLoadMore} 
+        target="Post"
       />
     </div>
   );

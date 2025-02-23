@@ -8,10 +8,10 @@ import { GetCookie } from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 
 const CreatePost = ({groupID, onPostCreated }) => {
+    const [error,setError] = useState("")
     const [content, setContent] = useState('');
     const [imagePreview, setImagePreview] = useState('');
 
-    console.log(groupID)
     const cookieValue = GetCookie("sessionId")
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -24,12 +24,27 @@ const CreatePost = ({groupID, onPostCreated }) => {
         }
     };
     const handlePost = async () => {
+        setError("")
         const postData = {
             "groupId" : groupID ,
             content,
             "image": imagePreview,
         };
+        if (!content.trim() && !imagePreview) {
+            setError('Post must contain either text or an image');
+            return;
+        }
 
+        if (content.length > 400) {
+            setError('Content exceeds maximum length of 400 characters');
+            return;
+        }
+
+        if (imagePreview && imagePreview.length > 1*1024*1024) {
+            setError('Image size is too large');
+            return;
+        }
+      
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/create/post`, {
                 method: 'POST',
@@ -65,10 +80,6 @@ const CreatePost = ({groupID, onPostCreated }) => {
             console.error('Error creating post:', error);
         }
     };
-    // const handleSubmit = (e) => {
-    //     console.log(content, imagePreview)
-    //     e.preventDefault();
-    // };
 
     const removeImage = () => {
         setImagePreview(null);
@@ -105,6 +116,7 @@ const CreatePost = ({groupID, onPostCreated }) => {
                         Post
                     </button>
                 </div>
+                {error && <div className="error-message">*{error}</div>}
             </form>
         </div>
     );

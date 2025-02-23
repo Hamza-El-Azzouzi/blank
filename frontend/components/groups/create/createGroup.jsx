@@ -5,6 +5,7 @@ import { FiX, FiImage, FiGlobe } from 'react-icons/fi';
 import './createGroup.css';
 
 const CreateGroup = ({ onClose, onSubmit }) => {
+    const [error,setError] = useState("")
     const [groupData, setGroupData] = useState({
         name: '',
         description: '',
@@ -19,9 +20,31 @@ const CreateGroup = ({ onClose, onSubmit }) => {
     };
 
     const handleSubmit = (e) => {
+        setError("")
+        
+        if (!groupData.name.trim() || !groupData.description.trim()) {
+            setError('Please fill in all required fields');
+            return;
+        }
+
+        const nameRegex = /^[a-zA-Z0-9\s]+$/;
+        if (!nameRegex.test(groupData.name)) {
+            setError('Group name can only contain letters, numbers and spaces');
+            return;
+        }
+
+        if (groupData.name.length > 50) {
+            setError('Group name must be less than 50 characters');
+            return;
+        }
+
+        if (groupData.description.length > 250) {
+            setError('Description must be less than 150 characters');
+            return;
+        }
         e.preventDefault();
         onSubmit(groupData);
-        // onClose();
+        onClose();
     };
 
     return (
@@ -44,7 +67,7 @@ const CreateGroup = ({ onClose, onSubmit }) => {
                         <textarea name="description" placeholder="Group Description"
                             value={groupData.description} onChange={handleChange} maxLength={150} className="group-textarea" required />
                     </div>
-
+                    {error && <div className="error-message">*{error}</div>}
                     <div className="form-footer">
                         <button type="button" onClick={onClose} className="cancel-button">
                             Cancel
