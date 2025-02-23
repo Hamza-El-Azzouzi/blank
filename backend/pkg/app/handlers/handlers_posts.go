@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -79,13 +79,17 @@ func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
 		return
 	}
-
-	posts, err := p.PostService.PostsByUser(userID, nPagination)
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+	posts, err := p.PostService.PostsByUser(userID, authUserID, nPagination)
+	if err != nil {
+		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}

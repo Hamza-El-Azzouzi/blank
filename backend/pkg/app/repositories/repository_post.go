@@ -98,37 +98,39 @@ func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]mo
 	return posts, nil
 }
 
-func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models.PostByUser, error) {
+func (r *PostRepository) PostsByUser(userID, authUserID uuid.UUID, pagination int) ([]models.PostByUser, error) {
 	query := `
 		SELECT
 			p.post_id,
 			p.content,
-			COALESCE(p.image, '') AS image,
-			p.privacy_level,
+			p.image,
 			p.created_at,
+			p.privacy_level,
 			(SELECT COUNT(*) FROM Like WHERE Like.post_id = p.post_id) AS like_count,
-			(
-				SELECT
-					COUNT(*)
-				FROM
-					Comment c
-				WHERE
-					c.post_id = p.post_id
-			) AS comments_count,
+			(SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comments_count,
 			EXISTS(SELECT 1 FROM Like WHERE Like.post_id = p.post_id AND Like.user_id = ?) AS has_liked,
 			p.user_id
 		FROM
 			Post p
 			JOIN User u ON p.user_id = u.user_id
 		WHERE
-			p.user_id = ?
+			p.user_id = ? AND (
+				? = ? OR
+				(p.privacy_level = 'public') OR
+				(p.privacy_level = 'almost private' AND EXISTS(
+					SELECT 1 FROM Follow WHERE Follow.follower_id = ? AND Follow.following_id = p.user_id AND status = 'accepted'
+				)) OR
+				(p.privacy_level = 'private' AND EXISTS(
+					SELECT 1 FROM Post_Privacy WHERE Post_Privacy.post_id = p.post_id AND Post_Privacy.user_id = ?
+				))
+			)
 		GROUP BY
 			p.post_id
 		ORDER BY
 			p.created_at DESC
 		LIMIT 20 OFFSET ?;
 	`
-	rows, err := r.DB.Query(query, userID, userID, pagination)
+	rows, err := r.DB.Query(query, authUserID, userID, authUserID, userID, authUserID, authUserID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
@@ -141,8 +143,8 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 			&post.ID,
 			&post.Content,
 			&post.Image,
-			&post.Privacy,
 			&post.CreatedAt,
+			&post.Privacy,
 			&post.LikeCount,
 			&post.CommentCount,
 			&post.HasLiked,
@@ -154,8 +156,7 @@ func (r *PostRepository) PostsByUser(userID uuid.UUID, pagination int) ([]models
 		post.FormattedDate = post.CreatedAt.Format("01/02/2006, 3:04 PM")
 		posts = append(posts, post)
 	}
-	err = rows.Err()
-	if err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating posts with user info: %v", err)
 	}
 
