@@ -28,7 +28,7 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var err error
-	AuthUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
@@ -46,16 +46,16 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := u.UserService.GetUserInfo(userID)
+	user, err := u.UserService.GetUserInfo(userID, authUserID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
-	user.IsOwner = userID == AuthUserID
+	user.IsOwner = userID == authUserID
 
 	if !user.IsOwner {
-		follow := models.FollowRequest{FollowerId: AuthUserID.String(), FollowingId: userID.String()}
+		follow := models.FollowRequest{FollowerId: authUserID.String(), FollowingId: userID.String()}
 		user.FollowStatus, err = u.FollowService.GetFollowStatus(follow)
 		if err != nil {
 			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
@@ -143,7 +143,7 @@ func (u *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
-func (p *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
@@ -154,19 +154,19 @@ func (p *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	AuthUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 
-	user, err := p.UserService.GetUserInfo(AuthUserID)
+	user, err := u.UserService.GetAuthenticatedUser(authUserID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
-	utils.SendResponses(w, http.StatusOK, "", user)	
+	utils.SendResponses(w, http.StatusOK, "", user)
 }
 
 func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
@@ -183,4 +183,3 @@ func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.SendResponses(w, http.StatusOK, "success", users)
 }
-

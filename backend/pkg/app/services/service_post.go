@@ -13,14 +13,19 @@ import (
 
 type PostService struct {
 	PostRepo *repositories.PostRepository
+	UserRepo *repositories.UserRepository
 }
 
 func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string, image string, selectedFollowers []string) error {
 	postId := uuid.Must(uuid.NewV4())
-
+	privacy = strings.ToLower(privacy)
 	imageFilename, err := utils.SaveImage(image)
 	if err != nil {
 		return err
+	}
+
+	if !p.UserRepo.IsProfilePublic(userId.String()) && privacy == "public" {
+		privacy = "almost private"
 	}
 
 	post := &models.Post{
@@ -28,7 +33,7 @@ func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string,
 		UserID:  userId,
 		Content: content,
 		Image:   imageFilename,
-		Privacy: strings.ToLower(privacy),
+		Privacy: privacy,
 	}
 
 	err = p.PostRepo.Create(post)
@@ -56,7 +61,7 @@ func (p *PostService) AllPosts(pagination int, currentUserID uuid.UUID) ([]model
 }
 
 func (p *PostService) PostsByUser(userID, authUserID uuid.UUID, pagination int) ([]models.PostByUser, error) {
-	posts, err := p.PostRepo.PostsByUser(userID,authUserID, pagination)
+	posts, err := p.PostRepo.PostsByUser(userID, authUserID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error Kayn f Posts by user service : %v", err)
 	}

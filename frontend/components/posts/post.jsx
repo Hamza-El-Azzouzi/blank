@@ -50,8 +50,6 @@ const Post = ({ post }) => {
         >
           <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
         </Link>
-        <a href={`/profile/${post.user_id}`}>
-        </a>
         <div className="post-meta">
           <Link
             key={post.user_id}

@@ -122,6 +122,34 @@
     max-width: 70%;
 }
 
+.user-private {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5rem;
+    min-height: 40vh;
+}
+
+.user-private div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+    background: var(--bg-secondary);
+    padding: 50px;
+    border-radius: 15px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    max-width: 70%;
+    border: 1px solid var(--border);
+}
+
+.user-private-icon {
+    font-size: 5rem;
+    color: var(--text-tertiary);
+}
+
 /* edit user info dialog style */
 
 .dialog-overlay {
@@ -229,7 +257,7 @@
     justify-content: space-between;
 }
 
-.form-action > button {
+.form-action>button {
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;
