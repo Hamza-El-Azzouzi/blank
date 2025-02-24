@@ -58,10 +58,12 @@ const Post = ({ post }) => {
             <span className="post-author">{post.author}</span>
           </Link>
           <span className="post-time">
-            {post.privacy === 'public' && <FiGlobe className="privacy-icon" />}
-            {post.privacy === 'almost private' && <FiUsers className="privacy-icon" />}
-            {post.privacy === 'private' && <FiLock className="privacy-icon" />}
-            {post.formatted_date}
+            <div style={{fontSize: '13px'}}>
+              {post.privacy === 'public' && <FiGlobe className="privacy-icon" />}
+              {post.privacy === 'almost private' && <FiUsers className="privacy-icon" />}
+              {post.privacy === 'private' && <FiLock className="privacy-icon" />}
+            </div>
+            <div>{post.formatted_date}</div>
           </span>
         </div>
       </div>
