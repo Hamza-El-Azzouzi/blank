@@ -54,7 +54,7 @@ func (f *FollowRepositorie) GetFollowStatus(follow models.FollowRequest) (string
 	return status, err
 }
 
-func (f *FollowRepositorie) GetFollowers(userId, offset string) (*models.FollowListResponse, error) {
+func (f *FollowRepositorie) GetFollowers(userId, offset string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
@@ -85,17 +85,10 @@ func (f *FollowRepositorie) GetFollowers(userId, offset string) (*models.FollowL
 		followers = append(followers, follower)
 	}
 
-	var response models.FollowListResponse
-	response.FollowList = followers
-	if len(followers) > 20 {
-		response.LastUserId = followers[19].UserId
-		response.FollowList = followers[:20]
-	}
-
-	return &response, nil
+	return followers, nil
 }
 
-func (f *FollowRepositorie) GetFollowing(userId, offset string) (*models.FollowListResponse, error) {
+func (f *FollowRepositorie) GetFollowing(userId, offset string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
@@ -125,14 +118,7 @@ func (f *FollowRepositorie) GetFollowing(userId, offset string) (*models.FollowL
 		following = append(following, follower)
 	}
 
-	var response models.FollowListResponse
-	response.FollowList = following
-	if len(following) > 20 {
-		response.LastUserId = following[19].UserId
-		response.FollowList = following[:20]
-	}
-
-	return &response, nil
+	return following, nil
 }
 
 func (f *FollowRepositorie) DeleteFollow(followData models.FollowRequest) error {

@@ -4,7 +4,7 @@ import './followDialog.css';
 
 const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner }) => {
     const [users, setUsers] = useState([]);
-    const [userId, setLastUserId] = useState('');
+    const [lastUserId, setLastUserId] = useState('');
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observerRef = useRef();
@@ -16,7 +16,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         try {
             const endpoint = type === 'followers' ? 'followerlist' : 'followinglist';
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}/${userID}?offset=${userId}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}/${userID}?offset=${lastUserId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -113,7 +113,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         }
 
         return () => observer.disconnect();
-    }, [hasMore, loading, userId]);
+    }, [hasMore, loading, lastUserId]);
 
     return (
         <div className="follow-dialog-overlay" onClick={onClose}>

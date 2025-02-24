@@ -36,7 +36,7 @@ const GroupHeader = ({ group }) => {
                     showToast('success', 'Success! Operation completed.');
                     router.push("/groups")
                 }).catch((error) => {
-                    console.log(error)
+                    console.error(error)
                     showToast('error', error.message);
                 })
     };
@@ -72,7 +72,7 @@ const GroupHeader = ({ group }) => {
                     setIsDisabled(true);
                     group.IsPending = true
                 }).catch((error) => {
-                    console.log(error)
+                    console.error(error)
                     showToast('error', error.message);
                 })
         };
@@ -99,7 +99,7 @@ const GroupHeader = ({ group }) => {
                 router.push("/groups")
             
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
                 showToast('error', error.message);
             })
     };

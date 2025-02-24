@@ -100,7 +100,7 @@ const GroupDetailPage = () => {
                 const data = await response.json();
                 setGroupData(data.data);
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         };
         fetchGroupData();
@@ -123,7 +123,7 @@ const GroupDetailPage = () => {
                 const data = await response.json();
                 setRequest(data.data);
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         };
         fetchRequests();
@@ -182,7 +182,7 @@ const GroupDetailPage = () => {
                     prevRequests.filter(req => req.UserId !== userId)
                 );
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
             })
     };
 

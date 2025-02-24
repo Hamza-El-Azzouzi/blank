@@ -35,7 +35,7 @@ const GroupsPage = () => {
             .then((data) => {
                 setGroups([...data.data, ...groups]);
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
             })
     }, []);
 
@@ -69,7 +69,7 @@ const GroupsPage = () => {
             setGroups(data.data);
         })
         .catch((error) => {
-            console.log(error);
+            console.error(error);
             showToast('error', 'Failed to search groups');
         });
     };
@@ -97,7 +97,7 @@ const GroupsPage = () => {
                 setShowCreateGroup(false)
                 setGroups([data.data, ...groups]);
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
                 showToast('error', error.message);
             })
     };
@@ -121,7 +121,7 @@ const GroupsPage = () => {
             .then((data) => {
                 showToast('success', 'Success! Operation completed.');
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
                 showToast('error', error.message);
             })
     };

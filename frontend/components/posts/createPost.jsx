@@ -18,15 +18,44 @@ const CreatePost = ({ onPostCreated }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [lastUserId, setLastUserId] = useState('');
 
     useEffect(() => {
         setCookieValue(cookies.GetCookie("sessionId"));
     }, [cookieValue]);
 
+    const getUserID = async () => {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              'Content-Type': "application/json"
+            },
+            body: JSON.stringify({
+              name: "token",
+              value: cookieValue
+            })
+          });
+    
+          const data = await response.json();
+    
+          if (!response.ok) {
+            throw new Error(data.message || 'Failed to fetch user ID');
+          }
+    
+          return data.data
+        } catch (error) {
+          console.error('Error fetching profile path:', error);
+        }
+      };
+
     useEffect(() => {
+        if (!showFollowersDialog || !cookieValue) return;
         const fetchFollowers = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/followerlist?page=${page}`, {
+                const userId = await getUserID();
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/followerlist/${userId}?offset=${lastUserId}`, {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`,
                     },
@@ -59,10 +88,8 @@ const CreatePost = ({ onPostCreated }) => {
             }
         };
 
-        if (cookieValue) {
-            fetchFollowers();
-        }
-    }, [cookieValue, page]);
+        fetchFollowers();
+    }, [cookieValue, page, showFollowersDialog, lastUserId]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -87,6 +114,7 @@ const CreatePost = ({ onPostCreated }) => {
         const value = e.target.value;
         setPrivacy(value);
         if (value === 'private') {
+            setPage(1);
             setShowFollowersDialog(true);
         }
     };

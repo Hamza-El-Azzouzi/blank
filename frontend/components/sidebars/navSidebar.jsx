@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiBell, FiUsers, FiUser, FiLogOut } from 'react-icons/fi';
 import { BiSearch } from 'react-icons/bi';
 import './sidebar.css';
 import * as cookies from '@/lib/cookie';

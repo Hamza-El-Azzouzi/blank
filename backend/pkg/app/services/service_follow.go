@@ -41,11 +41,33 @@ func (f *FollowService) GetFollowStatus(follow models.FollowRequest) (string, er
 }
 
 func (f *FollowService) GetFollowers(userId, offset string) (*models.FollowListResponse, error) {
-	return f.FollowRepo.GetFollowers(userId, offset)
+	followers, err := f.FollowRepo.GetFollowers(userId, offset)
+	if err != nil {
+		return nil, err
+	}
+	var response models.FollowListResponse
+	response.FollowList = followers
+	if len(followers) > 20 {
+		response.LastUserId = followers[19].UserId
+		response.FollowList = followers[:20]
+	}
+
+	return &response, nil
 }
 
 func (f *FollowService) GetFollowing(userId, offset string) (*models.FollowListResponse, error) {
-	return f.FollowRepo.GetFollowing(userId, offset)
+	following, err := f.FollowRepo.GetFollowing(userId, offset)
+	if err != nil {
+		return nil, err
+	}
+	var response models.FollowListResponse
+	response.FollowList = following
+	if len(following) > 20 {
+		response.LastUserId = following[19].UserId
+		response.FollowList = following[:20]
+	}
+
+	return &response, nil
 }
 
 func (f *FollowService) DeleteFollow(followData models.FollowRequest) error {
