@@ -8,6 +8,7 @@ import Posts from '@/components/posts/posts';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 import UserNotFound from '@/components/profile/NotFound';
+import PrivateAccount from '@/components/profile/PrivateAccount';
 
 export default function ProfilePage({ params }) {
   const [cookieValue, setCookieValue] = useState(null);
@@ -75,7 +76,7 @@ export default function ProfilePage({ params }) {
   }, [userID, cookieValue]);
 
   useEffect(() => {
-    if (!profile.first_name) return;
+    if (!profile.is_owner && (!profile.first_name || (!profile.is_public && !profile.is_following))) return;
     if (endReached) return;
     setLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-posts/${userID}/${postsPage}`, {
@@ -85,12 +86,13 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async data => {
+        const posts = data.data
         const user = {
           name: profile.first_name + " " + profile.last_name,
           avatar: profile.avatar,
         };
-        if (data && data.length > 0) {
-          const updatedPosts = await Promise.all(data.map(async post => {
+        if (posts && posts.length > 0) {
+          const updatedPosts = await Promise.all(posts.map(async post => {
             if (post.image) {
               post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
             }
@@ -136,27 +138,33 @@ export default function ProfilePage({ params }) {
         <>
           <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />
 
-          <div className="profile-tabs">
-            <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
-              Posts
-            </button>
-            <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
-              About
-            </button>
-          </div>
-          {activeTab === 'about' &&
-            <ProfileAbout profile={profile} />
-          }
-
-          {activeTab === 'posts' && profile.first_name &&
+          {!profile.is_owner && !profile.is_public && !profile.is_following
+            ? <PrivateAccount />
+            :
             <>
-              <h3>{profile.first_name}&lsquo;s posts</h3>
-              <Posts
-                posts={posts}
-                loading={loading}
-                endReached={endReached}
-                onLoadMore={handleLoadMore}
-              />
+              <div className="profile-tabs">
+                <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+                  Posts
+                </button>
+                <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+                  About
+                </button>
+              </div>
+              {activeTab === 'about' &&
+                <ProfileAbout profile={profile} />
+              }
+
+              {activeTab === 'posts' && profile.first_name &&
+                <>
+                  <h3>{profile.first_name}&lsquo;s posts</h3>
+                  <Posts
+                    posts={posts}
+                    loading={loading}
+                    endReached={endReached}
+                    onLoadMore={handleLoadMore}
+                  />
+                </>
+              }
             </>
           }
         </>

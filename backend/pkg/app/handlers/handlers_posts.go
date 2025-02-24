@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,11 +52,7 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", posts)
 }
 
 func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
@@ -83,21 +78,21 @@ func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
 		return
 	}
-
-	posts, err := p.PostService.PostsByUser(userID, nPagination)
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+	posts, err := p.PostService.PostsByUser(userID, authUserID, nPagination)
+	if err != nil {
+
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", posts)
 }
 
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
@@ -133,9 +128,5 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts[0])
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", posts[0])
 }

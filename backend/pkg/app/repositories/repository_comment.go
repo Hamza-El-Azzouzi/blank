@@ -63,7 +63,8 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, o
 			EXISTS(SELECT 1 FROM Like l WHERE l.comment_id = c.comment_id AND l.user_id = ?) AS has_liked,
 			u.first_name,
 			u.last_name,
-			u.avatar
+			u.avatar,
+			u.user_id
 		FROM
 			Comment c
 			JOIN User u ON c.user_id = u.user_id
@@ -91,6 +92,7 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, o
 			&comment.User.FirstName,
 			&comment.User.LastName,
 			&comment.User.Avatar,
+			&comment.User.UserID,
 		)
 		if scanErr != nil {
 			return nil, scanErr

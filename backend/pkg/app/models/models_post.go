@@ -20,6 +20,7 @@ type PostWithUser struct {
 	Content       string    `json:"content"`
 	Image         string    `json:"image"`
 	CreatedAt     time.Time `json:"created_at"`
+	Privacy       string    `json:"privacy"`
 	UserID        uuid.UUID `json:"user_id"`
 	FirstName     string    `json:"first_name"`
 	LastName      string    `json:"last_name"`
@@ -37,14 +38,13 @@ type PostByUser struct {
 	Content       string    `json:"content"`
 	Image         string    `json:"image,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`
+	Privacy       string    `json:"privacy"`
 	FormattedDate string    `json:"formatted_date"`
 	LikeCount     int       `json:"like_count"`
 	CommentCount  int       `json:"comment_count"`
-	Privacy       string    `json:"privacy"`
 	HasLiked      bool      `json:"has_liked"`
 	UserID        string    `json:"user_id"`
 }
-
 
 type PostData struct {
 	Content           string   `json:"content"`

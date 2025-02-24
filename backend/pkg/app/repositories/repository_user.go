@@ -148,7 +148,7 @@ func (r *UserRepository) SearchUsers(searchQuery string) ([]models.UserInfo, err
 	return users, nil
 }
 
-func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error) {
+func (r *UserRepository) GetAllUserInfo(user_id uuid.UUID) (*models.UserInfo, error) {
 	user := &models.UserInfo{}
 	query := `
 	SELECT 
@@ -178,6 +178,39 @@ func (r *UserRepository) GetUserInfo(user_id uuid.UUID) (*models.UserInfo, error
 		&user.IsPublic,
 		&user.Following,
 		&user.Followers)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &models.UserInfo{}, nil
+		}
+		return &models.UserInfo{}, err
+	}
+	return user, nil
+}
+
+func (r *UserRepository) GetPublicUserInfo(user_id uuid.UUID) (*models.UserInfo, error) {
+	user := &models.UserInfo{}
+	query := `
+	SELECT 
+		u.first_name,
+		u.last_name,
+		COALESCE(u.avatar, ""),
+		u.is_public,
+		(SELECT COUNT(*) FROM Follow WHERE follower_id = u.user_id AND status = 'accepted') AS following_count,
+		(SELECT COUNT(*) FROM Follow WHERE following_id = u.user_id AND status = 'accepted') AS followers_count
+	FROM User u
+	LEFT JOIN Follow f ON u.user_id = f.follower_id OR u.user_id = f.following_id
+	WHERE u.user_id = ?;
+	`
+
+	row := r.DB.QueryRow(query, user_id)
+	err := row.Scan(
+		&user.FirstName,
+		&user.LastName,
+		&user.Avatar,
+		&user.IsPublic,
+		&user.Following,
+		&user.Followers,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &models.UserInfo{}, nil
@@ -273,4 +306,39 @@ func (u *UserRepository) IsProfilePublic(userID string) bool {
 	row := u.DB.QueryRow(query, userID)
 	row.Scan(&isPublic)
 	return isPublic
+}
+
+func (u *UserRepository) GetUserPrivacy(userID uuid.UUID) (bool, error) {
+	var isPublic bool
+	query := `SELECT is_public FROM User WHERE user_id = ?`
+	err := u.DB.QueryRow(query, userID).Scan(&isPublic)
+	if err != nil {
+		return false, err
+	}
+
+	return isPublic, nil
+}
+
+func (u *UserRepository) IsFollowing(authUserID, userID uuid.UUID) (bool, error) {
+	isFollowing := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+					Follow f
+				WHERE
+					f.follower_id = ?
+					AND f.following_id = ?
+					AND f.status = "accepted"
+			) AS is_following
+	`
+
+	err := u.DB.QueryRow(query, authUserID, userID).Scan(&isFollowing)
+	if err != nil {
+		return isFollowing, err
+	}
+
+	return isFollowing, nil
 }

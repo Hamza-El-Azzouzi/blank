@@ -26,8 +26,9 @@ export default function Home() {
       });
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
-      if (data && data.length > 0) {
-        const newPosts = await Promise.all(data.map(async (post) => {
+      const posts = data.data;
+      if (posts && posts.length > 0) {
+        const newPosts = await Promise.all(posts.map(async (post) => {
           post.avatar = post.avatar
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar)
             : '/default-avatar.jpg';

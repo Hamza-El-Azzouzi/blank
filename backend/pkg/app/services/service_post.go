@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
@@ -12,14 +13,19 @@ import (
 
 type PostService struct {
 	PostRepo *repositories.PostRepository
+	UserRepo *repositories.UserRepository
 }
 
 func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string, image string, selectedFollowers []string) error {
 	postId := uuid.Must(uuid.NewV4())
-
+	privacy = strings.ToLower(privacy)
 	imageFilename, err := utils.SaveImage(image)
 	if err != nil {
 		return err
+	}
+
+	if !p.UserRepo.IsProfilePublic(userId.String()) && privacy == "public" {
+		privacy = "almost private"
 	}
 
 	post := &models.Post{
@@ -54,8 +60,8 @@ func (p *PostService) AllPosts(pagination int, currentUserID uuid.UUID) ([]model
 	return posts, nil
 }
 
-func (p *PostService) PostsByUser(userID uuid.UUID, pagination int) ([]models.PostByUser, error) {
-	posts, err := p.PostRepo.PostsByUser(userID, pagination)
+func (p *PostService) PostsByUser(userID, authUserID uuid.UUID, pagination int) ([]models.PostByUser, error) {
+	posts, err := p.PostRepo.PostsByUser(userID, authUserID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("error Kayn f Posts by user service : %v", err)
 	}

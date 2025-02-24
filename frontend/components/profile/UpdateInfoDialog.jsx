@@ -95,7 +95,12 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
           <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} placeholder="Nickname" />
           <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
           <textarea name="about" value={formData.about} onChange={handleChange} placeholder="About You"></textarea>
-          <input type="date" name="date_of_birth" value={new Date(formData.date_of_birth)?.toISOString().split('T')[0]} onChange={handleChange} />
+          <input
+            type="date"
+            name="date_of_birth"
+            value={formData.date_of_birth ? new Date(formData.date_of_birth)?.toISOString().split('T')[0] : new Date()?.toISOString().split('T')[0]}
+            onChange={handleChange}
+          />
           <div>
             <label>
               <input type="radio" value="true" checked={formData.is_public === true} onChange={() => setFormData({ ...formData, is_public: true })} />

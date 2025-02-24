@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
+import { FiHeart, FiMessageSquare, FiGlobe, FiUsers, FiLock } from 'react-icons/fi';
 import * as cookies from '@/lib/cookie';
 import './posts.css';
 import Comments from '../comments/Comments';
@@ -49,8 +49,6 @@ const Post = ({ post }) => {
         >
           <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
         </Link>
-        <a href={`/profile/${post.user_id}`}>
-        </a>
         <div className="post-meta">
           <Link
             key={post.user_id}
@@ -58,7 +56,14 @@ const Post = ({ post }) => {
           >
             <span className="post-author">{post.author}</span>
           </Link>
-          <span className="post-time">{post.formatted_date}</span>
+          <span className="post-time">
+            <div style={{fontSize: '13px'}}>
+              {post.privacy === 'public' && <FiGlobe className="privacy-icon" />}
+              {post.privacy === 'almost private' && <FiUsers className="privacy-icon" />}
+              {post.privacy === 'private' && <FiLock className="privacy-icon" />}
+            </div>
+            <div>{post.formatted_date}</div>
+          </span>
         </div>
       </div>
 
