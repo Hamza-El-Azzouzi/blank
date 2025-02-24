@@ -1,4 +1,3 @@
-// components/posts/createPost.jsx
 "use client"
 import React, { useState, useEffect } from 'react';
 import { FiImage, FiSearch } from 'react-icons/fi';

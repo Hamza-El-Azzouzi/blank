@@ -1,5 +1,3 @@
-/* app/(main)/main.js */
-
 .app-container {
   display: flex;
   justify-content: space-between;
@@ -46,7 +44,7 @@
   transition: transform 0.5s ease, right 0.5s ease;
 }
 
-.home-page {
+.feed-container {
   display: grid;
   grid-template-columns: 1fr;
   max-width: 800px;

@@ -80,7 +80,7 @@ func (g *GroupHandler) GroupSearch(w http.ResponseWriter, r *http.Request) {
 	utils.SendResponses(w, http.StatusOK, "Created successfully", groups)
 }
 
-func (g *GroupHandler) GroupDerails(w http.ResponseWriter, r *http.Request) {
+func (g *GroupHandler) GroupDetails(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return

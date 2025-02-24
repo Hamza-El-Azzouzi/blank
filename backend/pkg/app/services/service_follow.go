@@ -40,11 +40,11 @@ func (f *FollowService) GetFollowStatus(follow models.FollowRequest) (string, er
 	return status, err
 }
 
-func (f *FollowService) GetFollowers(userId string, offset int) (*models.FollowListResponse, error) {
+func (f *FollowService) GetFollowers(userId, offset string) (*models.FollowListResponse, error) {
 	return f.FollowRepo.GetFollowers(userId, offset)
 }
 
-func (f *FollowService) GetFollowing(userId string, offset int) (*models.FollowListResponse, error) {
+func (f *FollowService) GetFollowing(userId, offset string) (*models.FollowListResponse, error) {
 	return f.FollowRepo.GetFollowing(userId, offset)
 }
 

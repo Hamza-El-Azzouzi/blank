@@ -54,87 +54,84 @@ func (f *FollowRepositorie) GetFollowStatus(follow models.FollowRequest) (string
 	return status, err
 }
 
-func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.FollowListResponse, error) {
+func (f *FollowRepositorie) GetFollowers(userId, offset string) (*models.FollowListResponse, error) {
 	query := `
         SELECT 
             u.user_id,
             u.first_name,
             u.last_name,
-            u.avatar,
-            COUNT(*) OVER() as total_count
+            u.avatar
         FROM Follow f
         JOIN User u ON f.follower_id = u.user_id
         WHERE f.following_id = ? AND f.status = "accepted"
-        ORDER BY u.first_name ASC
-        LIMIT 20 OFFSET ?`
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
 
-	rows, err := f.DB.Query(query, userId, offset)
+	rows, err := f.DB.Query(query, userId, offset, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var response models.FollowListResponse
 	var followers []models.FollowList
-	var totalCount int
 
 	for rows.Next() {
 		var follower models.FollowList
-		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar, &totalCount)
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
 		if err != nil {
 			return nil, err
 		}
 		followers = append(followers, follower)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
+	var response models.FollowListResponse
+	response.FollowList = followers
+	if len(followers) > 20 {
+		response.LastUserId = followers[19].UserId
+		response.FollowList = followers[:20]
 	}
 
-	response.FollowList = followers
-	response.TotalCount = totalCount
 	return &response, nil
 }
 
-func (f *FollowRepositorie) GetFollowing(userId string, offset int) (*models.FollowListResponse, error) {
+func (f *FollowRepositorie) GetFollowing(userId, offset string) (*models.FollowListResponse, error) {
 	query := `
         SELECT 
             u.user_id,
             u.first_name,
             u.last_name,
-            u.avatar,
-            COUNT(*) OVER() as total_count
+            u.avatar
         FROM Follow f
         JOIN User u ON f.following_id = u.user_id
         WHERE f.follower_id = ? AND f.status = "accepted"
-        ORDER BY u.first_name ASC
-        LIMIT 20 OFFSET ?`
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
 
-	rows, err := f.DB.Query(query, userId, offset)
+	rows, err := f.DB.Query(query, userId, offset, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var response models.FollowListResponse
 	var following []models.FollowList
-	var totalCount int
-
 	for rows.Next() {
 		var follower models.FollowList
-		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar, &totalCount)
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
 		if err != nil {
 			return nil, err
 		}
 		following = append(following, follower)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
+	var response models.FollowListResponse
+	response.FollowList = following
+	if len(following) > 20 {
+		response.LastUserId = following[19].UserId
+		response.FollowList = following[:20]
 	}
 
-	response.FollowList = following
-	response.TotalCount = totalCount
 	return &response, nil
 }
 
