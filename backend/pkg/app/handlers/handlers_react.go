@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"blank/pkg/app/models"
@@ -37,7 +36,6 @@ func (rh *ReactHandler) React(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = rh.ReactService.Create(userID, react.ID, react.Target)
-	fmt.Println("create", err)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return

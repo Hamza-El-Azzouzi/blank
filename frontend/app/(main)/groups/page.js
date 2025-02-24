@@ -119,7 +119,6 @@ const GroupsPage = () => {
             const data = await response.json();
             setGroups(new Set(data.data.map(group => JSON.stringify(group)))); // Ensure uniqueness
         } catch (error) {
-            console.log(error);
             showToast('error', 'Failed to search groups');
         }
     };
@@ -141,7 +140,7 @@ const GroupsPage = () => {
                 .then(() => {
                     showToast('success', 'Success! Operation completed.');
                 }).catch((error) => {
-                    console.log(error)
+                    
                     showToast('error', error.message);
                 })
         };
@@ -173,7 +172,6 @@ const GroupsPage = () => {
                 });
             })
             .catch((error) => {
-                console.log(error);
                 showToast('error', error.message);
             });
     };

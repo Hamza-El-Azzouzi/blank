@@ -206,8 +206,7 @@ func (g *GroupRepository) IsOwner(group_id, user_id string) (bool, error) {
 	exist := 0
 	query := "SELECT count(*) FROM `Group` WHERE group_id = ? AND creator_id = ?"
 	err := g.DB.QueryRow(query, group_id, user_id).Scan(&exist)
-	fmt.Println(group_id, user_id, exist)
-	fmt.Println(err)
+	
 	if err != nil {
 		return false, err
 	}
@@ -297,10 +296,10 @@ func (g *GroupRepository) GroupResponseDeclined(group_id, user_id string) (int, 
 func (g *GroupRepository) GroupCreatePost(post_id string, group models.GroupPost, user_id, FileName string) (models.GroupPost, error) {
 	query := "INSERT INTO `Group_Post` (group_post_id,group_id,user_id,content,image) VALUES (?,?,?,?,?)"
 	var groupInfo models.GroupPost
-	fmt.Println(groupInfo.Group_id)
+	
 	_, err := g.DB.Exec(query, post_id, group.Group_id, user_id, group.Content, FileName)
 	if err != nil {
-		fmt.Println("grom repo", err)
+		
 		return models.GroupPost{}, err
 	}
 
@@ -391,9 +390,9 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 		LIMIT 20 OFFSET ?;
 	`
 	rows, err := g.DB.Query(querySelect, user_id, group_id, pagination)
-	fmt.Println(err)
+	
 	if err != nil {
-		fmt.Println(err)
+		
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
 	defer rows.Close()
@@ -421,7 +420,7 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 	}
 	err = rows.Err()
 	if err != nil {
-		fmt.Println(err)
+		
 		return []models.GroupPost{}, err
 	}
 	return groupInfos, nil
@@ -513,7 +512,7 @@ func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Ev
 		event.Time = dateTime.Format("15:04")
 		events = append(events, event)
 	}
-	fmt.Println(events)
+	
 	return events, nil
 }
 

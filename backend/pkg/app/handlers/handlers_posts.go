@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -88,7 +87,6 @@ func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	posts, err := p.PostService.PostsByUser(userID, authUserID, nPagination)
-	fmt.Println(err)
 	if err != nil {
 
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)

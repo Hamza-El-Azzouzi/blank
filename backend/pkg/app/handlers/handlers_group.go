@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -135,7 +134,6 @@ func (g *GroupHandler) GroupDetails(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
 	}
 	GroupDerails, err := g.GroupService.GroupDetails(user_id, pathParts[3])
-	fmt.Println(err)
 	if err != nil {
 		switch err.Error() {
 		case "forbidden":
@@ -357,7 +355,6 @@ func (g *GroupHandler) GroupPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pathParts := strings.Split(r.URL.Path, "/")
-	fmt.Println(pathParts)
 	if len(pathParts) != 6 {
 		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
@@ -373,7 +370,6 @@ func (g *GroupHandler) GroupPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	groupPost, err := g.GroupService.GroupPost(pathParts[3], user_id, pag)
-	fmt.Println(err)
 	if err != nil {
 		switch err.Error() {
 		case "forbidden":

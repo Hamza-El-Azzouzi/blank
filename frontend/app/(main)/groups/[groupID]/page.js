@@ -139,7 +139,7 @@ const GroupDetailPage = () => {
                 if (data.data && data.data[0].TotalCount < ITEMS_PER_PAGE) {
                     setHasMoreRequests(false);
                 }
-                console.log(data.data)
+               
                 if (data.data) setRequests(prevRequests => [...prevRequests, ...data.data]);
 
             } catch (error) {
@@ -209,7 +209,7 @@ const GroupDetailPage = () => {
                 );
 
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
             })
     };
     const handleRequesttResponse = (requestId, response, userId) => {
@@ -239,12 +239,11 @@ const GroupDetailPage = () => {
                     prevRequests.filter(req => req.UserId !== userId)
                 );
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
             })
     };
     const fetchPosts = async (group_id, pageNumber) => {
         if (endReached || (!isJoined && !isOwner)) return;
-        console.log(isOwner)
         try {
             setLoading(true);
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${group_id}/post/${pageNumber}`, {
@@ -310,7 +309,6 @@ const GroupDetailPage = () => {
                 return response.json();
             })
             .then((data) => {
-                console.log(data.data)
                 const newEvent = {
                     ...data.data,
                     going_count: 0,
@@ -318,7 +316,7 @@ const GroupDetailPage = () => {
                 };
                 setEvents(prevEvents => [newEvent, ...(prevEvents || [])]);
             }).catch((error) => {
-                console.log(error)
+                console.error(error)
             })
 
 

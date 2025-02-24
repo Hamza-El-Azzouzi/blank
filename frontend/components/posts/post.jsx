@@ -8,7 +8,6 @@ import './posts.css';
 import Comments from '../comments/Comments';
 
 const Post = ({ post, target}) => {
-  console.log(target)
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
   const [commentsCount, setCommentsCount] = useState(post.comment_count || 0);

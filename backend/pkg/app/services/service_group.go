@@ -160,14 +160,14 @@ func (g *GroupService) GroupPost(group_id, user_id string, pagination int) ([]mo
 		return []models.GroupPost{}, fmt.Errorf("forbidden")
 	}
 	posts, err := g.GroupRepo.GroupPost(group_id, user_id, pagination)
-	fmt.Println(err)
+	
 	return posts, err
 }
 
 func (g *GroupService) CreateEvent(event models.Event, user_id string) (models.Event, error) {
 	isMember := g.IsGroupMember(event.Group_id, user_id)
 	IsOwner := g.IsOwner(event.Group_id, user_id)
-	fmt.Println(isMember, IsOwner)
+	
 	if !isMember && !IsOwner {
 		return models.Event{}, fmt.Errorf("forbbiden")
 	}

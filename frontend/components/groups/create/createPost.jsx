@@ -71,7 +71,7 @@ const CreatePost = ({groupID, onPostCreated }) => {
                 comment_count: post.data.comment_count,
                 isLiked: post.data.HasLiked,
             };
-            console.log(newPost)
+            
             if (onPostCreated) onPostCreated(newPost);
 
             setContent('');

@@ -61,7 +61,6 @@ func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]mo
 	LIMIT 20 OFFSET ?;`
 	rows, err := r.DB.Query(query, currentUserID, currentUserID, currentUserID, currentUserID, pagination)
 	if err != nil {
-		fmt.Println(err)
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
 	defer rows.Close()
