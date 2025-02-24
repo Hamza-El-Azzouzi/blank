@@ -2,6 +2,7 @@
 
 import { formatNumber } from '@/lib/formatting'
 import { useState } from 'react'
+import Link from 'next/link';
 import { FiHeart } from 'react-icons/fi'
 
 export default function Comment({ comment, cookieValue }) {
@@ -35,11 +36,16 @@ export default function Comment({ comment, cookieValue }) {
     return (
         <div className="comment">
             <div className='comment-side'>
-                <img
-                    src={comment.user.avatar}
-                    alt={`${comment.user.first_name}'s avatar`}
-                    className="comment-avatar"
-                />
+                <Link
+                    key={comment.user.user_id}
+                    href={`/profile/${comment.user.user_id}`}
+                >
+                    <img
+                        src={comment.user.avatar}
+                        alt={`${comment.user.first_name}'s avatar`}
+                        className="comment-avatar"
+                    />
+                </Link>
                 <div className="comment-reaction">
                     <button className={`comment-reaction-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
                         <FiHeart className={`comment-reaction-icon ${isLiked ? 'liked' : ''}`} />
@@ -48,7 +54,12 @@ export default function Comment({ comment, cookieValue }) {
                 </div>
             </div>
             <div className="comment-content">
-                <div className="comment-author">{comment.user.first_name} {comment.user.last_name}</div>
+                <Link
+                    key={comment.user.user_id}
+                    href={`/profile/${comment.user.user_id}`}
+                >
+                    <div className="comment-author">{comment.user.first_name} {comment.user.last_name}</div>
+                </Link>
                 <p className="comment-text">{comment.content}</p>
                 <span className="comment-time">{comment.formatted_date}</span>
             </div>

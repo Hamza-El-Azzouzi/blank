@@ -8,7 +8,17 @@ import (
 	"blank/pkg/app/utils"
 )
 
-func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHandler *handlers.PostHandler, reactHandler *handlers.ReactHandler, authMiddleware *middleware.AuthMiddleware, messageHnadler *handlers.MessageHandler, userHandler *handlers.UserHandler, groupHandler *handlers.GroupHandler, commentHandler *handlers.CommentHandler) {
+func SetupRoutes(mux *http.ServeMux,
+	authHandler *handlers.AuthHandler,
+	postHandler *handlers.PostHandler,
+	reactHandler *handlers.ReactHandler,
+	authMiddleware *middleware.AuthMiddleware,
+	messageHnadler *handlers.MessageHandler,
+	userHandler *handlers.UserHandler,
+	groupHandler *handlers.GroupHandler,
+	followHandler *handlers.FollowHandler,
+	commentHandler *handlers.CommentHandler,
+) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
@@ -18,7 +28,6 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/storage/avatars/{avatar}", handlers.ServeImages)
 
 	mux.HandleFunc("/api/users/", authHandler.GetUsers)
-	mux.HandleFunc("/api/searchedusers", authHandler.SearchUsers)
 	mux.HandleFunc("/api/messages", authHandler.GetUsers)
 	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
 	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
@@ -27,6 +36,7 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
 	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
+	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 
 	// comments routes
@@ -39,6 +49,14 @@ func SetupRoutes(mux *http.ServeMux, authHandler *handlers.AuthHandler, postHand
 
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
+
+	mux.HandleFunc("/api/requestfollow", followHandler.RequestFollow)
+	mux.HandleFunc("/api/acceptfollow", followHandler.AcceptFollow)
+	mux.HandleFunc("/api/refusefollow", followHandler.RefuseFollow)
+	mux.HandleFunc("/api/deletefollowing", followHandler.DeleteFollowing)
+	mux.HandleFunc("/api/deletefollower", followHandler.DeleteFollower)
+	mux.HandleFunc("/api/followerlist", followHandler.FollowerList)
+	mux.HandleFunc("/api/followinglist", followHandler.FollowingList)
 
 	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)
 	mux.HandleFunc("/api/groups", groupHandler.Groups)

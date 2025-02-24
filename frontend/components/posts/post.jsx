@@ -1,26 +1,11 @@
 // components/posts/post.jsx
 "use client"
 import React, { useState } from 'react';
-import { FiHeart, FiMessageSquare, FiSend } from 'react-icons/fi';
+import Link from 'next/link';
+import { FiHeart, FiMessageSquare, FiGlobe, FiUsers, FiLock } from 'react-icons/fi';
 import * as cookies from '@/lib/cookie';
 import './posts.css';
 import Comments from '../comments/Comments';
-
-const AVATAR = "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
-const mockComments = [
-  {
-    id: 1,
-    author: "Alex Turner",
-    content: "This is amazing! 👏",
-    time: "15m ago"
-  },
-  {
-    id: 2,
-    author: "Sara Wilson",
-    content: "Great progress! Keep it up",
-    time: "1h ago"
-  }
-];
 
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
@@ -59,10 +44,27 @@ const Post = ({ post }) => {
   return (
     <div className="post">
       <div className="post-header">
-        <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
+        <Link
+          key={post.user_id}
+          href={`/profile/${post.user_id}`}
+        >
+          <img src={post.avatar} alt={`${post.author}'s avatar`} className="post-avatar" />
+        </Link>
         <div className="post-meta">
-          <span className="post-author">{post.author}</span>
-          <span className="post-time">{post.formatted_date}</span>
+          <Link
+            key={post.user_id}
+            href={`/profile/${post.user_id}`}
+          >
+            <span className="post-author">{post.author}</span>
+          </Link>
+          <span className="post-time">
+            <div style={{fontSize: '13px'}}>
+              {post.privacy === 'public' && <FiGlobe className="privacy-icon" />}
+              {post.privacy === 'almost private' && <FiUsers className="privacy-icon" />}
+              {post.privacy === 'private' && <FiLock className="privacy-icon" />}
+            </div>
+            <div>{post.formatted_date}</div>
+          </span>
         </div>
       </div>
 

@@ -126,11 +126,11 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 	return allUser, nil
 }
 
-func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) ([]models.User, error) {
-	users := []models.User{}
-	query := "SELECT id, username , first_name, last_name FROM users WHERE username LIKE ? AND id != ?"
+func (r *UserRepository) SearchUsers(searchQuery string) ([]models.UserInfo, error) {
+	users := []models.UserInfo{}
+	query := "SELECT user_id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
 
-	rows, err := r.DB.Query(query, "%"+userName+"%", user_id)
+	rows, err := r.DB.Query(query, "%"+searchQuery+"%", "%"+searchQuery+"%")
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -138,8 +138,8 @@ func (r *UserRepository) GetUserByUserName(userName string, user_id uuid.UUID) (
 		return nil, err
 	}
 	for rows.Next() {
-		user := models.User{}
-		err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
+		user := models.UserInfo{}
+		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar)
 		if err != nil {
 			return nil, err
 		}
@@ -298,6 +298,14 @@ func (u *UserRepository) UserExist(userID uuid.UUID) bool {
 		return true
 	}
 	return false
+}
+
+func (u *UserRepository) IsProfilePublic(userID string) bool {
+	isPublic := false
+	query := `SELECT is_public FROM User WHERE user_id = ?`
+	row := u.DB.QueryRow(query, userID)
+	row.Scan(&isPublic)
+	return isPublic
 }
 
 func (u *UserRepository) GetUserPrivacy(userID uuid.UUID) (bool, error) {

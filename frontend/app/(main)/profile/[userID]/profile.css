@@ -211,7 +211,6 @@
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 0.75rem;
     color: var(--text-primary);
     font-size: 1rem;
     width: 100%;

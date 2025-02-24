@@ -24,7 +24,8 @@ export default function ProfilePage({ params }) {
     followers: 0,
     about: "",
     is_owner: false,
-    nickname: ""
+    nickname: "",
+    follow_status: "",
   });
 
   const [posts, setPosts] = useState([]);
@@ -61,7 +62,6 @@ export default function ProfilePage({ params }) {
           setNotFound(true);
           return;
         }
-
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
@@ -87,12 +87,13 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async data => {
+        const posts = data.data
         const user = {
           name: profile.first_name + " " + profile.last_name,
           avatar: profile.avatar,
         };
-        if (data && data.length > 0) {
-          const updatedPosts = await Promise.all(data.map(async post => {
+        if (posts && posts.length > 0) {
+          const updatedPosts = await Promise.all(posts.map(async post => {
             if (post.image) {
               post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
             }
@@ -136,7 +137,7 @@ export default function ProfilePage({ params }) {
     <div className="container">
       {!notFound ?
         <>
-          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} />
+          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID}/>
 
           {!profile.is_owner && !profile.is_public && !profile.is_following
             ? <PrivateAccount />

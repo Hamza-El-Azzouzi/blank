@@ -7,26 +7,63 @@ import './posts.css';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 
-const allFollowers = Array.from({ length: 100 }, (_, i) => ({
-    id: i + 1,
-    name: `Follower ${i + 1}`,
-    username: `user${i + 1}`,
-    avatar: `https://source.unsplash.com/random/40x40?portrait=${i + 1}`
-}));
-
-const CreatePost = ({ onPostCreated }) => {  // Add this prop
+const CreatePost = ({ onPostCreated }) => {
     const [cookieValue, setCookieValue] = useState(null);
-    useEffect(() => {
-        setCookieValue(cookies.GetCookie("sessionId"));
-    }, [cookieValue]);
-
+    const [followers, setFollowers] = useState([]);
+    const [displayedFollowers, setDisplayedFollowers] = useState([]);
+    const [selectedFollowers, setSelectedFollowers] = useState([]);
     const [content, setContent] = useState('');
     const [image, setImage] = useState(null);
     const [privacy, setPrivacy] = useState('Public');
     const [showFollowersDialog, setShowFollowersDialog] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [displayedFollowers, setDisplayedFollowers] = useState(allFollowers.slice(0, 20));
-    const [selectedFollowers, setSelectedFollowers] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+
+    useEffect(() => {
+        setCookieValue(cookies.GetCookie("sessionId"));
+    }, [cookieValue]);
+
+    useEffect(() => {
+        const fetchFollowers = async () => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/followerlist?page=${page}`, {
+                    headers: {
+                        'Authorization': `Bearer ${cookieValue}`,
+                    },
+                });
+                if (!response.ok) throw new Error('Failed to fetch followers');
+                const data = await response.json();
+
+                let followersData = data.data.follow_list || [];
+                followersData = await Promise.all(followersData.map(async (user) => {
+                    user.avatar = user.avatar
+                      ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
+                      : '/default-avatar.jpg';
+                    return user;
+                }));
+                if (followersData.length < 20) {
+                    setHasMore(false);
+                }
+                if (page === 1) {
+                    setFollowers(followersData);
+                    setDisplayedFollowers(followersData);
+                } else {
+                    setFollowers(prev => [...prev, ...followersData]);
+                    setDisplayedFollowers(prev => [...prev, ...followersData]);
+                }
+            } catch (error) {
+                console.error('Error fetching followers:', error);
+                setFollowers([]);
+                setDisplayedFollowers([]);
+                setHasMore(false);
+            }
+        };
+
+        if (cookieValue) {
+            fetchFollowers();
+        }
+    }, [cookieValue, page]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -56,27 +93,25 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
     };
 
     const handleScroll = (e) => {
-        const bottom = e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
-        if (bottom) {
-            const currentLength = displayedFollowers.length;
-            const nextFollowers = allFollowers.slice(currentLength, currentLength + 20);
-            if (nextFollowers.length > 0) {
-                setDisplayedFollowers(prev => [...prev, ...nextFollowers]);
-            }
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop === clientHeight && hasMore) {
+            setPage(prev => prev + 1);
         }
     };
 
     const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchQuery(query);
+        setPage(1);
+
         if (query) {
-            const filtered = allFollowers.filter(follower =>
+            const filtered = followers.filter(follower =>
                 follower.name.toLowerCase().includes(query) ||
                 follower.username.toLowerCase().includes(query)
-            ).slice(0, 20);
+            );
             setDisplayedFollowers(filtered);
         } else {
-            setDisplayedFollowers(allFollowers.slice(0, 20));
+            setDisplayedFollowers(followers);
         }
     };
 
@@ -111,17 +146,19 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
                 throw new Error('Failed to create post');
             }
 
-            const post = await response.json();
+            const data = await response.json();
+            const post = data.data;
             const newPost = {
                 post_id: post.post_id,
                 author: post.author,
-                avatar: post.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar): '/default-avatar.jpg',
+                avatar: post.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar) : '/default-avatar.jpg',
                 content: post.content,
-                image: post.image ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image): null,
+                image: post.image ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image) : null,
                 formatted_date: post.formatted_date,
                 like_count: post.like_count,
                 comment_count: post.comment_count,
-                isLiked:post.HasLiked,
+                isLiked: post.HasLiked,
+                privacy: post.privacy,
             };
 
             if (onPostCreated) onPostCreated(newPost);
@@ -165,7 +202,7 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
                             onChange={handlePrivacyChange}
                         >
                             <option value="public">Public</option>
-                            <option value="almost-private">Followers Only</option>
+                            <option value="almost private">Followers Only</option>
                             <option value="private">Selected Followers</option>
                         </select>
 
@@ -193,20 +230,19 @@ const CreatePost = ({ onPostCreated }) => {  // Add this prop
                 <div className="followers-list" onScroll={handleScroll}>
                     {displayedFollowers.map((follower) => (
                         <div
-                            key={follower.id}
-                            className={`follower-item ${selectedFollowers.includes(follower.id) ? 'selected' : ''}`}
-                            onClick={() => handleFollowerSelect(follower.id)}
+                            key={follower.user_id}
+                            className={`follower-item ${selectedFollowers.includes(follower.user_id) ? 'selected' : ''}`}
+                            onClick={() => handleFollowerSelect(follower.user_id)}
                         >
                             <div className="follower-info">
-                                <img src={follower.avatar} alt={follower.name} className="follower-avatar" />
+                                <img src={follower.avatar} alt={follower.first_name} className="follower-avatar" />
                                 <div className="follower-details">
-                                    <div className="follower-name">{follower.name}</div>
-                                    <div className="follower-username">@{follower.username}</div>
+                                    <div className="follower-name">{follower.first_name} {follower.last_name}</div>
                                 </div>
                             </div>
                             <Checkbox
-                                checked={selectedFollowers.includes(follower.id)}
-                                onChange={() => handleFollowerSelect(follower.id)}
+                                checked={selectedFollowers.includes(follower.user_id)}
+                                onChange={() => handleFollowerSelect(follower.user_id)}
                             />
                         </div>
                     ))}

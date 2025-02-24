@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
@@ -15,11 +13,8 @@ import (
 )
 
 type UserHandler struct {
-	AuthService   *services.AuthService
-	AuthMidlaware *middleware.AuthMiddleware
-	PostService   *services.PostService
 	UserService   *services.UserService
-	AuthHandler   *AuthHandler
+	FollowService *services.FollowService
 }
 
 func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
@@ -53,12 +48,20 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.UserService.GetUserInfo(userID, authUserID)
 	if err != nil {
-		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
 	user.IsOwner = userID == authUserID
+
+	if !user.IsOwner {
+		follow := models.FollowRequest{FollowerId: authUserID.String(), FollowingId: userID.String()}
+		user.FollowStatus, err = u.FollowService.GetFollowStatus(follow)
+		if err != nil {
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
+		}
+	}
 
 	utils.SendResponses(w, http.StatusOK, "", user)
 }
@@ -159,10 +162,24 @@ func (u *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) 
 
 	user, err := u.UserService.GetAuthenticatedUser(authUserID)
 	if err != nil {
-		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
 	utils.SendResponses(w, http.StatusOK, "", user)
+}
+
+func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	query := r.URL.Query().Get("q")
+
+	users, errUsers := u.UserService.SearchUsers(query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }

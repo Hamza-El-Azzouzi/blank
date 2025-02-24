@@ -54,12 +54,24 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 			return fmt.Errorf("invalid image")
 		}
 		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
+		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (u *UserService) SearchUsers(query string) ([]models.UserInfo, error) {
+	if query == "" {
+		return []models.UserInfo{}, nil
+	}
+	allUser, errUser := u.UserRepo.SearchUsers(query)
+	if errUser != nil {
+		return nil, errUser
+	}
+	return allUser, nil
 }
 
 func (u *UserService) UserExist(userID uuid.UUID) bool {
