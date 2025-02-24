@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -215,13 +216,29 @@ func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	offset := r.URL.Query().Get("offset")
-	userId := r.Context().Value("user_id").(string)
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	userId := r.PathValue("userId")
+	userID, err := uuid.FromString(userId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(userID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+		return
+	}
 	
+	offset := r.URL.Query().Get("offset")
 	if offset != "" {
 		lastUserID, err := uuid.FromString(offset)
 		if err != nil {
-			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to unfollow doesn't exist", nil)
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
 			return
 		}
 
@@ -247,13 +264,29 @@ func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	offset := r.URL.Query().Get("offset")
-	userId := r.Context().Value("user_id").(string)
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
 
+	userId := r.PathValue("userId")
+	userID, err := uuid.FromString(userId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(userID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+		return
+	}
+	
+	offset := r.URL.Query().Get("offset")
 	if offset != "" {
 		lastUserID, err := uuid.FromString(offset)
 		if err != nil {
-			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to unfollow doesn't exist", nil)
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
 			return
 		}
 

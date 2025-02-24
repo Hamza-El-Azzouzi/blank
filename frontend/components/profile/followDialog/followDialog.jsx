@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { fetchBlob } from '@/lib/fetch_blob';
 import './followDialog.css';
 
-const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
+const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner }) => {
     const [users, setUsers] = useState([]);
     const [userId, setLastUserId] = useState('');
     const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
         try {
             const endpoint = type === 'followers' ? 'followerlist' : 'followinglist';
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?offset=${userId}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}/${userID}?offset=${userId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -127,9 +127,11 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile }) => {
                                 <img src={user.avatar} alt={`${user.first_name}'s avatar`} className="follow-avatar" />
                                 <span className="follow-name">{user.first_name} {user.last_name}</span>
                             </div>
-                            <button className="follow-remove-btn" onClick={() => handleRemoveUser(user.user_id)}>
-                                Remove
-                            </button>
+                            {isOwner && (
+                                <button className="follow-remove-btn" onClick={() => handleRemoveUser(user.user_id)}>
+                                    Remove
+                                </button>
+                            )}
                         </div>
                     ))}
 

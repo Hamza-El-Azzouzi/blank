@@ -12,6 +12,7 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
     const [dialogType, setDialogType] = useState(null);
 
     const handleOpenDialog = (type) => {
+        if (!profile.is_public && !profile.is_owner && !profile.is_following) return;
         setDialogType(type);
         setShowFollowDialog(true);
     };
@@ -105,12 +106,14 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 </button>
             )}
 
-            {showFollowDialog && profile.is_owner && (
+            {showFollowDialog && (
                 <FollowDialog
                     type={dialogType}
                     onClose={() => setShowFollowDialog(false)}
                     cookieValue={cookieValue}
                     setProfile={setProfile}
+                    userID={userID}
+                    isOwner={profile.is_owner}
                 />
             )}
 
