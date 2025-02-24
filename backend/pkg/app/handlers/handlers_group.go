@@ -135,6 +135,7 @@ func (g *GroupHandler) GroupDetails(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
 	}
 	GroupDerails, err := g.GroupService.GroupDetails(user_id, pathParts[3])
+	fmt.Println(err)
 	if err != nil {
 		switch err.Error() {
 		case "forbidden":
@@ -372,9 +373,15 @@ func (g *GroupHandler) GroupPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	groupPost, err := g.GroupService.GroupPost(pathParts[3], user_id, pag)
+	fmt.Println(err)
 	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-		return
+		switch err.Error() {
+		case "forbidden":
+			utils.SendResponses(w, http.StatusForbidden, "Not authorized", nil)
+			return
+		default:
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		}
 	}
 	utils.SendResponses(w, http.StatusOK, "Created successfully", groupPost)
 }

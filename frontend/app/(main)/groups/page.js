@@ -47,11 +47,11 @@ const GroupsPage = () => {
                 // Convert Set to prevent duplicates
                 setGroups(prevGroups => {
                     const newGroups = new Set(prevGroups);
-                    data.data.forEach(group => newGroups.add(JSON.stringify(group))); // Store as JSON strings to maintain uniqueness
+                   if (data.data) data.data.forEach(group => newGroups.add(JSON.stringify(group))); // Store as JSON strings to maintain uniqueness
                     return newGroups;
                 });
 
-                if (data.data.length < ITEMS_PER_PAGE) {
+                if (data.data && data.data.length < ITEMS_PER_PAGE) {
                     setHasMore(false);
                 }
             } catch (err) {
@@ -123,7 +123,28 @@ const GroupsPage = () => {
             showToast('error', 'Failed to search groups');
         }
     };
-
+    const handleJoinGroup = (groupID) => {
+            fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/requested`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    'content-type': 'application/json',
+                    'Authorization': `Bearer ${cookieValue}`
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(error => { throw error; });
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    showToast('success', 'Success! Operation completed.');
+                }).catch((error) => {
+                    console.log(error)
+                    showToast('error', error.message);
+                })
+        };
     const handleCreateGroup = (groupData) => {
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/createGroup`, {
             method: "POST",
@@ -191,7 +212,7 @@ const GroupsPage = () => {
             <div className="groups-grid">
                 {[...groups].map(groupJson => {
                     const group = JSON.parse(groupJson); // Convert back to object
-                    return <GroupCard key={group.GroupeId} group={group} />;
+                    return <GroupCard key={group.GroupeId} group={group} onJoinClick={handleJoinGroup} />;
                 })}
             </div>
            

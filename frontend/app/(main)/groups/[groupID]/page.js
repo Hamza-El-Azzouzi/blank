@@ -17,6 +17,8 @@ const ITEMS_PER_PAGE = 20;
 const GroupDetailPage = () => {
     const [activeTab, setActiveTab] = useState('posts');
     const [showCreateEvent, setShowCreateEvent] = useState(false);
+    const [isOwner, setIsOwner] = useState(false);
+    const [isJoined, setIsJoined] = useState(false);
 
     // Pagination states
     const [events, setEvents] = useState([]);
@@ -25,7 +27,7 @@ const GroupDetailPage = () => {
     const [hasMoreEvents, setHasMoreEvents] = useState(true);
 
     const [requests, setRequests] = useState([]);
-    // const [request, setRequest] = useState([]);
+
     const [requestPage, setRequestPage] = useState(0);
     const [loadingRequests, setLoadingRequests] = useState(false);
     const [hasMoreRequests, setHasMoreRequests] = useState(true);
@@ -64,14 +66,24 @@ const GroupDetailPage = () => {
                 if (!response.ok) throw new Error("Failed to fetch group data");
 
                 const data = await response.json();
-                setGroupData(data.data);
+
+                setGroupData(data.data)
+                setIsJoined(data.data.IsJoined);
+                setIsOwner(data.data.IsOwner);
             } catch (error) {
                 console.error(error);
+
             }
         };
         fetchGroupData();
-    }, [cookieValue, groupID]);
 
+
+    }, [cookieValue, groupID]);
+    useEffect(() => {
+        if ((isJoined || isOwner) && !endReached) {
+            fetchPosts(groupID, page);
+        }
+    }, [endReached, groupID, isJoined, isOwner, page]);
     // Fetch events with pagination (only when "Events" tab is active)
     useEffect(() => {
         if (activeTab !== 'events' || loadingEvents || !hasMoreEvents) return;
@@ -231,8 +243,8 @@ const GroupDetailPage = () => {
             })
     };
     const fetchPosts = async (group_id, pageNumber) => {
-        if (endReached) return;
-
+        if (endReached || (!isJoined && !isOwner)) return;
+        console.log(isOwner)
         try {
             setLoading(true);
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${group_id}/post/${pageNumber}`, {
@@ -242,7 +254,7 @@ const GroupDetailPage = () => {
                     'Authorization': `Bearer ${cookieValue}`,
                 },
             });
-            if (!response.ok) throw new Error('Failed to fetch posts');
+            if (!response.ok) throw new Error('Failed to fetch posts', response);
             const data = await response.json();
             if (data.data && data.data.length > 0) {
                 const newPosts = await Promise.all(data.data.map(async (post) => {
@@ -276,9 +288,7 @@ const GroupDetailPage = () => {
             setLoading(false);
         }
     };
-    useEffect(() => {
-        fetchPosts(groupID, page)
-    }, [page])
+
 
     const handleCreateEvent = (eventData) => {
         eventData["group_id"] = groupID

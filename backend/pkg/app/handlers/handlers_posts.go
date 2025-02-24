@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,11 +16,9 @@ import (
 )
 
 type PostHandler struct {
-	AuthService    *services.AuthService
 	AuthMidlaware  *middleware.AuthMiddleware
 	PostService    *services.PostService
 	CommentService *services.CommentService
-	AuthHandler    *AuthHandler
 }
 
 func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
@@ -55,11 +53,7 @@ func (p *PostHandler) Posts(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", posts)
 }
 
 func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
@@ -85,21 +79,22 @@ func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
 		return
 	}
-
-	posts, err := p.PostService.PostsByUser(userID, nPagination)
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+	posts, err := p.PostService.PostsByUser(userID, authUserID, nPagination)
+	fmt.Println(err)
+	if err != nil {
+
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", posts)
 }
 
 func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
@@ -135,83 +130,5 @@ func (p *PostHandler) PostSaver(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(posts[0])
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-	}
-}
-
-func (p *PostHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	var commentData models.CommentData
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&commentData)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	defer r.Body.Close()
-	isLogged, userId := p.AuthMidlaware.IsUserLoggedIn(w, r)
-	if !isLogged {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-	commentData.Comment = strings.TrimSpace(commentData.Comment)
-	if commentData.Comment == "" || len(commentData.Comment) > 5000 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	err = p.CommentService.SaveComment(userId.ID, commentData.PostId, commentData.Comment)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	comment, err := p.CommentService.GetCommentByPost(commentData.PostId, 0)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(comment[0])
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
-func (p *PostHandler) CommentGetter(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 5 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	var err error
-	postID := pathParts[3]
-	pagination := pathParts[4]
-	nPagination, err := strconv.Atoi(pagination)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	comment, err := p.CommentService.GetCommentByPost(postID, nPagination)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(comment)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	utils.SendResponses(w, http.StatusOK, "success", posts[0])
 }

@@ -20,6 +20,7 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 	*repositories.SessionsRepositorie,
 	*repositories.MessageRepository,
 	*repositories.GroupRepository,
+	*repositories.FollowRepositorie,
 ) {
 	return &repositories.UserRepository{DB: db},
 		&repositories.PostRepository{DB: db},
@@ -27,7 +28,8 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 		&repositories.ReactReposetorie{DB: db},
 		&repositories.SessionsRepositorie{DB: db},
 		&repositories.MessageRepository{DB: db},
-		&repositories.GroupRepository{DB:db}
+		&repositories.GroupRepository{DB: db},
+		&repositories.FollowRepositorie{DB: db}
 }
 
 func InitServices(userRepo *repositories.UserRepository,
@@ -36,7 +38,8 @@ func InitServices(userRepo *repositories.UserRepository,
 	reactRepo *repositories.ReactReposetorie,
 	sessionRepo *repositories.SessionsRepositorie,
 	messageRepo *repositories.MessageRepository,
-	groupRepo *repositories.GroupRepository) (*services.AuthService,
+	groupRepo *repositories.GroupRepository,
+	followRepo *repositories.FollowRepositorie) (*services.AuthService,
 	*services.PostService,
 	*services.CommentService,
 	*services.ReactService,
@@ -44,15 +47,17 @@ func InitServices(userRepo *repositories.UserRepository,
 	*services.MessageService,
 	*services.UserService,
 	*services.GroupService,
+	*services.FollowService,
 ) {
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
-		&services.PostService{PostRepo: postRepo},
+		&services.PostService{PostRepo: postRepo, UserRepo: userRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
 		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo,GroupRepo: groupRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
 		&services.UserService{UserRepo: userRepo},
-		&services.GroupService{GroupRepo: groupRepo}
+		&services.GroupService{GroupRepo: groupRepo},
+		&services.FollowService{FollowRepo: followRepo, UserRepo: userRepo}
 }
 
 func InitHandlers(authService *services.AuthService,
@@ -63,13 +68,15 @@ func InitHandlers(authService *services.AuthService,
 	authMiddleware *middleware.AuthMiddleware,
 	messageService *services.MessageService,
 	userService *services.UserService,
-	groupService *services.GroupService) (*handlers.AuthHandler,
+	groupService *services.GroupService,
+	followService *services.FollowService) (*handlers.AuthHandler,
 	*handlers.PostHandler,
 	*handlers.ReactHandler,
 	*handlers.MessageHandler,
 	*handlers.UserHandler,
 	*handlers.GroupHandler,
-
+	*handlers.CommentHandler,
+	*handlers.FollowHandler,
 ) {
 	MessageHandler := &handlers.MessageHandler{
 		MessageService: messageService,
@@ -89,22 +96,29 @@ func InitHandlers(authService *services.AuthService,
 		SessionService: sessionService,
 	}
 	postHandler := &handlers.PostHandler{
-		AuthService:     authService,
-		AuthMidlaware:   authMiddleware,
-		PostService:     postService,
-		CommentService:  commentService,
-		AuthHandler:     authHandler,
+		AuthMidlaware:  authMiddleware,
+		PostService:    postService,
+		CommentService: commentService,
+	}
+	commentHandler := &handlers.CommentHandler{
+		CommentService: commentService,
+		PostService:    postService,
+		UserService:    userService,
 	}
 	reactHandler := &handlers.ReactHandler{
-		ReactService:  reactService,
-		AuthMidlaware: authMiddleware,
+		ReactService: reactService,
 	}
 	userHandler := &handlers.UserHandler{
-		UserService: userService,
+		UserService:   userService,
+		FollowService: followService,
 	}
-	groupHandler :=  &handlers.GroupHandler{
-		GroupService : groupService,
+	groupHandler := &handlers.GroupHandler{
+		GroupService: groupService,
 	}
 
-	return authHandler, postHandler, reactHandler, MessageHandler, userHandler,groupHandler
+	followHandler := &handlers.FollowHandler{
+		FollowService: followService,
+		UserService:   userService,
+	}
+	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler
 }

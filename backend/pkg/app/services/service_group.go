@@ -70,11 +70,7 @@ func (g *GroupService) GroupsSearch(user_id, term string) ([]models.GroupDetails
 }
 
 func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetails, error) {
-	isMember := g.IsGroupMember(group_id, user_id)
-	IsOwner := g.IsOwner(group_id, user_id)
-	if !isMember && !IsOwner {
-		return models.GroupDetails{}, fmt.Errorf("forbidden")
-	}
+
 	groupDetails, err := g.GroupRepo.GroupDerails(user_id, group_id)
 	if err != nil {
 		return models.GroupDetails{}, err
@@ -105,7 +101,7 @@ func (g *GroupService) IsOwner(group_id, user_id string) bool {
 }
 
 func (g *GroupService) JoinGroup(group_id, user_id, isInvited string) error {
-	if !g.IsGroupMember(group_id, user_id) {
+	if g.IsGroupMember(group_id, user_id) {
 		return fmt.Errorf("forbidden")
 	}
 	return g.GroupRepo.JoinGroup(group_id, user_id, isInvited)
@@ -136,7 +132,7 @@ func (g *GroupService) GroupResponse(group_id, user_id_creator string, groupResp
 }
 
 func (g *GroupService) GroupLeave(group_id, user_id string) (int, error) {
-	if g.IsGroupMember(group_id, user_id) {
+	if !g.IsGroupMember(group_id, user_id) {
 		return 0, fmt.Errorf("forbidden")
 	}
 	return g.GroupRepo.GroupResponseDeclined(group_id, user_id)

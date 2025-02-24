@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FiUsers } from "react-icons/fi";
 import "./groupCard.css";
 
-const GroupCard = ({ group, onJoinClick }) => {
+const GroupCard = ({ group,onJoinClick }) => {
   const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
 
   const handleJoinClick = (e) => {

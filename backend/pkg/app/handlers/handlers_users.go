@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"blank/pkg/app/middleware"
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
@@ -15,14 +13,11 @@ import (
 )
 
 type UserHandler struct {
-	AuthService   *services.AuthService
-	AuthMidlaware *middleware.AuthMiddleware
-	PostService   *services.PostService
 	UserService   *services.UserService
-	AuthHandler   *AuthHandler
+	FollowService *services.FollowService
 }
 
-func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
@@ -33,7 +28,7 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var err error
-	AuthUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
@@ -45,31 +40,40 @@ func (p *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exist := p.UserService.UserExist(userID)
+	exist := u.UserService.UserExist(userID)
 	if !exist {
 		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
 		return
 	}
 
-	user, err := p.UserService.GetUserInfo(userID)
+	user, err := u.UserService.GetUserInfo(userID, authUserID)
 	if err != nil {
-		fmt.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
-	user.IsOwner = userID == AuthUserID
+	user.IsOwner = userID == authUserID
 
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(user)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+	if !user.IsOwner {
+		follow := models.FollowRequest{FollowerId: authUserID.String(), FollowingId: userID.String()}
+		user.FollowStatus, err = u.FollowService.GetFollowStatus(follow)
+		if err != nil {
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
+		}
 	}
+
+	utils.SendResponses(w, http.StatusOK, "", user)
 }
 
-func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
+func (u *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
 		return
 	}
 
@@ -126,7 +130,7 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = p.UserService.UpdateUserInfo(userID, userInfo)
+	err = u.UserService.UpdateUserInfo(userID, userInfo)
 	if err != nil {
 		if err.Error() == "UNIQUE constraint failed: User.email" {
 			utils.SendResponses(w, http.StatusBadRequest, "email already exists", nil)
@@ -136,10 +140,46 @@ func (p *UserHandler) UpdateUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(map[string]string{"message": "success"})
+	utils.SendResponses(w, http.StatusOK, "success", nil)
+}
+
+func (u *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 3 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	user, err := u.UserService.GetAuthenticatedUser(authUserID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
 	}
+
+	utils.SendResponses(w, http.StatusOK, "", user)
+}
+
+func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	query := r.URL.Query().Get("q")
+
+	users, errUsers := u.UserService.SearchUsers(query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }

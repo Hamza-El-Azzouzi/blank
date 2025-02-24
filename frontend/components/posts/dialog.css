@@ -232,11 +232,6 @@
     color: var(--primary);
 }
 
-.follower-username {
-    color: var(--text-tertiary);
-    font-size: 0.875rem;
-}
-
 .dialog-footer {
     display: flex;
     justify-content: flex-end;

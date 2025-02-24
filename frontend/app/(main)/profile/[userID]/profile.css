@@ -105,18 +105,6 @@
     white-space: pre-wrap;
 }
 
-.posts {
-    margin-top: 20px;
-}
-
-.post {
-    background: var(--bg-tertiary);
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
-}
-
 .user-not-found {
     display: flex;
     align-items: center;
@@ -134,6 +122,34 @@
     max-width: 70%;
 }
 
+.user-private {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5rem;
+    min-height: 40vh;
+}
+
+.user-private div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+    background: var(--bg-secondary);
+    padding: 50px;
+    border-radius: 15px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    max-width: 70%;
+    border: 1px solid var(--border);
+}
+
+.user-private-icon {
+    font-size: 5rem;
+    color: var(--text-tertiary);
+}
+
 /* edit user info dialog style */
 
 .dialog-overlay {
@@ -147,18 +163,6 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
-}
-
-.dialog-content {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem 2rem 0;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-
 }
 
 .dialog-content h3 {
@@ -207,7 +211,6 @@
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 0.75rem;
     color: var(--text-primary);
     font-size: 1rem;
     width: 100%;
@@ -228,12 +231,6 @@
 .dialog-content input::placeholder,
 .dialog-content textarea::placeholder {
     color: var(--text-tertiary);
-}
-
-.dialog-content div {
-    display: flex;
-    gap: 1.5rem;
-    margin: 0.5rem 0;
 }
 
 .dialog-content label {
@@ -260,7 +257,7 @@
     justify-content: space-between;
 }
 
-.dialog-content button {
+.form-action>button {
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;

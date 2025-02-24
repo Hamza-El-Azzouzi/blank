@@ -158,15 +158,28 @@
     gap: 12px;
 }
 
+.post-header > a {
+    width: 40px;
+    height: 40px;
+}
+
 .post-avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
+}
+
+.post-avatar:hover {
+    border: 2px solid var(--text-primary);
 }
 
 .post-meta {
     display: flex;
     flex-direction: column;
+}
+
+.post-meta > a {
+    text-decoration: none;
 }
 
 .post-author {
@@ -175,7 +188,13 @@
     font-size: 15px;
 }
 
+.post-author:hover {
+    text-decoration: underline;
+}
+
 .post-time {
+    display: flex;
+    gap: 10px;
     color: var(--text-secondary);
     font-size: 12px;
 }

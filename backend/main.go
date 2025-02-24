@@ -23,19 +23,20 @@ func main() {
 
 	defer database.Close()
 
-	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo, groupRepo := app.InitRepositories(database)
+	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo, groupRepo, followRepo := app.InitRepositories(database)
 
-	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService := app.InitServices(userRepo,
+	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService, followService := app.InitServices(userRepo,
 		postRepo,
 		commentRepo,
 		likeRepo,
 		sessionRepo,
 		messageRepo,
-		groupRepo)
+		groupRepo,
+		followRepo)
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler, MessageHandler, userHandler, groupHandler := app.InitHandlers(authService,
+	authHandler, postHandler, likeHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler := app.InitHandlers(authService,
 		postService,
 		commentService,
 		likeService,
@@ -43,15 +44,13 @@ func main() {
 		authMiddleware,
 		messageService,
 		userService,
-		groupService)
-
-	// cleaner := &utils.Cleaner{SessionService: sessionService}
-
-	// go cleaner.CleanupExpiredSessions()
+		groupService,
+		followService)
 
 	mux := http.NewServeMux()
 	protectedMux := authMiddleware.Protect(mux)
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler, groupHandler)
+
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler, groupHandler, followHandler, commentHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 
