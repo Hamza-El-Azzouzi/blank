@@ -43,6 +43,26 @@
     max-height: 300px;
     overflow-y: auto;
     z-index: 1001;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-tertiary) var(--bg-primary);
+}
+
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 3px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-secondary);
 }
 
 .search-result-item {
@@ -52,6 +72,13 @@
     color: var(--text-primary);
     text-decoration: none;
     transition: background-color 0.2s ease;
+}
+
+.search-result-item.loading {
+    text-align: center;
+    color: #666;
+    padding: 8px;
+    font-size: 0.9em;
 }
 
 .search-result-avatar {
