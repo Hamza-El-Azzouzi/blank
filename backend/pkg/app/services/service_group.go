@@ -204,7 +204,7 @@ func (g *GroupService) EventResponse(group_id, event_id, user_id, response strin
 	if !isMember && !IsOwner {
 		return models.Event{}, fmt.Errorf("forbbiden")
 	}
-	if response != "going" && response != "no_going" {
+	if response != "going" && response != "not-going" {
 		return models.Event{}, fmt.Errorf("invalid response, must be 'going' or 'no_going'")
 	}
 	response_id := uuid.Must(uuid.NewV4()).String()

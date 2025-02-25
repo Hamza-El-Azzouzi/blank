@@ -486,7 +486,7 @@ func (g *GroupHandler) EventResponse(w http.ResponseWriter, r *http.Request) {
 		switch err.Error() {
 		case "forbidden":
 			utils.SendResponses(w, http.StatusForbidden, "Not authorized", nil)
-		case "invalid response, must be 'going' or 'no_going'":
+		case "invalid response, must be 'going' or 'not_going'":
 			utils.SendResponses(w, http.StatusBadRequest, err.Error(), nil)
 		default:
 			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
