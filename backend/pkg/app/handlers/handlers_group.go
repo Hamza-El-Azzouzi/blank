@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -203,6 +204,7 @@ func (g *GroupHandler) GroupDelete(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
 	}
 	err := g.GroupService.GroupDelete(pathParts[3], user_id)
+	fmt.Println(err)
 	if err != nil {
 
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
@@ -377,6 +379,7 @@ func (g *GroupHandler) GroupPosts(w http.ResponseWriter, r *http.Request) {
 			return
 		default:
 			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
 		}
 	}
 	utils.SendResponses(w, http.StatusOK, "Created successfully", groupPost)

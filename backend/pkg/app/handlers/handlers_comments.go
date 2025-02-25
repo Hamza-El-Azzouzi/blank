@@ -67,10 +67,9 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
-	
+
 	comments, err = c.CommentService.CommentsByPost(userID, postID, target, page)
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
@@ -111,7 +110,7 @@ func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	insertedID, err := c.CommentService.SaveComment(userID, commentData.Commentable_id, commentData.Content, commentData.Target)
+	insertedID, err := c.CommentService.SaveComment(userID, commentData.Commentable_id, commentData.Content, commentData.Target, commentData.Image)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
@@ -154,10 +153,10 @@ func (c *CommentHandler) CommentLiker(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
-	target := pathParts[5]
-	err = c.CommentService.LikeComment(userID, commentID,target)
+	// target := pathParts[5]
+	err = c.CommentService.LikeComment(userID, commentID)
 	if err != nil {
-		log.Println(err)
+		log.Println("jay", err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}

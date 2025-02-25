@@ -5,6 +5,7 @@ import (
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -20,26 +21,39 @@ func (c *CommentService) CommentsByPost(userID uuid.UUID, postID, target string,
 	return c.CommentRepo.GetCommentByPost(userID, postID, target, offset, limit)
 }
 
-func (c *CommentService) SaveComment(userID uuid.UUID, commentable_id, content, target string) (uuid.UUID, error) {
+func (c *CommentService) SaveComment(userID uuid.UUID, commentable_id, content, target, image string) (uuid.UUID, error) {
+	var postID sql.NullString
+	var groupPostID sql.NullString
+
+	if target == "Post" {
+		postID = sql.NullString{String: commentable_id, Valid: true}
+		groupPostID = sql.NullString{Valid: false}
+	} else if target == "Group_Post" {
+		groupPostID = sql.NullString{String: commentable_id, Valid: true}
+		postID = sql.NullString{Valid: false}
+	}
+
+	imageFilename, err := utils.SaveImage(image)
+	if err != nil {
+		return uuid.Nil,err
+	}
 	comment := &models.Comment{
-		ID:             uuid.Must(uuid.NewV4()),
-		UserID:         userID,
-		Commentable_id: commentable_id,
-		Content:        content,
-		Target:         target,
+		ID:          uuid.Must(uuid.NewV4()),
+		UserID:      userID,
+		PostID:      postID,
+		GroupPostID: groupPostID,
+		Content:     content,
+		Image:       imageFilename,
 	}
 	return comment.ID, c.CommentRepo.Create(comment)
 }
 
-func (c *CommentService) LikeComment(userID uuid.UUID, commentID,target string) error {
-	likeID, err := c.CommentRepo.CheckLike(userID, commentID,target)
+func (c *CommentService) LikeComment(userID uuid.UUID, commentID string) error {
+	likeID, err := c.CommentRepo.CheckLike(userID, commentID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			likeID, err := uuid.NewV4()
-			if err != nil {
-				return err
-			}
-			return c.CommentRepo.LikeComment(likeID, userID, commentID,target)
+			likeID := uuid.Must(uuid.NewV4())
+			return c.CommentRepo.LikeComment(likeID, userID, commentID)
 		}
 		return err
 	}

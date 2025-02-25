@@ -14,22 +14,24 @@ type CommentRepositorie struct {
 }
 
 func (c *CommentRepositorie) Create(comment *models.Comment) error {
-	query := `INSERT INTO Comment (comment_id, user_id, commentable_id,commentable_type,content) VALUES (?, ?, ?, ?,?)`
+	query := `INSERT INTO Comment (comment_id, user_id, post_id, group_post_id, content) VALUES (?, ?, ?, ?, ?)`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return err
 	}
 	defer prp.Close()
+
 	_, err = prp.Exec(
 		comment.ID,
 		comment.UserID,
-		comment.Commentable_id,
-		comment.Target,
+		comment.PostID,
+		comment.GroupPostID,
 		comment.Content,
 	)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -59,9 +61,9 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID, target s
 				FROM
 					Like l
 				WHERE
-					l.likeable_id = c.comment_id AND l.likeable_type = ?
+					l.comment_id = c.comment_id
 			) AS LikeCount,
-			EXISTS(SELECT 1 FROM Like l WHERE l.likeable_id = c.comment_id AND l.user_id = ? AND l.likeable_type = ?) AS has_liked,
+			EXISTS(SELECT 1 FROM Like l WHERE l.comment_id = c.comment_id AND l.user_id = ?) AS has_liked,
 			u.first_name,
 			u.last_name,
 			u.avatar,
@@ -70,13 +72,16 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID, target s
 			Comment c
 			JOIN User u ON c.user_id = u.user_id
 		WHERE
-			c.commentable_id = ? AND c.commentable_type = ?
+			CASE 
+				WHEN ? = 'Post' THEN c.post_id = ?
+				WHEN ? = 'Group_Post' THEN c.group_post_id = ?
+			END
 		ORDER BY
 			c.created_at DESC
 		LIMIT ?
 		OFFSET ?;`
 
-	rows, queryErr := c.DB.Query(querySelect, target, userID, target, postID, target, limit, offset)
+	rows, queryErr := c.DB.Query(querySelect, userID, target, postID, target, postID, limit, offset)
 	if queryErr != nil {
 		return nil, queryErr
 	}
@@ -105,23 +110,26 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID, target s
 	return comments, nil
 }
 
-func (c *CommentRepositorie) CheckLike(user_id uuid.UUID, commentID,target string) (string, error) {
-	query := `SELECT like_id FROM LIKE WHERE user_id = ? AND likeable_id = ? AND likeable_type = ?`
+func (c *CommentRepositorie) CheckLike(user_id uuid.UUID, commentID string) (string, error) {
+	query := `SELECT like_id FROM LIKE WHERE user_id = ? AND comment_id = ?`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return "", err
 	}
 	defer prp.Close()
 	var like_id string
-	err = prp.QueryRow(user_id, commentID,target).Scan(&like_id)
+	err = prp.QueryRow(user_id, commentID).Scan(&like_id)
 	if err != nil {
 		return "", err
 	}
 	return like_id, nil
 }
 
-func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID,target string) error {
-	query := `INSERT INTO Like (like_id, user_id, likeable_id,likeable_type) VALUES (?,?,?,?)`
+func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID string) error {
+	var postId, groupPostId *string
+	postId = nil
+	groupPostId = nil
+	query := `INSERT INTO Like (like_id, user_id, comment_id,post_id,group_post_id) VALUES (?,?,?,?,?)`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return err
@@ -132,7 +140,8 @@ func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID,ta
 		likeID,
 		user_id,
 		commentID,
-		target,
+		postId,
+		groupPostId,
 	)
 	if err != nil {
 		return err
