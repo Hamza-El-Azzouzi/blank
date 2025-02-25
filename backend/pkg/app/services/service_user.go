@@ -59,7 +59,6 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 			return err
 		}
 	}
-
 	return nil
 }
 

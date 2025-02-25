@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { fetchBlob } from '@/lib/fetch_blob';
 import './followDialog.css';
 
@@ -113,7 +114,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         }
 
         return () => observer.disconnect();
-    }, [hasMore, loading, lastUserId]);
+    }, [lastUserId]);
 
     return (
         <div className="follow-dialog-overlay" onClick={onClose}>
@@ -124,8 +125,13 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                     {users.map(user => (
                         <div key={user.user_id} className="follow-item">
                             <div className="follow-user-info">
-                                <img src={user.avatar} alt={`${user.first_name}'s avatar`} className="follow-avatar" />
-                                <span className="follow-name">{user.first_name} {user.last_name}</span>
+                                <Link
+                                    key={user.user_id}
+                                    href={`/profile/${user.user_id}`}
+                                >
+                                    <img src={user.avatar} alt={`${user.first_name}'s avatar`} className="follow-avatar" />
+                                    <span className="follow-name">{user.first_name} {user.last_name}</span>
+                                </Link>
                             </div>
                             {isOwner && (
                                 <button className="follow-remove-btn" onClick={() => handleRemoveUser(user.user_id)}>

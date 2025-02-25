@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"blank/pkg/app/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type FollowRepositorie struct {
@@ -128,4 +130,38 @@ func (f *FollowRepositorie) DeleteFollow(followData models.FollowRequest) error 
 	}
 	_, err = preparedQuery.Exec(followData.FollowerId, followData.FollowingId)
 	return err
+}
+
+func (f *FollowRepositorie) SearchFollowers(userId uuid.UUID, searchQuery string) ([]models.FollowList, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM Follow f
+        JOIN User u ON f.follower_id = u.user_id
+        WHERE f.following_id = ? AND f.status = "accepted" AND (u.first_name LIKE ? OR u.last_name LIKE ?)
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
+
+	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", userId, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []models.FollowList
+
+	for rows.Next() {
+		var follower models.FollowList
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		followers = append(followers, follower)
+	}
+
+	return followers, nil
 }

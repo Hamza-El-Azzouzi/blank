@@ -233,7 +233,7 @@ func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
 		return
 	}
-	
+
 	offset := r.URL.Query().Get("offset")
 	if offset != "" {
 		lastUserID, err := uuid.FromString(offset)
@@ -241,7 +241,6 @@ func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
 			return
 		}
-
 		if !f.UserService.UserExist(lastUserID) {
 			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
 			return
@@ -281,7 +280,7 @@ func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
 		return
 	}
-	
+
 	offset := r.URL.Query().Get("offset")
 	if offset != "" {
 		lastUserID, err := uuid.FromString(offset)
@@ -304,4 +303,30 @@ func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	utils.SendResponses(w, http.StatusOK, "success", following)
+}
+
+func (f *FollowHandler) SearchFollowers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	userId := r.PathValue("userId")
+	userID, err := uuid.FromString(userId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(userID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+		return
+	}
+	query := r.URL.Query().Get("q")
+
+	users, errUsers := f.FollowService.SearchFollowers(userID, query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }
