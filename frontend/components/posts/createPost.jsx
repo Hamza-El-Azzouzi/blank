@@ -21,7 +21,7 @@ const CreatePost = ({ onPostCreated }) => {
     const [lastUserId, setLastUserId] = useState('');
     const debounceTimeoutRef = useRef(null);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [searchResults, setSearchResults] = useState([]); // Add this new state
+    const [searchResults, setSearchResults] = useState([]);
 
     const getUserID = async () => {
         try {

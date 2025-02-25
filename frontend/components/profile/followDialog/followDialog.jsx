@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { fetchBlob } from '@/lib/fetch_blob';
+import { FiSearch } from 'react-icons/fi';
 import './followDialog.css';
 
 const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner }) => {
@@ -9,6 +10,12 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const observerRef = useRef();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const debounceTimeoutRef = useRef(null);
+    const [displayedUsers, setDisplayedUsers] = useState([]);
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
 
     const fetchUsers = async () => {
         if (loading || !hasMore) return;
@@ -64,6 +71,71 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         }
     };
 
+    const performSearch = async (query) => {
+        if (query.length < 1) {
+            setDisplayedUsers(users);
+            setSearchResults([]);
+            setIsSearchLoading(false);
+            return;
+        }
+        
+        setIsSearchLoading(true);
+        try {
+            const endpoint = type === 'followers' ? 'searchfollowers' : 'searchfollowing';
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}/${userID}?q=${query}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${cookieValue}`
+                    }
+                }
+            );
+
+            const data = await response.json();
+            if (data.data.follow_list) {
+                const searchResults = await Promise.all(
+                    data.data.follow_list.map(async (user) => ({
+                        ...user,
+                        avatar: user.avatar
+                            ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
+                            : '/default-avatar.jpg'
+                    }))
+                );
+                setSearchResults(searchResults);
+                setDisplayedUsers(searchResults);
+            }
+        } catch (error) {
+            console.error('Error searching users:', error);
+            setSearchResults([]);
+            setDisplayedUsers([]);
+        } finally {
+            setIsSearchLoading(false);
+        }
+    };
+
+    const debouncedSearch = useCallback((query) => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        debounceTimeoutRef.current = setTimeout(() => {
+            performSearch(query);
+        }, 300);
+    }, []);
+
+    const handleSearch = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        if (query.length < 1) {
+            setDisplayedUsers(users);
+            setSearchResults([]);
+            setIsSearchLoading(false);
+            return;
+        }
+        setIsSearchLoading(true);
+        debouncedSearch(query);
+    };
+
     const handleRemoveUser = async (userId) => {
         try {
             const endpoint = type === 'followers' ? 'deletefollower' : 'deletefollowing';
@@ -116,13 +188,42 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         return () => observer.disconnect();
     }, [lastUserId]);
 
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (users.length > 0) {
+            setDisplayedUsers(users);
+        }
+    }, [users]);
+
     return (
         <div className="follow-dialog-overlay" onClick={onClose}>
             <div className="follow-dialog" onClick={e => e.stopPropagation()}>
                 <h3>{type === 'followers' ? 'Followers' : 'Following'} list</h3>
 
+                <div className="followers-search">
+                    <FiSearch className="search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="followers-search-input"
+                    />
+                </div>
+
                 <div className="follow-list">
-                    {users.map(user => (
+                    {isSearchLoading ? (
+                        <div className="follow-loading">Loading...</div>
+                    ) : searchQuery && searchResults.length === 0 ? (
+                        <div className="follow-empty-message">No results found</div>
+                    ) : displayedUsers.map(user => (
                         <div key={user.user_id} className="follow-item">
                             <div className="follow-user-info">
                                 <Link
@@ -141,11 +242,10 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                         </div>
                     ))}
 
-                    {loading && <div className="follow-loading">loading...</div>}
-                    <div ref={observerRef} className="follow-observer"></div>
+                    {!searchQuery && !isSearchLoading && <div ref={observerRef} className="follow-observer"></div>}
                 </div>
 
-                {!hasMore && users.length === 0 && (
+                {!hasMore && displayedUsers.length === 0 && !searchQuery && (
                     <div className="follow-empty-message">
                         No {type} found
                     </div>
@@ -157,4 +257,4 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
     );
 }
 
-export default FollowDialog
+export default FollowDialog;

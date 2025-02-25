@@ -55,6 +55,7 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/followerlist/{userId}", followHandler.FollowerList)
 	mux.HandleFunc("/api/followinglist/{userId}", followHandler.FollowingList)
 	mux.HandleFunc("/api/searchfollowers/{userId}", followHandler.SearchFollowers)
+	mux.HandleFunc("/api/searchfollowing/{userId}", followHandler.SearchFollowing)
 
 	// group routes
 	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)

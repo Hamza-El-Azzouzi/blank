@@ -330,3 +330,29 @@ func (f *FollowHandler) SearchFollowers(w http.ResponseWriter, r *http.Request) 
 	}
 	utils.SendResponses(w, http.StatusOK, "success", users)
 }
+
+func (f *FollowHandler) SearchFollowing(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	userId := r.PathValue("userId")
+	userID, err := uuid.FromString(userId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(userID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+		return
+	}
+	query := r.URL.Query().Get("q")
+
+	users, errUsers := f.FollowService.SearchFollowing(userID, query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
+}

@@ -93,3 +93,21 @@ func (f *FollowService) SearchFollowers(userID uuid.UUID, query string) (*models
 
 	return &response, nil
 }
+
+func (f *FollowService) SearchFollowing(userID uuid.UUID, query string) (*models.FollowListResponse, error) {
+	if query == "" {
+		return &models.FollowListResponse{}, nil
+	}
+	followers, err := f.FollowRepo.SearchFollowing(userID, query)
+	if err != nil {
+		return nil, err
+	}
+	var response models.FollowListResponse
+	response.FollowList = followers
+	if len(followers) > 20 {
+		response.LastUserId = followers[19].UserId
+		response.FollowList = followers[:20]
+	}
+
+	return &response, nil
+}

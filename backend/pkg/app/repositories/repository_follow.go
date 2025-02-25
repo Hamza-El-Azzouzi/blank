@@ -165,3 +165,37 @@ func (f *FollowRepositorie) SearchFollowers(userId uuid.UUID, searchQuery string
 
 	return followers, nil
 }
+
+func (f *FollowRepositorie) SearchFollowing(userId uuid.UUID, searchQuery string) ([]models.FollowList, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM Follow f
+        JOIN User u ON f.following_id = u.user_id
+        WHERE f.follower_id = ? AND f.status = "accepted" AND (u.first_name LIKE ? OR u.last_name LIKE ?)
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
+
+	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", userId, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followings []models.FollowList
+
+	for rows.Next() {
+		var following models.FollowList
+		err := rows.Scan(&following.UserId, &following.FirstName, &following.LastName, &following.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		followings = append(followings, following)
+	}
+
+	return followings, nil
+}
