@@ -5,8 +5,6 @@ import (
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
-
-	"github.com/gofrs/uuid/v5"
 )
 
 type FollowService struct {
@@ -76,11 +74,11 @@ func (f *FollowService) DeleteFollow(followData models.FollowRequest) error {
 	return f.FollowRepo.DeleteFollow(followData)
 }
 
-func (f *FollowService) SearchFollowers(userID uuid.UUID, query string) (*models.FollowListResponse, error) {
+func (f *FollowService) SearchFollowers(userID, offset, query string) (*models.FollowListResponse, error) {
 	if query == "" {
 		return &models.FollowListResponse{}, nil
 	}
-	followers, err := f.FollowRepo.SearchFollowers(userID, query)
+	followers, err := f.FollowRepo.SearchFollowers(userID, offset, query)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +92,11 @@ func (f *FollowService) SearchFollowers(userID uuid.UUID, query string) (*models
 	return &response, nil
 }
 
-func (f *FollowService) SearchFollowing(userID uuid.UUID, query string) (*models.FollowListResponse, error) {
+func (f *FollowService) SearchFollowing(userID, offset, query string) (*models.FollowListResponse, error) {
 	if query == "" {
 		return &models.FollowListResponse{}, nil
 	}
-	followers, err := f.FollowRepo.SearchFollowing(userID, query)
+	followers, err := f.FollowRepo.SearchFollowing(userID, offset, query)
 	if err != nil {
 		return nil, err
 	}

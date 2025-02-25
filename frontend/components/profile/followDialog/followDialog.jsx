@@ -83,7 +83,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         try {
             const endpoint = type === 'followers' ? 'searchfollowers' : 'searchfollowing';
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}/${userID}?q=${query}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?offset=${lastUserId}&q=${query}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`

@@ -143,7 +143,7 @@ const CreatePost = ({ onPostCreated }) => {
         }
         try {
             const userId = await getUserID();
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchfollowers/${userId}?q=${query}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchfollowers?offset=${lastUserId}&q=${query}`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {

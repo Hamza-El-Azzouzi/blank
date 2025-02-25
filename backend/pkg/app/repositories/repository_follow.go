@@ -4,8 +4,6 @@ import (
 	"database/sql"
 
 	"blank/pkg/app/models"
-
-	"github.com/gofrs/uuid/v5"
 )
 
 type FollowRepositorie struct {
@@ -132,7 +130,7 @@ func (f *FollowRepositorie) DeleteFollow(followData models.FollowRequest) error 
 	return err
 }
 
-func (f *FollowRepositorie) SearchFollowers(userId uuid.UUID, searchQuery string) ([]models.FollowList, error) {
+func (f *FollowRepositorie) SearchFollowers(userId, offset, searchQuery string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
@@ -146,7 +144,7 @@ func (f *FollowRepositorie) SearchFollowers(userId uuid.UUID, searchQuery string
         ORDER BY u.user_id
         LIMIT 21`
 
-	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", userId, userId)
+	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", offset, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -162,11 +160,10 @@ func (f *FollowRepositorie) SearchFollowers(userId uuid.UUID, searchQuery string
 		}
 		followers = append(followers, follower)
 	}
-
 	return followers, nil
 }
 
-func (f *FollowRepositorie) SearchFollowing(userId uuid.UUID, searchQuery string) ([]models.FollowList, error) {
+func (f *FollowRepositorie) SearchFollowing(userId, offset, searchQuery string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
@@ -180,7 +177,7 @@ func (f *FollowRepositorie) SearchFollowing(userId uuid.UUID, searchQuery string
         ORDER BY u.user_id
         LIMIT 21`
 
-	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", userId, userId)
+	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", offset, offset)
 	if err != nil {
 		return nil, err
 	}
