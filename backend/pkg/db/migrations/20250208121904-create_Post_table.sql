@@ -1,4 +1,5 @@
 -- +migrate Up
+
 CREATE TABLE
   `Post` (
     `post_id` text PRIMARY KEY,

@@ -1,38 +1,66 @@
 package db
 
 import (
+	"context"
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 	migrate "github.com/rubenv/sql-migrate"
 )
 
+type foreignKeyConnector struct {
+	dsn    string
+	driver driver.Driver
+}
+
+func (c *foreignKeyConnector) Connect(ctx context.Context) (driver.Conn, error) {
+	conn, err := c.driver.Open(c.dsn)
+	if err != nil {
+		return nil, err
+	}
+	execer, ok := conn.(driver.ExecerContext)
+	if !ok {
+		return nil, fmt.Errorf("connection does not implement ExecerContext")
+	}
+	_, err = execer.ExecContext(ctx, "PRAGMA foreign_keys = ON;", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
+	}
+	return conn, nil
+}
+
+func (c *foreignKeyConnector) Driver() driver.Driver {
+	return c.driver
+}
+
 func InitDB(dataSourceName string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dataSourceName)
-	if err != nil {
-		return nil, err
+	connector := &foreignKeyConnector{
+		dsn:    dataSourceName,
+		driver: &sqlite3.SQLiteDriver{},
 	}
-	err = db.Ping()
-	if err != nil {
-		return nil, err
+	db := sql.OpenDB(connector) 
+	
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-	_, err = db.Exec("PRAGMA foreign_keys = ON;")
-	if err != nil {
-		return nil, err
-	}
+
 	var foreignKeysEnabled int
-	err = db.QueryRow("PRAGMA foreign_keys;").Scan(&foreignKeysEnabled)
-	if err != nil {
-		panic(err)
+	if err := db.QueryRow("PRAGMA foreign_keys;").Scan(&foreignKeysEnabled); err != nil {
+		return nil, fmt.Errorf("failed to check foreign keys: %w", err)
 	}
+	fmt.Println("Foreign keys enabled:", foreignKeysEnabled)
+
 	migrations := &migrate.FileMigrationSource{
 		Dir: "./pkg/db/migrations",
 	}
 	n, err := migrate.Exec(db, "sqlite3", migrations, migrate.Up)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to apply migrations: %w", err)
 	}
 	log.Printf("Applied %d migrations!\n", n)
+
 	return db, nil
 }

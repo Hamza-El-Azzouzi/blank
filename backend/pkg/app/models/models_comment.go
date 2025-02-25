@@ -7,11 +7,12 @@ import (
 )
 
 type Comment struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	PostID    string
-	Content   string
-	CreatedAt time.Time
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	Commentable_id string
+	Content        string
+	Target         string
+	CreatedAt      time.Time
 }
 
 type CommentDetails struct {
@@ -25,6 +26,7 @@ type CommentDetails struct {
 }
 
 type CommentData struct {
-	PostID  string `json:"post_id"`
-	Content string `json:"content"`
+	Commentable_id string `json:"commentable_id"`
+	Content        string `json:"content"`
+	Target         string `json:"target"`
 }

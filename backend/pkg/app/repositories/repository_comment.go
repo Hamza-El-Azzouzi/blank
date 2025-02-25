@@ -14,7 +14,7 @@ type CommentRepositorie struct {
 }
 
 func (c *CommentRepositorie) Create(comment *models.Comment) error {
-	query := `INSERT INTO Comment (comment_id, user_id, post_id, content) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO Comment (comment_id, user_id, commentable_id,commentable_type,content) VALUES (?, ?, ?, ?,?)`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return err
@@ -23,7 +23,8 @@ func (c *CommentRepositorie) Create(comment *models.Comment) error {
 	_, err = prp.Exec(
 		comment.ID,
 		comment.UserID,
-		comment.PostID,
+		comment.Commentable_id,
+		comment.Target,
 		comment.Content,
 	)
 	if err != nil {
@@ -46,7 +47,7 @@ func (c *CommentRepositorie) CommentExist(commentID string) bool {
 	return false
 }
 
-func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, offset, limit int) ([]models.CommentDetails, error) {
+func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID, target string, offset, limit int) ([]models.CommentDetails, error) {
 	querySelect := `
 		SELECT
 			c.comment_id,
@@ -58,9 +59,9 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, o
 				FROM
 					Like l
 				WHERE
-					l.comment_id = c.comment_id
+					l.likeable_id = c.comment_id AND l.likeable_type = ?
 			) AS LikeCount,
-			EXISTS(SELECT 1 FROM Like l WHERE l.comment_id = c.comment_id AND l.user_id = ?) AS has_liked,
+			EXISTS(SELECT 1 FROM Like l WHERE l.likeable_id = c.comment_id AND l.user_id = ? AND l.likeable_type = ?) AS has_liked,
 			u.first_name,
 			u.last_name,
 			u.avatar,
@@ -69,13 +70,13 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, o
 			Comment c
 			JOIN User u ON c.user_id = u.user_id
 		WHERE
-			c.post_id = ?
+			c.commentable_id = ? AND c.commentable_type = ?
 		ORDER BY
 			c.created_at DESC
 		LIMIT ?
 		OFFSET ?;`
 
-	rows, queryErr := c.DB.Query(querySelect, userID, postID, limit, offset)
+	rows, queryErr := c.DB.Query(querySelect, target, userID, target, postID, target, limit, offset)
 	if queryErr != nil {
 		return nil, queryErr
 	}
@@ -104,23 +105,23 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID string, o
 	return comments, nil
 }
 
-func (c *CommentRepositorie) CheckLike(user_id uuid.UUID, commentID string) (string, error) {
-	query := `SELECT like_id FROM LIKE WHERE user_id = ? AND comment_id = ?`
+func (c *CommentRepositorie) CheckLike(user_id uuid.UUID, commentID,target string) (string, error) {
+	query := `SELECT like_id FROM LIKE WHERE user_id = ? AND likeable_id = ? AND likeable_type = ?`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return "", err
 	}
 	defer prp.Close()
 	var like_id string
-	err = prp.QueryRow(user_id, commentID).Scan(&like_id)
+	err = prp.QueryRow(user_id, commentID,target).Scan(&like_id)
 	if err != nil {
 		return "", err
 	}
 	return like_id, nil
 }
 
-func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID string) error {
-	query := `INSERT INTO Like (like_id, user_id, comment_id) VALUES (?,?,?)`
+func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID,target string) error {
+	query := `INSERT INTO Like (like_id, user_id, likeable_id,likeable_type) VALUES (?,?,?,?)`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return err
@@ -131,6 +132,7 @@ func (c *CommentRepositorie) LikeComment(likeID, user_id uuid.UUID, commentID st
 		likeID,
 		user_id,
 		commentID,
+		target,
 	)
 	if err != nil {
 		return err

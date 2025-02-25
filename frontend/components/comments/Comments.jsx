@@ -10,7 +10,7 @@ import { fetchBlob } from '@/lib/fetch_blob'
 import { BiLoaderCircle } from 'react-icons/bi'
 import Comment from './Comment'
 
-export default function Comments({ postID, setCommentsCount, onClose }) {
+export default function Comments({ postID, setCommentsCount, onClose, target }) {
     const [comments, setComments] = useState([])
     const [user, setUser] = useState({})
     const [toasts, setToasts] = useState([]);
@@ -92,8 +92,9 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                 'Authorization': `Bearer ${cookieValue}`
             },
             body: JSON.stringify({
-                post_id: postID,
-                content: commentContent
+                commentable_id: postID,
+                content: commentContent,
+                target: target
             })
         })
             .then(res => res.json())
@@ -116,7 +117,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
 
     const handleFetchComments = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/comment/${postID}/${page}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/comment/${postID}/${page}/${target}`, {
                 credentials: "include",
                 headers: { 'Authorization': `Bearer ${cookieValue}` }
             })
@@ -183,6 +184,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                                     key={comment.comment_id}
                                     comment={comment}
                                     cookieValue={cookieValue}
+                                    target={target}
                                 />
                             ))
                             : <span className='no-comments'>No comments to display!</span>

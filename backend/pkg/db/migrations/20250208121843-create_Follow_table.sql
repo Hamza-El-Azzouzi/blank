@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Follow` (
   `follower_id` text,
   `following_id` text,
@@ -7,6 +8,8 @@ CREATE TABLE `Follow` (
   PRIMARY KEY (`follower_id`, `following_id`),
   FOREIGN KEY (`follower_id`) REFERENCES `User` (`user_id`),
   FOREIGN KEY (`following_id`) REFERENCES `User` (`user_id`)
+  ,
+  CHECK (`follower_id` <> `following_id`)
 );
 
 CREATE INDEX idx_follow_follower_id ON `Follow` (`follower_id`);

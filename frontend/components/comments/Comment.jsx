@@ -5,12 +5,12 @@ import { useState } from 'react'
 import Link from 'next/link';
 import { FiHeart } from 'react-icons/fi'
 
-export default function Comment({ comment, cookieValue }) {
+export default function Comment({ comment, cookieValue,target }) {
     const [likes, setLikes] = useState(comment?.like_count || 0)
     const [isLiked, setIsLiked] = useState(comment.has_liked || false)
 
     const handleLike = async () => {
-        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/comment/${comment.comment_id}/like`, {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/comment/${comment.comment_id}/like/${target}`, {
             method: "POST",
             credentials: "include",
             headers: {

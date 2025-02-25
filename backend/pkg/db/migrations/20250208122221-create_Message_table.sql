@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Message` (
   `message_id` text PRIMARY KEY,
   `sender_id` text,

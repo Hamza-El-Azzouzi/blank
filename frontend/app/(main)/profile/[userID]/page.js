@@ -163,6 +163,7 @@ export default function ProfilePage({ params }) {
                     loading={loading}
                     endReached={endReached}
                     onLoadMore={handleLoadMore}
+                    target="Post"
                   />
                 </>
               }

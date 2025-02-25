@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Post_Privacy` (
   `post_id` text,
   `user_id` text,
