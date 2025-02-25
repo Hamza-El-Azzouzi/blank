@@ -18,6 +18,7 @@ func SetupRoutes(mux *http.ServeMux,
 	groupHandler *handlers.GroupHandler,
 	followHandler *handlers.FollowHandler,
 	commentHandler *handlers.CommentHandler,
+	webSocketHandler *handlers.WebSocketHandler,
 ) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
@@ -74,8 +75,9 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/createEvent", groupHandler.CreateEvent)
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
-
-
+	
+	// WebSocket handler
+	mux.HandleFunc("/ws", webSocketHandler.Connect)
 
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

@@ -47,6 +47,7 @@ func (h *AuthMiddleware) Protect(next http.Handler) http.Handler {
 			"/api/login":     true,
 			"/api/register":  true,
 			"/api/integrity": true,
+			"/ws": true,
 		}
 
 		if _, ok := publicRoutes[r.URL.Path]; ok {
