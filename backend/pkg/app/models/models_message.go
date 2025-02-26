@@ -8,13 +8,13 @@ import (
 )
 
 type ContactUser struct {
-	UserID          string
-	FirstName       string
-	LastName        string
-	Avatar          string
-	LastMessage     string
-	LastMessageTime time.Time
-	IsSeen          bool
+	UserID          string    `json:"user_id"`
+	FirstName       string    `json:"first_name"`
+	LastName        string    `json:"last_name"`
+	Avatar          string    `json:"avatar"`
+	LastMessage     string    `json:"last_message"`
+	LastMessageTime time.Time `json:"last_message_time"`
+	IsSeen          bool      `json:"is_seen"`
 }
 
 type Chat struct {
