@@ -23,12 +23,7 @@ type Chat struct {
 	Reciver string `json:"id"`
 }
 
-type Message struct {
-	SenderID   string `json:"sender_id,omitempty"`
-	ReceiverID string `json:"receiver_id,omitempty"`
-	Content    string `json:"content,omitempty"`
-	Type       string `json:"type"`
-}
+
 
 type HistoryChat struct {
 	SnederID   string `json:"senderID"`

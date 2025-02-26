@@ -25,7 +25,7 @@ func main() {
 
 	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo, groupRepo, followRepo := app.InitRepositories(database)
 
-	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService, followService := app.InitServices(userRepo,
+	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService, followService, webSocketService := app.InitServices(userRepo,
 		postRepo,
 		commentRepo,
 		likeRepo,
@@ -45,7 +45,8 @@ func main() {
 		messageService,
 		userService,
 		groupService,
-		followService)
+		followService,
+		webSocketService)
 
 	mux := http.NewServeMux()
 	protectedMux := authMiddleware.Protect(mux)
