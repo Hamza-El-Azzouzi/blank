@@ -98,7 +98,7 @@ func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	}
 
 	commentData.Content = html.EscapeString(strings.TrimSpace(commentData.Content))
-	if commentData.Content == "" || len(commentData.Content) > 200 {
+	if (commentData.Content == "" && commentData.Image == "") || len(commentData.Content) > 200{
 		utils.SendResponses(w, http.StatusBadRequest, "Comment can't be empty or longer than  200 characters", nil)
 		return
 	}

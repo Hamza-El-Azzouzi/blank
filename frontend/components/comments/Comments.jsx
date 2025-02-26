@@ -41,8 +41,8 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
     }, [cookieValue])
 
     useEffect(function checkInputChanging() {
-        setIsChanged(commentContent !== "")
-    }, [commentContent])
+        setIsChanged(commentContent !== "" || image !== null)
+    }, [commentContent,image])
 
     useEffect(function fetchAuthenticatedUserInfo() {
         if (!cookieValue) return
