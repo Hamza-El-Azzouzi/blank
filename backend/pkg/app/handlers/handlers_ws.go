@@ -14,17 +14,20 @@ import (
 )
 
 type WebSocketHandler struct {
-	UserService    *services.UserService
-	GroupService   *services.GroupService
-	Upgrader       websocket.Upgrader
-	Mutex          sync.Mutex
-	ConnectedUsers map[uuid.UUID]*models.ConnectedUser
+	WebSocketService *services.WebSocketService
+	UserService      *services.UserService
+	GroupService     *services.GroupService
+	SessionService   *services.SessionService
+	Upgrader         websocket.Upgrader
+	Mutex            sync.Mutex
+	ConnectedUsers   map[uuid.UUID]*models.ConnectedUser
 }
 
 func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	conn, err := ws.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("Upgrading error: %#v\n", err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
@@ -37,12 +40,6 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	ws.connectClient(conn, userID)
 	defer ws.disconnectClient(conn, userID)
 
-	var conns []*websocket.Conn
-
-	for _, conn := range ws.ConnectedUsers {
-		conns = append(conns, conn.Conn)
-	}
-
 	for {
 		var message models.Message
 		err := conn.ReadJSON(&message)
@@ -50,20 +47,40 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		ws.SendNotification(conns, models.Notification{
-			Type:    "MESSAGE",
-			Label:   "New Message from " + ws.ConnectedUsers[userID].User.FirstName + " " + ws.ConnectedUsers[userID].User.LastName,
-			Message: message,
-		})
+		_, ok := ws.SessionService.CheckSession(message.SessionID)
+		if !ok {
+			ws.SendNotification([]uuid.UUID{userID}, models.Notification{
+				Type:  "error",
+				Label: "Your session has expired",
+			})
+			break
+		}
+
+		message.SenderID = userID
+
+		dists, notification := ws.WebSocketService.NotificationService(message)
+		if notification.Type == "error" {
+			log.Printf("Error sending notification: %v", err)
+			ws.SendNotification([]uuid.UUID{userID}, notification)
+			continue
+		}
+
+		err = ws.SendNotification(dists, notification)
+		if err != nil {
+			break
+		}
 	}
 }
 
-func (ws *WebSocketHandler) SendNotification(conns []*websocket.Conn, notificacion models.Notification) error {
-	log.Printf("Message received: %+v", notificacion.Message)
-	for _, conn := range conns {
-		err := conn.WriteJSON(notificacion)
-		if err != nil {
-			return err
+func (ws *WebSocketHandler) SendNotification(dists []uuid.UUID, notificacion models.Notification) error {
+	for _, conn := range ws.ConnectedUsers {
+		for _, dist := range dists {
+			if conn.User.UserID == dist {
+				err := conn.Conn.WriteJSON(notificacion)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil
@@ -74,6 +91,7 @@ func (ws *WebSocketHandler) connectClient(conn *websocket.Conn, userID uuid.UUID
 	if err != nil {
 		return err
 	}
+	user.UserID = userID
 
 	ws.Mutex.Lock()
 	ws.ConnectedUsers[userID] = &models.ConnectedUser{
