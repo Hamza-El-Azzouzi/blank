@@ -1,6 +1,15 @@
 // components/Toast.jsx
 import { useEffect, useState } from 'react';
 import styles from './Toast.module.css';
+import { RiMessage2Fill } from "react-icons/ri";
+import { MdError } from "react-icons/md";
+import { IoIosWarning, IoMdInformationCircleOutline } from "react-icons/io";
+import { GrStatusGood } from "react-icons/gr";
+
+
+
+
+
 const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
   const [visible, setVisible] = useState(true);
 
@@ -18,13 +27,15 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return '✅';
+        return <GrStatusGood />;
+      case 'message':
+        return <RiMessage2Fill />;
       case 'error':
-        return '❌';
+        return <MdError />;
       case 'warning':
-        return '⚠️';
+        return <IoIosWarning />;
       default:
-        return 'ℹ️';
+        return <IoMdInformationCircleOutline />;
     }
   };
 
