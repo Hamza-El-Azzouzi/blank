@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { GetCookie } from '@/lib/cookie';
 import './sidebar.css';
-// import ChatDialog from '@/components/chat/chatDialog';
+import ChatDialog from '@/components/chat/chatDialog';
 
 const UserSidebar = () => {
   const [contacts, setContacts] = useState([]);
@@ -91,6 +91,12 @@ const UserSidebar = () => {
     setSelectedUser(null);
   };
 
+  const refreshContacts = () => {
+    setPage(0);
+    setHasMore(true);
+    fetchContacts(0);
+  };
+
   return (
     <>
       <h2 className="contacts-header">Messages</h2>
@@ -126,13 +132,9 @@ const UserSidebar = () => {
         </ul>
       )}
 
-      {/* {showChatDialog && selectedUser && (
-        <ChatDialog
-          contact={selectedUser}
-          onClose={handleCloseDialog}
-          onMessageSent={refreshContacts}
-        />
-      )} */}
+      {showChatDialog && selectedUser && (
+        <ChatDialog contact={selectedUser} onClose={handleCloseDialog} onMessageSent={refreshContacts}/>
+      )}
     </>
   );
 };

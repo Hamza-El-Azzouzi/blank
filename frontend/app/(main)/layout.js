@@ -39,7 +39,7 @@ export default function MainLayout({ children }) {
     return () => {
       worker.port.close();
     };
-  }, []);
+  }, [sessionId]);
 
   const showToast = (type, message) => {
     const newToast = { id: Date.now(), type, message };
