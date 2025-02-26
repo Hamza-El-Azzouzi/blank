@@ -9,28 +9,9 @@ import { MdPeopleAlt } from "react-icons/md";
 import { FiBell } from 'react-icons/fi';
 import Link from 'next/link';
 import Toast from '@/components/toast/Toast';
-import GetCookie from '@/lib/cookie';
+import * as cookies from '@/lib/cookie';
 
 export default function MainLayout({ children }) {
-
-  useEffect(function handleSharedWorkerConnection() {
-    const worker = new SharedWorker("./workers/shared-worker.js", "Social Network");
-
-    worker.port.onmessage = (e) => {
-      showToast('info', e.data.label);
-    };
-
-    worker.port.postMessage({ 
-      type: "message",
-      content: "Salam Ana Hamza"
-    });
-
-    return () => {
-      worker.port.close();
-    };
-  }, []);
-
-
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
@@ -38,6 +19,27 @@ export default function MainLayout({ children }) {
   const rightSidebarRef = useRef(null);
   const leftToggleRef = useRef(null);
   const rightToggleRef = useRef(null);
+
+  const sessionId = cookies.GetCookie("sessionId");
+
+  useEffect(function handleSharedWorkerConnection() {
+    const worker = new SharedWorker("./workers/shared-worker.js", "Social Network");
+
+    worker.port.onmessage = (e) => {
+      showToast(e.data.type, e.data.label);
+    };
+
+    worker.port.postMessage({
+      session_id: sessionId,
+      receiver_id: "1d795d01-fca1-4d08-add1-1461c6321931",
+      content: "Salam Ana Hamza",
+      receiver_type: "user"
+    });
+
+    return () => {
+      worker.port.close();
+    };
+  }, []);
 
   const showToast = (type, message) => {
     const newToast = { id: Date.now(), type, message };
