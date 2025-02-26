@@ -12,6 +12,29 @@ type MessageRepository struct {
 	DB *sql.DB
 }
 
+func (m *MessageRepository) SaveMessage(message models.Message) error {
+	Query := `
+		INSERT INTO Message (
+			message_id,
+			sender_id,
+			receiver_id,
+			content
+			)
+		VALUES (?,?,?,?)
+	`
+	preparedQuery, err := m.DB.Prepare(Query)
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec(
+		message.ID,
+		message.SenderID,
+		message.ReceiverID,
+		message.Content,
+	)
+	return err
+}
+
 func (m *MessageRepository) Create(messageId uuid.UUID, msg string, reciever_id string, sender uuid.UUID, date string) error {
 	Query := "INSERT INTO messages (id,user_id_sender,user_id_receiver,message,created_at)VALUES (?,?,?,?,?)"
 	preparedQuery, err := m.DB.Prepare(Query)
