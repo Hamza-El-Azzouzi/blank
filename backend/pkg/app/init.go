@@ -10,6 +10,7 @@ import (
 	"blank/pkg/app/repositories"
 	"blank/pkg/app/services"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 )
 
@@ -130,8 +131,8 @@ func InitHandlers(authService *services.AuthService,
 				return true
 			},
 		},
-		ConnectedUsers: make(map[string]*models.ConnectedUser),
+		ConnectedUsers: make(map[uuid.UUID]*models.ConnectedUser),
 	}
-	
+
 	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler, websocketHandler
 }

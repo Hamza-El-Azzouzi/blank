@@ -57,4 +57,5 @@ type UserInfo struct {
 
 type ConnectedUser struct {
 	Conn *websocket.Conn
+	User *UserInfo
 }

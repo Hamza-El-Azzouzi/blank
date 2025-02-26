@@ -16,25 +16,20 @@ function initWebSocket() {
     })
 }
 
-self.onconnect = function (event) {
+self.onconnect = async function (event) {
     const port = event.ports[0]
 
     if (!wsReady) {
         wsReady = initWebSocket()
     }
 
-    port.onmessage = async function (e) {
-        try {
-            const ws = await wsReady
-            ws.send(JSON.stringify(e.data))
-        } catch (error) {
-            console.error("Failed to send message:", error)
-        }
-    }
+    const ws = await wsReady
 
-    port.onerror = function (error) {
-        console.log("Port error:", error)
-    }
+    port.onmessage = (e) => ws.send(JSON.stringify(e.data))
+    port.onerror = (error) => console.log("Port error:", error)
+    
+    ws.onmessage = (e) => port.postMessage(JSON.parse(e.data))
+
 
     port.onclose = async function () {
         try {
