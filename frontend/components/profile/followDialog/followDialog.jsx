@@ -11,11 +11,12 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
     const [hasMore, setHasMore] = useState(true);
     const observerRef = useRef();
     const [searchQuery, setSearchQuery] = useState('');
-    const [isSearching, setIsSearching] = useState(false);
     const debounceTimeoutRef = useRef(null);
     const [displayedUsers, setDisplayedUsers] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [lastSearchId, setLastSearchId] = useState('');
+    const [hasMoreSearch, setHasMoreSearch] = useState(true);
 
     const fetchUsers = async () => {
         if (loading || !hasMore) return;
@@ -71,19 +72,27 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         }
     };
 
-    const performSearch = async (query) => {
+    const performSearch = async (query, isNewSearch = false) => {
         if (query.length < 1) {
             setDisplayedUsers(users);
             setSearchResults([]);
             setIsSearchLoading(false);
             return;
         }
+
+        if (isNewSearch) {
+            setLastSearchId('');
+            setSearchResults([]);
+            setHasMoreSearch(true);
+        }
+
+        if (!hasMoreSearch && !isNewSearch) return;
         
         setIsSearchLoading(true);
         try {
             const endpoint = type === 'followers' ? 'searchfollowers' : 'searchfollowing';
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?offset=${lastUserId}&q=${query}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -93,7 +102,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
 
             const data = await response.json();
             if (data.data.follow_list) {
-                const searchResults = await Promise.all(
+                const newSearchResults = await Promise.all(
                     data.data.follow_list.map(async (user) => ({
                         ...user,
                         avatar: user.avatar
@@ -101,13 +110,19 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                             : '/default-avatar.jpg'
                     }))
                 );
-                setSearchResults(searchResults);
-                setDisplayedUsers(searchResults);
+
+                setSearchResults(prev => isNewSearch ? newSearchResults : [...prev, ...newSearchResults]);
+                setDisplayedUsers(prev => isNewSearch ? newSearchResults : [...prev, ...newSearchResults]);
+                
+                if (data.data.last_user_id) {
+                    setLastSearchId(data.data.last_user_id);
+                    setHasMoreSearch(newSearchResults.length === 20);
+                } else {
+                    setHasMoreSearch(false);
+                }
             }
         } catch (error) {
             console.error('Error searching users:', error);
-            setSearchResults([]);
-            setDisplayedUsers([]);
         } finally {
             setIsSearchLoading(false);
         }
@@ -119,13 +134,14 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         }
 
         debounceTimeoutRef.current = setTimeout(() => {
-            performSearch(query);
+            performSearch(query, true);
         }, 300);
     }, []);
 
     const handleSearch = (e) => {
         const query = e.target.value;
         setSearchQuery(query);
+        setLastSearchId('');
         if (query.length < 1) {
             setDisplayedUsers(users);
             setSearchResults([]);
@@ -174,19 +190,30 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
-                if (entries[0].isIntersecting && hasMore && !loading) {
-                    fetchUsers();
+                if (entries[0].isIntersecting && !loading) {
+                    if (searchQuery) {
+                        if (hasMoreSearch && !isSearchLoading) {
+                            performSearch(searchQuery);
+                        }
+                    } else if (hasMore) {
+                        fetchUsers();
+                    }
                 }
             },
-            { threshold: 0.1 }
+            { threshold: 0.5 }
         );
 
-        if (observerRef.current) {
-            observer.observe(observerRef.current);
+        const currentObserver = observerRef.current;
+        if (currentObserver) {
+            observer.observe(currentObserver);
         }
 
-        return () => observer.disconnect();
-    }, [lastUserId]);
+        return () => {
+            if (currentObserver) {
+                observer.disconnect();
+            }
+        };
+    }, [lastUserId, hasMore, loading, searchQuery, lastSearchId, hasMoreSearch, isSearchLoading]);
 
     useEffect(() => {
         return () => {
@@ -219,30 +246,36 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                 </div>
 
                 <div className="follow-list">
-                    {isSearchLoading ? (
+                    {isSearchLoading && !displayedUsers.length ? (
                         <div className="follow-loading">Loading...</div>
-                    ) : searchQuery && searchResults.length === 0 ? (
+                    ) : searchQuery && !displayedUsers.length ? (
                         <div className="follow-empty-message">No results found</div>
-                    ) : displayedUsers.map(user => (
-                        <div key={user.user_id} className="follow-item">
-                            <div className="follow-user-info">
-                                <Link
-                                    key={user.user_id}
-                                    href={`/profile/${user.user_id}`}
-                                >
-                                    <img src={user.avatar} alt={`${user.first_name}'s avatar`} className="follow-avatar" />
-                                    <span className="follow-name">{user.first_name} {user.last_name}</span>
-                                </Link>
-                            </div>
-                            {isOwner && (
-                                <button className="follow-remove-btn" onClick={() => handleRemoveUser(user.user_id)}>
-                                    Remove
-                                </button>
+                    ) : (
+                        <>
+                            {displayedUsers.map(user => (
+                                <div key={user.user_id} className="follow-item">
+                                    <div className="follow-user-info">
+                                        <Link
+                                            key={user.user_id}
+                                            href={`/profile/${user.user_id}`}
+                                        >
+                                            <img src={user.avatar} alt={`${user.first_name}'s avatar`} className="follow-avatar" />
+                                            <span className="follow-name">{user.first_name} {user.last_name}</span>
+                                        </Link>
+                                    </div>
+                                    {isOwner && (
+                                        <button className="follow-remove-btn" onClick={() => handleRemoveUser(user.user_id)}>
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                            <div ref={observerRef} style={{ height: '20px' }}></div>
+                            {(loading || (isSearchLoading && displayedUsers.length > 0)) && (
+                                <div className="follow-loading">Loading more...</div>
                             )}
-                        </div>
-                    ))}
-
-                    {!searchQuery && !isSearchLoading && <div ref={observerRef} className="follow-observer"></div>}
+                        </>
+                    )}
                 </div>
 
                 {!hasMore && displayedUsers.length === 0 && !searchQuery && (
