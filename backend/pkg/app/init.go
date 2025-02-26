@@ -49,6 +49,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	*services.UserService,
 	*services.GroupService,
 	*services.FollowService,
+	*services.WebSocketService,
 ) {
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
 		&services.PostService{PostRepo: postRepo, UserRepo: userRepo},
@@ -58,7 +59,8 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
 		&services.UserService{UserRepo: userRepo},
 		&services.GroupService{GroupRepo: groupRepo},
-		&services.FollowService{FollowRepo: followRepo, UserRepo: userRepo}
+		&services.FollowService{FollowRepo: followRepo, UserRepo: userRepo},
+		&services.WebSocketService{UserRepo: userRepo, MessageRepo: messageRepo}
 }
 
 func InitHandlers(authService *services.AuthService,
@@ -70,7 +72,8 @@ func InitHandlers(authService *services.AuthService,
 	messageService *services.MessageService,
 	userService *services.UserService,
 	groupService *services.GroupService,
-	followService *services.FollowService) (*handlers.AuthHandler,
+	followService *services.FollowService,
+	webSocketService *services.WebSocketService) (*handlers.AuthHandler,
 	*handlers.PostHandler,
 	*handlers.ReactHandler,
 	*handlers.MessageHandler,
@@ -124,8 +127,10 @@ func InitHandlers(authService *services.AuthService,
 	}
 
 	websocketHandler := &handlers.WebSocketHandler{
-		UserService:  userService,
-		GroupService: groupService,
+		WebSocketService: webSocketService,
+		UserService:      userService,
+		GroupService:     groupService,
+		SessionService:   sessionService,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
