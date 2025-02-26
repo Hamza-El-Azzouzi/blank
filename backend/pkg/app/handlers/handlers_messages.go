@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -35,7 +37,7 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 	sessionId, err := r.Cookie("sessionId")
 
 	if err == nil && sessionId.Value != "" {
-		_,existSessions = m.SessionService.CheckSession(sessionId.Value)
+		_, existSessions = m.SessionService.CheckSession(sessionId.Value)
 	}
 	if !existSessions {
 		log.Printf("session doesn't exist: %#v\n", err)
@@ -94,8 +96,8 @@ func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request)
 				break
 			}
 			m.Clients[data["id"]].Conn.WriteJSON(map[string]string{
-				"pimp" : data["pimp"],
-				"usernametyper" : user.Nickname,
+				"pimp":          data["pimp"],
+				"usernametyper": user.Nickname,
 			})
 		}
 		if data["type"] == "ping" && existSessions {
@@ -249,4 +251,31 @@ func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func (m *MessageHandler) GetContactUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	userID := r.Context().Value("user_id").(string)
+
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
+		}
+	}
+
+	contacts, err := m.MessageService.GetContactUsers(userID, offset)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get contacts", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "Success", contacts)
 }

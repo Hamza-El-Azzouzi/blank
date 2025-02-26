@@ -115,3 +115,58 @@ func (r *MessageRepository) IsNewUser(userId uuid.UUID) bool {
 
 	return exist == 0
 }
+
+func (m *MessageRepository) GetContactUsers(userID string, offset int) ([]models.ContactUser, error) {
+	query := `
+	SELECT 
+		u.user_id,
+		u.first_name,
+		u.last_name,
+		u.avatar,
+		m.content AS LastMessage,
+		m.created_at AS LastMessageTime,
+		m.seen AS IsSeen
+	FROM User u
+	LEFT JOIN Message m
+		ON m.message_id = (
+			SELECT message_id
+			FROM Message
+			WHERE ((sender_id = u.user_id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.user_id))
+			AND group_id IS NULL
+			ORDER BY created_at DESC
+			LIMIT 1
+		)
+	WHERE 
+		u.user_id != ?
+		AND EXISTS (
+			SELECT 1
+			FROM Message
+			WHERE ((sender_id = u.user_id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.user_id))
+			AND group_id IS NULL
+		)
+	ORDER BY m.created_at DESC
+	LIMIT 20 OFFSET ?
+	`
+
+	rows, err := m.DB.Query(query, userID, userID, userID, userID, userID, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var contacts []models.ContactUser
+
+	for rows.Next() {
+		var contact models.ContactUser
+
+		if err := rows.Scan(&contact.UserID, &contact.FirstName, &contact.LastName, &contact.Avatar,
+			&contact.LastMessage, &contact.LastMessageTime, &contact.IsSeen); err != nil {
+			return nil, err
+
+		}
+
+		contacts = append(contacts, contact)
+	}
+
+	return contacts, nil
+}

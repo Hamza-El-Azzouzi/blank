@@ -7,6 +7,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type ContactUser struct {
+	UserID          string
+	FirstName       string
+	LastName        string
+	Avatar          string
+	LastMessage     string
+	LastMessageTime time.Time
+	IsSeen          bool
+}
+
 type Chat struct {
 	Message string `json:"msg"`
 	Sender  string `json:"session"`

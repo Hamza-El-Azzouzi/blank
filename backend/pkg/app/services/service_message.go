@@ -62,3 +62,7 @@ func (m *MessageService) MarkReadMsg(markRead models.MarkAsRead) error {
 	}
 	return nil
 }
+
+func (m *MessageService) GetContactUsers(userID string, offset int) ([]models.ContactUser, error) {
+	return m.MessageRepo.GetContactUsers(userID, offset)
+}

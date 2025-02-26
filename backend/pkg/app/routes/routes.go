@@ -21,17 +21,11 @@ func SetupRoutes(mux *http.ServeMux,
 	webSocketHandler *handlers.WebSocketHandler,
 ) {
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
-	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
 	mux.HandleFunc("/api/register", authHandler.HandleRegister)
 	mux.HandleFunc("/api/login", authHandler.HandleLogin)
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 	mux.HandleFunc("/storage/avatars/{avatar}", handlers.ServeImages)
-
-	mux.HandleFunc("/api/users/", authHandler.GetUsers)
-	mux.HandleFunc("/api/messages", authHandler.GetUsers)
-	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
-	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
 
 	// user routes
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
@@ -47,9 +41,7 @@ func SetupRoutes(mux *http.ServeMux,
 
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
-
 	mux.HandleFunc("/api/reacts", reactHandler.React)
-	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
 
 	mux.HandleFunc("/api/requestfollow", followHandler.RequestFollow)
 	mux.HandleFunc("/api/acceptfollow", followHandler.AcceptFollow)
@@ -68,17 +60,22 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/delete", groupHandler.GroupDelete)
 	mux.HandleFunc("/api/group/{group_id}/request/", groupHandler.GroupRequest)
 	mux.HandleFunc("/api/group/{group_id}/response", groupHandler.GroupResponse)
-
 	mux.HandleFunc("/api/group/{group_id}/leave", groupHandler.GroupeLeave)
 	mux.HandleFunc("/api/join/{group_id}/", groupHandler.JoinGroup)
-
 	mux.HandleFunc("/api/group/createEvent", groupHandler.CreateEvent)
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
-	
+
+	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
+	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
+	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
+	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
+
+	// message handler
+	mux.HandleFunc("/api/chat/contacts", messageHnadler.GetContactUsers)
+
 	// WebSocket handler
 	mux.HandleFunc("/ws", webSocketHandler.Connect)
-
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
