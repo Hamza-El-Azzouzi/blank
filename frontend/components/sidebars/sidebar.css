@@ -153,14 +153,16 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     margin-bottom: 10px;
+    background-color: var(--bg-secondary);
 }
 
 .sidebar-contact-item.unseen {
     background-color: var(--bg-tertiary);
+
 }
 
 .sidebar-contact-item:hover {
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
 }
 
 .contact-details {

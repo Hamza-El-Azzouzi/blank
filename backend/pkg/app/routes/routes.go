@@ -73,6 +73,7 @@ func SetupRoutes(mux *http.ServeMux,
 
 	// message handler
 	mux.HandleFunc("/api/chat/contacts", messageHnadler.GetContactUsers)
+	mux.HandleFunc("/api/chat", messageHnadler.GetMessages)
 
 	// WebSocket handler
 	mux.HandleFunc("/ws", webSocketHandler.Connect)
