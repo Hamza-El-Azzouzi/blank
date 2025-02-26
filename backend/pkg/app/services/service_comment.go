@@ -33,9 +33,9 @@ func (c *CommentService) SaveComment(userID uuid.UUID, commentable_id, content, 
 		postID = sql.NullString{Valid: false}
 	}
 
-	imageFilename, err := utils.SaveImage(image)
+	imageFilenameComment, err := utils.SaveImage(image)
 	if err != nil {
-		return uuid.Nil,err
+		return uuid.Nil, err
 	}
 	comment := &models.Comment{
 		ID:          uuid.Must(uuid.NewV4()),
@@ -43,7 +43,7 @@ func (c *CommentService) SaveComment(userID uuid.UUID, commentable_id, content, 
 		PostID:      postID,
 		GroupPostID: groupPostID,
 		Content:     content,
-		Image:       imageFilename,
+		Image:       imageFilenameComment,
 	}
 	return comment.ID, c.CommentRepo.Create(comment)
 }

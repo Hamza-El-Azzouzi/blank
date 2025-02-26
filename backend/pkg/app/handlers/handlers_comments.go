@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"html"
 	"log"
 	"net/http"
@@ -69,6 +70,7 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 	}
 
 	comments, err = c.CommentService.CommentsByPost(userID, postID, target, page)
+	fmt.Println(err)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return

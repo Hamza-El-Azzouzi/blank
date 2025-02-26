@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 	"html"
 
 	"blank/pkg/app/models"
@@ -14,7 +15,8 @@ type CommentRepositorie struct {
 }
 
 func (c *CommentRepositorie) Create(comment *models.Comment) error {
-	query := `INSERT INTO Comment (comment_id, user_id, post_id, group_post_id, content) VALUES (?, ?, ?, ?, ?)`
+	fmt.Println(comment.Image)
+	query := `INSERT INTO Comment (comment_id, user_id, post_id, group_post_id, content,image) VALUES (?, ?, ?, ?, ?,?)`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {
 		return err
@@ -27,6 +29,7 @@ func (c *CommentRepositorie) Create(comment *models.Comment) error {
 		comment.PostID,
 		comment.GroupPostID,
 		comment.Content,
+		comment.Image,
 	)
 	if err != nil {
 		return err
@@ -54,6 +57,7 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID, target s
 		SELECT
 			c.comment_id,
 			c.content,
+			c.image,
 			c.created_at,
 			(
 				SELECT
@@ -92,6 +96,7 @@ func (c *CommentRepositorie) GetCommentByPost(userID uuid.UUID, postID, target s
 		scanErr := rows.Scan(
 			&comment.CommentID,
 			&comment.Content,
+			&comment.Image,
 			&comment.CreatedAt,
 			&comment.LikeCount,
 			&comment.HasLiked,

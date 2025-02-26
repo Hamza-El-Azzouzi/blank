@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link';
 import { FiHeart } from 'react-icons/fi'
 
-export default function Comment({ comment, cookieValue,target }) {
+export default function Comment({ comment, cookieValue, target }) {
     const [likes, setLikes] = useState(comment?.like_count || 0)
     const [isLiked, setIsLiked] = useState(comment.has_liked || false)
 
@@ -62,6 +62,17 @@ export default function Comment({ comment, cookieValue,target }) {
                 </Link>
                 <p className="comment-text">{comment.content}</p>
                 <span className="comment-time">{comment.formatted_date}</span>
+                {comment.image && (
+                    <div className="post-image-container">
+                        {comment.image !== "" && (
+                            <img
+                                src={comment.image}
+                                alt="Post content"
+                                className="post-image"
+                            />
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     )

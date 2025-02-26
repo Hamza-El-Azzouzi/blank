@@ -91,10 +91,10 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
             showToast('warning', 'Comment size should be less than 200 characters');
             return
         }
-
         const newComment = {
             user: user,
             content: commentContent,
+            image:image,
             formatted_date: new Date().toLocaleString()
         }
 
@@ -145,6 +145,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                     setNoMore(true)
                 }
                 data = await Promise.all(data.map(async (comment) => {
+                    console.log(data)
                     return {
                         ...comment,
                         user: {
@@ -152,7 +153,10 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                             avatar: comment.user.avatar
                                 ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + comment.user.avatar)
                                 : '/default-avatar.jpg'
-                        }
+                        },
+                        image: comment.image
+                            ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + comment.image)
+                            : ''
                     }
                 }))
 

@@ -2,6 +2,7 @@ import * as cookies from '@/lib/cookie';
 
 export const fetchBlob = async (url) => {
     const token = cookies.GetCookie("sessionId")
+    console.log(url)
     try {
         const response = await fetch(url, {
             method: "GET",
