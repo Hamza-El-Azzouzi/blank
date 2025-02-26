@@ -129,15 +129,11 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]models.UserInfo, int, error) {
 	users := []models.UserInfo{}
 	var total int
-
-	// Get total count
 	countQuery := "SELECT COUNT(*) FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
 	err := r.DB.QueryRow(countQuery, "%"+searchQuery+"%", "%"+searchQuery+"%").Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
-
-	// Get paginated results
 	query := `
         SELECT user_id, first_name, last_name, avatar 
         FROM User 

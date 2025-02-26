@@ -109,7 +109,14 @@ const NavSidebar = () => {
             : '/default-avatar.jpg';
           return user;
         }));
-        setSearchResults(pageNum === 1 ? users : [...searchResults, ...users]);
+
+        setSearchResults(prev => {
+          if (pageNum === 1) {
+            return users;
+          }
+          return [...prev, ...users];
+        });
+        
         setHasMore(data.data.hasMore);
         setPage(pageNum);
       } else {
@@ -120,7 +127,9 @@ const NavSidebar = () => {
       }
     } catch (error) {
       console.error('Search error:', error);
-      setSearchResults([]);
+      if (pageNum === 1) {
+        setSearchResults([]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -158,11 +167,12 @@ const NavSidebar = () => {
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
+    setPage(1); 
     if (query.length < 1) {
       setSearchResults([]);
+      setHasMore(true);
       return;
     }
-    setIsLoading(true);
     debouncedSearch(query);
   };
 
@@ -181,7 +191,7 @@ const NavSidebar = () => {
         </div>
         {searchQuery && (
           <div className="search-results" ref={searchResultsRef}>
-            {isLoading && page === 1 ? (
+            {isLoading && searchResults.length === 0 ? (
               <div className="search-result-item">Loading...</div>
             ) : searchResults.length > 0 ? (
               <>
@@ -203,7 +213,7 @@ const NavSidebar = () => {
                     <span>{user.first_name} {user.last_name}</span>
                   </Link>
                 ))}
-                {isLoading && <div className="search-result-item loading">Loading...</div>}
+                {isLoading && <div className="search-result-item loading">Loading more...</div>}
               </>
             ) : (
               <div className="search-result-item">No results found</div>
