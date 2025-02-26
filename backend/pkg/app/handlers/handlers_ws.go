@@ -57,6 +57,13 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		}
 
 		message.SenderID = userID
+		if message.SenderID == message.ReceiverID {
+			ws.SendNotification([]uuid.UUID{userID}, models.Notification{
+				Type:  "error",
+				Label: "You can't send a message to yourself!",
+			})
+			continue
+		}
 
 		dists, notification := ws.WebSocketService.NotificationService(message)
 		if notification.Type == "error" {
