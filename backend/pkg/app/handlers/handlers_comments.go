@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"html"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -156,7 +155,6 @@ func (c *CommentHandler) CommentLiker(w http.ResponseWriter, r *http.Request) {
 	// target := pathParts[5]
 	err = c.CommentService.LikeComment(userID, commentID)
 	if err != nil {
-		log.Println("jay", err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
