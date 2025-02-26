@@ -6,9 +6,18 @@ CREATE TABLE
     `receiver_id` text,
     `group_id` text,
     `content` text,
-    `seen` boolean,
+    `seen` boolean DEFAULT 0 CHECK (`seen` IN (0, 1)),
     `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-    CHECK ((receiver_id IS NULL AND group_id IS NOT NULL) OR (receiver_id IS NOT NULL AND group_id IS NULL)),
+    CHECK (
+      (
+        receiver_id IS NULL
+        AND group_id IS NOT NULL
+      )
+      OR (
+        receiver_id IS NOT NULL
+        AND group_id IS NULL
+      )
+    ),
     FOREIGN KEY (`sender_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`receiver_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`) on DELETE CASCADE ON UPDATE CASCADE
