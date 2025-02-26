@@ -106,9 +106,9 @@ func (r *PostRepository) PostsByUser(userID, authUserID uuid.UUID, pagination in
 			p.image,
 			p.created_at,
 			p.privacy_level,
-			(SELECT COUNT(*) FROM Like WHERE Like.likeable_id = p.post_id AND Like.likeable_type = "Post") AS like_count,
-			(SELECT COUNT(*) FROM Comment c WHERE c.commentable_id = p.post_id AND c.commentable_type = "Post") AS comments_count,
-			EXISTS(SELECT 1 FROM Like WHERE Like.likeable_id = p.post_id AND Like.user_id = ? AND Like.likeable_type = "Post") AS has_liked,
+			(SELECT COUNT(*) FROM Like WHERE Like.post_id = p.post_id) AS like_count,
+			(SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comments_count,
+			EXISTS(SELECT 1 FROM Like WHERE Like.post_id = p.post_id AND Like.user_id = ?) AS has_liked,
 			p.user_id
 		FROM
 			Post p
