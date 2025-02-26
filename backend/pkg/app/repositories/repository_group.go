@@ -228,7 +228,6 @@ func (g *GroupRepository) JoinGroup(group_id, user_id, isInvited string) error {
 func (g *GroupRepository) GroupDelete(group_id string) error {
 	query := "DELETE FROM `Group` WHERE group_id = ?"
 	_, err := g.DB.Exec(query, group_id)
-	fmt.Println("reepo",err)
 	if err != nil {
 		return err
 	}

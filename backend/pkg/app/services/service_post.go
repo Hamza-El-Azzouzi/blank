@@ -23,7 +23,6 @@ func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string,
 	if err != nil {
 		return err
 	}
-// fmt.Println(imageFilename)
 	if !p.UserRepo.IsProfilePublic(userId.String()) && privacy == "public" {
 		privacy = "almost private"
 	}

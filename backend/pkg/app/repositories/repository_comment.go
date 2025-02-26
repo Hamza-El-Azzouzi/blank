@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 	"html"
 
 	"blank/pkg/app/models"
@@ -15,7 +14,6 @@ type CommentRepositorie struct {
 }
 
 func (c *CommentRepositorie) Create(comment *models.Comment) error {
-	fmt.Println(comment.Image)
 	query := `INSERT INTO Comment (comment_id, user_id, post_id, group_post_id, content,image) VALUES (?, ?, ?, ?, ?,?)`
 	prp, err := c.DB.Prepare(query)
 	if err != nil {

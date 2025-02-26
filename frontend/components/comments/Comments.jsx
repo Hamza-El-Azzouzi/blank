@@ -145,7 +145,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                     setNoMore(true)
                 }
                 data = await Promise.all(data.map(async (comment) => {
-                    console.log(data)
+
                     return {
                         ...comment,
                         user: {
