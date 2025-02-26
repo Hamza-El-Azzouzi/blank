@@ -11,13 +11,33 @@ import Link from 'next/link';
 import GetCookie from '@/lib/cookie';
 
 export default function MainLayout({ children }) {
+
+  useEffect(function handleSharedWorkerConnection() {
+    const worker = new SharedWorker("./workers/shared-worker.js", "Social Network");
+
+    // worker.port.onmessage = (event) => {
+    //   console.log(event.data);
+
+    // };
+
+    worker.port.postMessage({
+      type: "message",
+      content: "Salam Ana Hamza"
+    });
+
+    return () => {
+      worker.port.close();
+    };
+  }, []);
+
+
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const leftSidebarRef = useRef(null);
   const rightSidebarRef = useRef(null);
   const leftToggleRef = useRef(null);
   const rightToggleRef = useRef(null);
-  
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Handle left sidebar

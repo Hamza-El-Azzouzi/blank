@@ -52,7 +52,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
 		&services.PostService{PostRepo: postRepo, UserRepo: userRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
-		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo,GroupRepo: groupRepo},
+		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo, GroupRepo: groupRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
 		&services.UserService{UserRepo: userRepo},
@@ -77,6 +77,7 @@ func InitHandlers(authService *services.AuthService,
 	*handlers.GroupHandler,
 	*handlers.CommentHandler,
 	*handlers.FollowHandler,
+	*handlers.WebSocketHandler,
 ) {
 	MessageHandler := &handlers.MessageHandler{
 		MessageService: messageService,
@@ -120,5 +121,17 @@ func InitHandlers(authService *services.AuthService,
 		FollowService: followService,
 		UserService:   userService,
 	}
-	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler
+
+	websocketHandler := &handlers.WebSocketHandler{
+		UserService:  userService,
+		GroupService: groupService,
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		ConnectedUsers: make(map[string]*models.ConnectedUser),
+	}
+	
+	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler, websocketHandler
 }

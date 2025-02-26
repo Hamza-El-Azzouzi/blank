@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+	"github.com/gorilla/websocket"
 )
 
 type User struct {
@@ -51,5 +52,9 @@ type UserInfo struct {
 	Following    int    `json:"following"`
 	Followers    int    `json:"followers"`
 	FollowStatus string `json:"follow_status"`
-	IsFollowing bool   `json:"is_following"`
+	IsFollowing  bool   `json:"is_following"`
+}
+
+type ConnectedUser struct {
+	Conn *websocket.Conn
 }
