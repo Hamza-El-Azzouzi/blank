@@ -10,25 +10,32 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
     const cookieValue = GetCookie("sessionId");
     const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
+    const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
     useEffect(() => {
-        fetchMessages();
+        fetchMessages(0);
         markMessagesAsSeen();
     }, []);
 
     useEffect(() => {
-        if (messagesEndRef.current) {
+        if (!initialLoadComplete && !loading && messages.length > 0) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            setInitialLoadComplete(true);
         }
-    }, [messages]);
+    }, [loading, messages, initialLoadComplete]);
 
-    const fetchMessages = async () => {
+    const fetchMessages = async (pageNum) => {
         try {
-            setLoading(true);
+            pageNum === 0 ? setLoading(true) : setLoadingMore(true);
+
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/${contact.user_id}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/${contact.user_id}?offset=${pageNum}`,
                 {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${cookieValue}` },
@@ -38,13 +45,41 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
             if (!response.ok) throw new Error('Failed to fetch messages');
 
             const data = await response.json();
-            if (data.data) {
-                setMessages(data.data);
+
+            if (data.data && data.data.length > 0) {
+                const reversedMessages = [...data.data].reverse();
+                if (pageNum === 0) {
+                    setMessages(reversedMessages);
+                } else {
+                    const container = messagesContainerRef.current;
+                    const scrollHeight = container?.scrollHeight || 0;
+                    const scrollTop = container?.scrollTop || 0;
+
+                    setMessages(prevMessages => [...reversedMessages, ...prevMessages]);
+                    setTimeout(() => {
+                        if (container) {
+                            const newScrollHeight = container.scrollHeight;
+                            container.scrollTop = scrollTop + (newScrollHeight - scrollHeight);
+                        }
+                    }, 5);
+                }
+
+                setHasMore(data.data.length === 20)
+            } else {
+                setHasMore(false);
             }
         } catch (error) {
             console.error('Error fetching messages:', error);
         } finally {
-            setLoading(false);
+            pageNum === 0 ? setLoading(false) : setLoadingMore(false);
+        }
+    };
+
+    const loadMoreMessages = () => {
+        if (hasMore && !loadingMore) {
+            const nextPage = page + 20;
+            setPage(nextPage);
+            fetchMessages(nextPage);
         }
     };
 
@@ -89,25 +124,41 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
                     </button>
                 </div>
 
-                <div className="chat-messages">
+                <div className="chat-messages" ref={messagesContainerRef}>
                     {loading ? (
                         <div className="chat-loading">Loading messages...</div>
-                    ) : messages.length === 0 ? (
-                        <div className="no-messages">
-                            <p>No messages yet</p>
-                            <p>Start a conversation with {contact.first_name}!</p>
-                        </div>
                     ) : (
                         <>
-                            {messages.map((msg, index) => (
-                                <div key={index} className={`message ${msg.receiver_id === contact.user_id ? 'sent' : 'received'}`}>
-                                    <div className="message-content">{msg.content}</div>
-                                    <div className="message-time">{formatTime(msg.created_at)}</div>
+                            {messages.length === 0 ? (
+                                <div className="no-messages">
+                                    <p>No messages yet</p>
+                                    <p>Start a conversation with {contact.first_name}!</p>
                                 </div>
-                            ))}
+                            ) : (
+                                <>
+                                    {hasMore && (
+                                        <div className="load-more-container">
+                                            <button className="load-more-button" onClick={loadMoreMessages} disabled={loadingMore}>
+                                                {loadingMore ? (
+                                                    <div className="button-spinner"></div>
+                                                ) : (
+                                                    'Load More Messages'
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {messages.map((msg, index) => (
+                                        <div key={index} className={`message ${msg.receiver_id === contact.user_id ? 'sent' : 'received'}`}>
+                                            <div className="message-content">{msg.content}</div>
+                                            <div className="message-time">{formatTime(msg.created_at)}</div>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+                            <div ref={messagesEndRef} />
                         </>
                     )}
-                    <div ref={messagesEndRef} />
                 </div>
 
                 <form className="chat-input-form" onSubmit={sendMessage}>

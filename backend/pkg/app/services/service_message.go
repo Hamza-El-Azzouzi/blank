@@ -15,12 +15,7 @@ func (m *MessageService) GetContactUsers(userID string, offset int) ([]models.Co
 }
 
 func (m *MessageService) GetUserMessages(authUserID, userID string, offset int) ([]models.MessageHistory, error) {
-	messages, err := m.MessageRepo.GetUserMessages(authUserID, userID, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	return messages, nil
+	return m.MessageRepo.GetUserMessages(authUserID, userID, offset)
 }
 
 func (m *MessageService) MarkMessagesAsSeen(receiverID, senderID string) error {

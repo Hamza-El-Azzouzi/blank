@@ -103,7 +103,7 @@ func (m *MessageRepository) GetUserMessages(authUserID, userID string, offset in
     FROM Message
     WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
     AND group_id IS NULL
-    ORDER BY created_at ASC
+    ORDER BY created_at DESC
 	LIMIT 20 OFFSET ?
     `
 
