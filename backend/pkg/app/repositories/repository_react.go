@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 
 	"blank/pkg/app/models"
 
@@ -14,20 +15,30 @@ type ReactReposetorie struct {
 
 func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) error {
 	var existingreactionID uuid.UUID
-	row := r.DB.QueryRow("SELECT like_id FROM Like WHERE likeable_id = ?  AND user_id = ? AND likeable_type = ?", react.Likeable_id, react.UserID, target)
+	var row *sql.Row
+	switch target {
+	case "Post":
+		row = r.DB.QueryRow("SELECT like_id FROM Like WHERE post_id = ? AND user_id = ?", react.Post_id, react.UserID)
+	case "Group_Post":
+		row = r.DB.QueryRow("SELECT like_id FROM Like WHERE group_post_id = ? AND user_id = ?", react.Group_Post_id, react.UserID)
+	case "Comment":
+		row = r.DB.QueryRow("SELECT like_id FROM Like WHERE comment_id = ? AND user_id = ?", react.Comment_id, react.UserID)
+	default:
+		return fmt.Errorf("invalid target type: %s", target)
+	}
 	switch err := row.Scan(&existingreactionID); err {
 	case sql.ErrNoRows:
-		preparedQuery, err := r.DB.Prepare("INSERT INTO Like (like_id, user_id, likeable_id, likeable_type) VALUES (?, ?, ?, ?)")
+		preparedQuery, err := r.DB.Prepare("INSERT INTO Like (like_id, user_id, comment_id, post_id,group_post_id) VALUES (?, ?, ?, ?,?)")
 		if err != nil {
 			return err
 		}
-		_, err = preparedQuery.Exec(react.ID, react.UserID, react.Likeable_id, target)
+		_, err = preparedQuery.Exec(react.ID, react.UserID, react.Comment_id,react.Post_id,react.Group_Post_id)
 		if err != nil {
 			return err
 		}
 		return nil
 	case nil:
-		preparedQuery, err := r.DB.Prepare("DELETE FROM Like WHERE like_id = ? AND user_id = ? AND likeable_type = ? ")
+		preparedQuery, err := r.DB.Prepare("DELETE FROM Like WHERE like_id = ? AND user_id = ? ")
 		if err != nil {
 			return err
 		}
@@ -43,9 +54,21 @@ func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) erro
 
 func (r *ReactReposetorie) GetReacts(Id, target string) (any, error) {
 	var like int
-	errcountlike := r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE likeable_id = ? AND likeable_type = ?", Id, target).Scan(&like)
-	if errcountlike != nil {
-		return nil, errcountlike
+	var err error
+
+	switch target {
+	case "Post":
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE post_id = ?", Id).Scan(&like)
+	case "Group_Post":
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE group_post_id = ?", Id).Scan(&like)
+	case "Comment":
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE comment_id = ?", Id).Scan(&like)
+	default:
+		return nil, fmt.Errorf("invalid target type: %s", target)
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	data := map[string]any{

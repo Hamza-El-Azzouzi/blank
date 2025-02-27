@@ -10,12 +10,35 @@ type MessageRepository struct {
 	DB *sql.DB
 }
 
-func (m *MessageRepository) SaveMessage(message models.Message) error {
+func (m *MessageRepository) SaveMessageToUser(message models.Message) error {
 	Query := `
 		INSERT INTO Message (
 			message_id,
 			sender_id,
 			receiver_id,
+			content
+			)
+		VALUES (?,?,?,?)
+	`
+	preparedQuery, err := m.DB.Prepare(Query)
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec(
+		message.ID,
+		message.SenderID,
+		message.ReceiverID,
+		message.Content,
+	)
+	return err
+}
+
+func (m *MessageRepository) SaveMessageToGroup(message models.Message) error {
+	Query := `
+		INSERT INTO Message (
+			message_id,
+			sender_id,
+			group_id,
 			content
 			)
 		VALUES (?,?,?,?)
