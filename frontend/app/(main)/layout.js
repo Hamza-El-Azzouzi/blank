@@ -26,12 +26,14 @@ export default function MainLayout({ children }) {
     const worker = new SharedWorker("./workers/shared-worker.js", "Social Network");
 
     worker.port.onmessage = (e) => {
-      showToast(e.data.type, e.data.label);
+      const data = JSON.parse(e.data);
+      
+      showToast(data.type, data.label);
     };
 
     worker.port.postMessage({
       session_id: sessionId,
-      receiver_id: "1d795d01-fca1-4d08-add1-1461c6321931",
+      receiver_id: "eb8fbcd1-a91e-4dfa-8d08-f486cbd5100f",
       content: "Salam Ana Hamza",
       receiver_type: "user"
     });

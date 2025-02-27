@@ -1,4 +1,5 @@
 let wsReady = null
+let ports = [] // Store (tabs)
 
 function initWebSocket() {
     return new Promise((resolve, reject) => {
@@ -18,6 +19,7 @@ function initWebSocket() {
 
 self.onconnect = async function (event) {
     const port = event.ports[0]
+    ports.push(port)
 
     if (!wsReady) {
         wsReady = initWebSocket()
@@ -26,18 +28,19 @@ self.onconnect = async function (event) {
     const ws = await wsReady
 
     port.onmessage = (e) => ws.send(JSON.stringify(e.data))
-    port.onerror = (error) => console.log("Port error:", error)
-    
-    ws.onmessage = (e) => port.postMessage(JSON.parse(e.data))
 
+    ws.onmessage = (e) => {
+        ports.forEach(p => p.postMessage(e.data)) 
+    }
 
-    port.onclose = async function () {
-        try {
-            const ws = await wsReady
+    port.onclose = function () {
+        // Remove closed port from the list
+        ports = ports.filter(p => p !== port)
+        
+        if (ports.length === 0) {
             ws.close()
-            console.log("Worker closed")
-        } catch (error) {
-            console.error("Error closing WebSocket:", error)
+            wsReady = null
+            console.log("WebSocket closed")
         }
     }
 }
