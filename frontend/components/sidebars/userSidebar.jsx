@@ -5,6 +5,7 @@ import { fetchBlob } from '@/lib/fetch_blob';
 import { GetCookie } from '@/lib/cookie';
 import './sidebar.css';
 import ChatDialog from '@/components/chat/chatDialog';
+import { formatTime } from '@/lib/format_time';
 
 const UserSidebar = () => {
   const [contacts, setContacts] = useState([]);
@@ -137,23 +138,6 @@ const UserSidebar = () => {
       )}
     </>
   );
-};
-
-const formatTime = (timestamp) => {
-  const messageDate = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now - messageDate;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
-
-  return messageDate.toLocaleDateString();
 };
 
 export default UserSidebar;

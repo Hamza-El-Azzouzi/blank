@@ -65,15 +65,11 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/createEvent", groupHandler.CreateEvent)
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
-
-	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
-	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
-	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
 	
 	// message handler
 	mux.HandleFunc("/api/chat/contacts", messageHnadler.GetContactUsers)
-	mux.HandleFunc("/api/chat/{user_id}", messageHnadler.GetMessages)
-	mux.HandleFunc("/api/chat/markAsRead/{user_id}", messageHnadler.MarkReadMessages)
+	mux.HandleFunc("/api/chat/{user_id}", messageHnadler.GetUserMessages)
+	mux.HandleFunc("/api/chat/markAsRead/{user_id}", messageHnadler.MarkMessagesAsSeen)
 
 	// WebSocket handler
 	mux.HandleFunc("/ws", webSocketHandler.Connect)

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { FiX, FiSend } from 'react-icons/fi';
 import { GetCookie } from '@/lib/cookie';
 import './chatDialog.css';
+import { formatTime } from '@/lib/format_time';
 
 const ChatDialog = ({ contact, onClose, onMessageSent }) => {
     const [message, setMessage] = useState('');
@@ -15,7 +16,7 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
     useEffect(() => {
         fetchMessages();
         markMessagesAsSeen();
-    }, [contact.user_id]);
+    }, []);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -52,7 +53,7 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
             await fetch(
                 `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/markAsRead/${contact.user_id}`,
                 {
-                    method: 'POST',
+                    method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${cookieValue}` },
                 }
             );
@@ -65,40 +66,14 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
         e.preventDefault();
         if (!message.trim()) return;
 
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/send`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${cookieValue}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        receiver_id: contact.user_id,
-                        content: message
-                    })
-                }
-            );
+        setMessages(prev => [...prev, {
+            receiver_id: contact.user_id,
+            content: message,
+            created_at: Date.now()
+        }]);
 
-            if (!response.ok) throw new Error('Failed to send message');
-
-            // Add message to the UI immediately
-            setMessages(prev => [...prev, {
-                is_sender: true,
-                content: message,
-                formatted_date: 'Just now'
-            }]);
-
-            // Clear input
-            setMessage('');
-
-            // Notify parent component to refresh contacts
-            if (onMessageSent) onMessageSent();
-
-        } catch (error) {
-            console.error('Error sending message:', error);
-        }
+        setMessage('');
+        if (onMessageSent) onMessageSent();
     };
 
     return (
@@ -106,7 +81,7 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
             <div className="chat-dialog" onClick={e => e.stopPropagation()}>
                 <div className="chat-dialog-header">
                     <div className="chat-contact-info">
-                        <Image src={contact.avatar} alt={`${contact.first_name} ${contact.last_name}`} width={40} height={40} className="chat-contact-avatar"/>
+                        <Image src={contact.avatar} alt={`${contact.first_name} ${contact.last_name}`} width={40} height={40} className="chat-contact-avatar" />
                         <h3>{contact.first_name} {contact.last_name}</h3>
                     </div>
                     <button className="close-dialog-btn" onClick={onClose}>
@@ -125,9 +100,9 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
                     ) : (
                         <>
                             {messages.map((msg, index) => (
-                                <div key={index} className={`message ${msg.is_sender ? 'sent' : 'received'}`}>
+                                <div key={index} className={`message ${msg.receiver_id === contact.user_id ? 'sent' : 'received'}`}>
                                     <div className="message-content">{msg.content}</div>
-                                    <div className="message-time">{msg.created_at}</div>
+                                    <div className="message-time">{formatTime(msg.created_at)}</div>
                                 </div>
                             ))}
                         </>
@@ -136,7 +111,7 @@ const ChatDialog = ({ contact, onClose, onMessageSent }) => {
                 </div>
 
                 <form className="chat-input-form" onSubmit={sendMessage}>
-                    <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Type a message..." className="chat-input"/>
+                    <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Type a message..." className="chat-input" />
                     <button type="submit" className="send-message-btn" disabled={!message.trim()}>
                         <FiSend />
                     </button>
