@@ -60,7 +60,7 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.UserService{UserRepo: userRepo},
 		&services.GroupService{GroupRepo: groupRepo},
 		&services.FollowService{FollowRepo: followRepo, UserRepo: userRepo},
-		&services.WebSocketService{UserRepo: userRepo, MessageRepo: messageRepo}
+		&services.WebSocketService{UserRepo: userRepo, MessageRepo: messageRepo, ConnectedUsers: make(map[uuid.UUID]*models.ConnectedUser)}
 }
 
 func InitHandlers(authService *services.AuthService,
@@ -136,7 +136,6 @@ func InitHandlers(authService *services.AuthService,
 				return true
 			},
 		},
-		ConnectedUsers: make(map[uuid.UUID]*models.ConnectedUser),
 	}
 
 	return authHandler, postHandler, reactHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler, websocketHandler

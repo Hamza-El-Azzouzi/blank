@@ -3,7 +3,6 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"sync"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -19,8 +18,6 @@ type WebSocketHandler struct {
 	GroupService     *services.GroupService
 	SessionService   *services.SessionService
 	Upgrader         websocket.Upgrader
-	Mutex            sync.Mutex
-	ConnectedUsers   map[uuid.UUID]*models.ConnectedUser
 }
 
 func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +34,12 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ws.connectClient(conn, userID)
-	defer ws.disconnectClient(conn, userID)
+	err = ws.WebSocketService.ConnectUser(conn, userID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+        return
+	}
+	defer ws.WebSocketService.DisconnectUser(conn, userID)
 
 	for {
 		var message models.Message
@@ -49,7 +50,7 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 
 		_, ok := ws.SessionService.CheckSession(message.SessionID)
 		if !ok {
-			ws.SendNotification([]uuid.UUID{userID}, models.Notification{
+			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
 				Type:  "error",
 				Label: "Your session has expired",
 			})
@@ -58,64 +59,23 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 
 		message.SenderID = userID
 		if message.SenderID == message.ReceiverID {
-			ws.SendNotification([]uuid.UUID{userID}, models.Notification{
+			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
 				Type:  "error",
-				Label: "You can't send a message to yourself!",
+				Label: "You can't send a message to yourself !",
 			})
 			continue
 		}
 
-		dists, notification := ws.WebSocketService.NotificationService(message)
+		dists, notification := ws.WebSocketService.ReadMessage(message)
 		if notification.Type == "error" {
 			log.Printf("Error sending notification: %v", err)
-			ws.SendNotification([]uuid.UUID{userID}, notification)
+			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, notification)
 			continue
 		}
 
-		err = ws.SendNotification(dists, notification)
+		err = ws.WebSocketService.SendNotification(dists, notification)
 		if err != nil {
 			break
 		}
 	}
-}
-
-func (ws *WebSocketHandler) SendNotification(dists []uuid.UUID, notificacion models.Notification) error {
-	for _, conn := range ws.ConnectedUsers {
-		for _, dist := range dists {
-			if conn.User.UserID == dist {
-				err := conn.Conn.WriteJSON(notificacion)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func (ws *WebSocketHandler) connectClient(conn *websocket.Conn, userID uuid.UUID) error {
-	user, err := ws.UserService.GetAuthenticatedUser(userID)
-	if err != nil {
-		return err
-	}
-	user.UserID = userID
-
-	ws.Mutex.Lock()
-	ws.ConnectedUsers[userID] = &models.ConnectedUser{
-		Conn: conn,
-		User: user,
-	}
-	ws.Mutex.Unlock()
-
-	log.Printf("%s %s connected\n", user.FirstName, user.LastName)
-	return nil
-}
-
-func (ws *WebSocketHandler) disconnectClient(conn *websocket.Conn, userID uuid.UUID) {
-	name := ws.ConnectedUsers[userID].User.FirstName + " " + ws.ConnectedUsers[userID].User.LastName
-	ws.Mutex.Lock()
-	delete(ws.ConnectedUsers, userID)
-	ws.Mutex.Unlock()
-	log.Printf("%s disconnected\n", name)
-	conn.Close()
 }
