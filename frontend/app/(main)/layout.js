@@ -33,9 +33,9 @@ export default function MainLayout({ children }) {
 
     worker.port.postMessage({
       session_id: sessionId,
-      receiver_id: "eb8fbcd1-a91e-4dfa-8d08-f486cbd5100f",
+      receiver_id: "839376aa-a302-43b0-87c3-6cd7fb7b6b23",
       content: "Salam Ana Hamza",
-      receiver_type: "user"
+      receiver_type: "to_group"
     });
 
     return () => {

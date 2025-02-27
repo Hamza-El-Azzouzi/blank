@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"blank/pkg/app/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type GroupRepository struct {
@@ -193,7 +195,7 @@ func (g *GroupRepository) IsGroupMember(group_id, user_id string) (bool, error) 
 func (g *GroupRepository) PostGroupExist(post_id string) bool {
 	exist := 0
 	query := `SELECT count(*) FROM Group_Post WHERE group_post_id = ?`
-	err := g.DB.QueryRow(query, post_id, ).Scan(&exist)
+	err := g.DB.QueryRow(query, post_id).Scan(&exist)
 	if err != nil {
 		return false
 	}
@@ -202,11 +204,11 @@ func (g *GroupRepository) PostGroupExist(post_id string) bool {
 	}
 	return false
 }
+
 func (g *GroupRepository) IsOwner(group_id, user_id string) (bool, error) {
 	exist := 0
 	query := "SELECT count(*) FROM `Group` WHERE group_id = ? AND creator_id = ?"
 	err := g.DB.QueryRow(query, group_id, user_id).Scan(&exist)
-	
 	if err != nil {
 		return false, err
 	}
@@ -296,10 +298,9 @@ func (g *GroupRepository) GroupResponseDeclined(group_id, user_id string) (int, 
 func (g *GroupRepository) GroupCreatePost(post_id string, group models.GroupPost, user_id, FileName string) (models.GroupPost, error) {
 	query := "INSERT INTO `Group_Post` (group_post_id,group_id,user_id,content,image) VALUES (?,?,?,?,?)"
 	var groupInfo models.GroupPost
-	
+
 	_, err := g.DB.Exec(query, post_id, group.Group_id, user_id, group.Content, FileName)
 	if err != nil {
-		
 		return models.GroupPost{}, err
 	}
 
@@ -390,9 +391,7 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 		LIMIT 20 OFFSET ?;
 	`
 	rows, err := g.DB.Query(querySelect, user_id, group_id, pagination)
-	
 	if err != nil {
-		
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
 	defer rows.Close()
@@ -420,7 +419,6 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 	}
 	err = rows.Err()
 	if err != nil {
-		
 		return []models.GroupPost{}, err
 	}
 	return groupInfos, nil
@@ -512,7 +510,7 @@ func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Ev
 		event.Time = dateTime.Format("15:04")
 		events = append(events, event)
 	}
-	
+
 	return events, nil
 }
 
@@ -556,3 +554,46 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 	return event, nil
 }
 
+func (g *GroupRepository) GetGroupMembers(groupID uuid.UUID) ([]uuid.UUID, error) {
+	selectQuery := `
+		SELECT 
+			user_id
+		FROM Group_Membership
+		WHERE group_id = ?
+	`
+	rows, err := g.DB.Query(selectQuery, groupID)
+	if err != nil {
+		return nil, err
+	}
+
+	var members []uuid.UUID
+
+	for rows.Next() {
+		var userID uuid.UUID
+		err = rows.Scan(&userID)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user ID: %v", err)
+		}
+		members = append(members, userID)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("error iterating users : %v", err)
+	}
+
+	return members, nil
+}
+
+func (g *GroupRepository) GroupExist(groupID uuid.UUID) (bool, error) {
+	var num int
+	query := `SELECT COUNT(*) FROM 'Group' WHERE group_id = ?`
+	row := g.DB.QueryRow(query, groupID)
+	err := row.Scan(&num)
+	if err != nil {
+		return false, err
+	}
+	if num == 1 {
+		return true, nil
+	}
+	return false, nil
+}

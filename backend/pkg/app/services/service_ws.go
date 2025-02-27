@@ -14,6 +14,7 @@ import (
 
 type WebSocketService struct {
 	UserRepo       *repositories.UserRepository
+	GroupRepo      *repositories.GroupRepository
 	MessageRepo    *repositories.MessageRepository
 	ConnectedUsers map[uuid.UUID]*models.ConnectedUser
 	Mutex          sync.Mutex
@@ -35,8 +36,10 @@ func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, mo
 		}
 	}
 
+	message.ID = uuid.Must(uuid.NewV4())
+
 	switch message.ReceiverType {
-	case "user":
+	case "to_user":
 		dists, notification, err = ws.SendMessageToUser(sender, message)
 		if err != nil {
 			return nil, models.Notification{
@@ -44,7 +47,7 @@ func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, mo
 				Label: err.Error(),
 			}
 		}
-	case "group":
+	case "to_group":
 		dists, notification, err = ws.SendMessageToGroup(sender, message)
 		if err != nil {
 			return nil, models.Notification{
@@ -58,15 +61,14 @@ func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, mo
 }
 
 func (ws *WebSocketService) SendMessageToUser(sender *models.UserInfo, message models.Message) ([]uuid.UUID, models.Notification, error) {
-	// check if the receiver user exist
+	// check if the user receiver user exist
 	exist := ws.UserRepo.UserExist(message.ReceiverID)
 	if !exist {
 		return nil, models.Notification{}, fmt.Errorf("user not found")
 	}
 
 	// save the message in the database
-	message.ID = uuid.Must(uuid.NewV4())
-	err := ws.MessageRepo.SaveMessage(message)
+	err := ws.MessageRepo.SaveMessageToUser(message)
 	if err != nil {
 		return nil, models.Notification{}, fmt.Errorf("error saving message : %v", err)
 	}
@@ -88,12 +90,44 @@ func (ws *WebSocketService) SendMessageToUser(sender *models.UserInfo, message m
 }
 
 func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message models.Message) ([]uuid.UUID, models.Notification, error) {
-	var (
-		dists        []uuid.UUID
-		notification models.Notification
-	)
+	// check if the group receiver user exist
+	exist, err := ws.GroupRepo.GroupExist(message.ReceiverID)
+	if !exist {
+		if err != nil {
+			return nil, models.Notification{}, err
+		}
+		return nil, models.Notification{}, fmt.Errorf("group not found")
+	}
 
-	return dists, notification, nil
+	// chack if the user is member of the group
+	isMember, err := ws.GroupRepo.IsGroupMember(message.ReceiverID.String(), message.SenderID.String())
+	if !isMember {
+		if err != nil {
+			return nil, models.Notification{}, err
+		}
+		return nil, models.Notification{}, fmt.Errorf("you are not member of the group")
+	}
+
+	// save the message in the database
+	err = ws.MessageRepo.SaveMessageToGroup(message)
+	if err != nil {
+		return nil, models.Notification{}, fmt.Errorf("error saving message : %v", err)
+	}
+
+	var notification models.Notification
+
+	groupMembers, err := ws.GroupRepo.GetGroupMembers(message.ReceiverID)
+	if err != nil {
+		return nil, models.Notification{}, err
+	}
+
+	notification = models.Notification{
+		Type:    "message",
+		Label:   "New Message from " + sender.FirstName + " " + sender.LastName,
+		Message: message,
+	}
+
+	return groupMembers, notification, nil
 }
 
 func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification models.Notification) error {
