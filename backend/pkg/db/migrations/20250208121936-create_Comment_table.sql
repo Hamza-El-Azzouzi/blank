@@ -2,18 +2,14 @@
 CREATE TABLE
   `Comment` (
     `comment_id` text PRIMARY KEY,
-    `user_id` int,
-    `post_id` text CHECK (
-      `post_id` IS NULL
-      OR `group_post_id` IS NULL
-    ),
-    `group_post_id` text CHECK (
-      `post_id` IS NULL
-      OR `group_post_id` IS NULL
-    ),
+    `user_id` text,
+    `post_id` text,
+    `group_post_id` text,
     `content` text,
     `image` text,
     `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
+    CHECK (((`post_id` IS NULL AND `group_post_id` IS NOT NULL) OR
+           (`post_id` IS NOT NULL AND `group_post_id` IS NULL))),
     FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`) on DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`group_post_id`) REFERENCES `Group_Post` (`group_post_id`) on DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE

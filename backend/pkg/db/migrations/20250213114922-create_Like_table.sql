@@ -2,7 +2,7 @@
 CREATE TABLE
     `Like` (
         `like_id` TEXT PRIMARY KEY,
-        `user_id` INT NOT NULL,
+        `user_id` TEXT NOT NULL,
         `comment_id` TEXT,
         `post_id` TEXT,
         `group_post_id` INT,
