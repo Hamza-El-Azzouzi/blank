@@ -171,9 +171,10 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
 
             if (response.ok) {
                 setUsers(prev => prev.filter(user => user.user_id !== userId));
+                setDisplayedUsers(prev => prev.filter(user => user.user_id !== userId));
                 setProfile(prev => ({
                     ...prev,
-                    [type]: prev[type] - 1
+                    [type]: Math.max(0, prev[type] - 1)
                 }));
             }
         } catch (error) {
