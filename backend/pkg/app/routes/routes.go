@@ -74,16 +74,6 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
 
-
-
-
-	mux.HandleFunc("/api/group/createEvent", groupHandler.CreateEvent)
-	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
-	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
-
-
-
-
 	// chat routes
 	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
 	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
