@@ -554,14 +554,14 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 	return event, nil
 }
 
-func (g *GroupRepository) GetGroupMembers(groupID uuid.UUID) ([]uuid.UUID, error) {
+func (g *GroupRepository) GetGroupMembers(senderID, groupID uuid.UUID) ([]uuid.UUID, error) {
 	selectQuery := `
 		SELECT 
 			user_id
 		FROM Group_Membership
-		WHERE group_id = ?
+		WHERE group_id = ? AND user_id != ?
 	`
-	rows, err := g.DB.Query(selectQuery, groupID)
+	rows, err := g.DB.Query(selectQuery, groupID, senderID)
 	if err != nil {
 		return nil, err
 	}

@@ -116,7 +116,7 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 
 	var notification models.Notification
 
-	groupMembers, err := ws.GroupRepo.GetGroupMembers(message.ReceiverID)
+	groupMembers, err := ws.GroupRepo.GetGroupMembers(message.SenderID, message.ReceiverID)
 	if err != nil {
 		return nil, models.Notification{}, err
 	}
