@@ -6,8 +6,8 @@ CREATE TABLE `Follow` (
   `following_id` text,
   `status` varchar(255),
   PRIMARY KEY (`follower_id`, `following_id`),
-  FOREIGN KEY (`follower_id`) REFERENCES `User` (`user_id`),
-  FOREIGN KEY (`following_id`) REFERENCES `User` (`user_id`)
+  FOREIGN KEY (`follower_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`following_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE
   ,
   CHECK (`follower_id` <> `following_id`)
 );

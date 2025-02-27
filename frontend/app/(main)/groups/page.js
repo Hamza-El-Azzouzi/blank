@@ -51,7 +51,7 @@ const GroupsPage = () => {
                     return newGroups;
                 });
 
-                if (data.data && data.data.length < ITEMS_PER_PAGE) {
+                if ((data.data && data.data[0].TotalCount < ITEMS_PER_PAGE) || (data.data === null)) {
                     setHasMore(false);
                 }
             } catch (err) {

@@ -318,16 +318,16 @@ func (g *GroupRepository) GroupCreatePost(post_id string, group models.GroupPost
 		WHEN comment_counts.comment_count > 100 THEN '+100'
 		ELSE IFNULL(CAST(comment_counts.comment_count AS TEXT), '0')
 	END AS comment_count,
-	(SELECT COUNT(*) FROM Like WHERE Like.likeable_id = Group_Post.group_post_id AND likeable_type = "Group_Post") AS like_count,
-	EXISTS(SELECT 1 FROM Like WHERE Like.likeable_id = Group_Post.group_post_id AND Like.user_id = ? AND likeable_type = "Group_Post" ) AS has_liked,
+	(SELECT COUNT(*) FROM Like WHERE Like.group_post_id = Group_Post.group_post_id) AS like_count,
+	EXISTS(SELECT 1 FROM Like WHERE Like.group_post_id = Group_Post.group_post_id AND Like.user_id = ?) AS has_liked,
 	COUNT(*) OVER() AS total_count
 	FROM 
 		   Group_Post
 	JOIN 
 		User ON Group_Post.user_id = User.user_id
 	LEFT JOIN 
-		(SELECT commentable_id, COUNT(*) AS comment_count FROM Comment WHERE commentable_type = "Group_Post" GROUP BY commentable_id) AS comment_counts
-		ON Group_Post.group_post_id = comment_counts.commentable_id
+		(SELECT group_post_id, COUNT(*) AS comment_count FROM Comment GROUP BY group_post_id) AS comment_counts
+		ON Group_Post.group_post_id = comment_counts.group_post_id
 	WHERE
 	Group_Post.group_post_id= ? 
 		GROUP BY 
@@ -372,16 +372,16 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 			WHEN comment_counts.comment_count > 100 THEN '+100'
 			ELSE IFNULL(CAST(comment_counts.comment_count AS TEXT), '0')
 		END AS comment_count,
-		(SELECT COUNT(*) FROM Like WHERE Like.likeable_id = Group_Post.group_post_id AND likeable_type = "Group_Post") AS like_count,
-		EXISTS(SELECT 1 FROM Like WHERE Like.likeable_id = Group_Post.group_post_id AND Like.user_id = ? AND likeable_type = "Group_Post" ) AS has_liked,
+		(SELECT COUNT(*) FROM Like WHERE Like.group_post_id = Group_Post.group_post_id ) AS like_count,
+		EXISTS(SELECT 1 FROM Like WHERE Like.group_post_id = Group_Post.group_post_id AND Like.user_id = ?) AS has_liked,
 		COUNT(*) OVER() AS total_count
 		FROM 
 			Group_Post
 		JOIN 
 			User ON Group_Post.user_id = User.user_id
 		LEFT JOIN 
-			(SELECT commentable_id, COUNT(*) AS comment_count FROM Comment WHERE commentable_type = "Group_Post" GROUP BY commentable_id) AS comment_counts
-			ON Group_Post.group_post_id = comment_counts.commentable_id
+			(SELECT group_post_id, COUNT(*) AS comment_count FROM Comment GROUP BY group_post_id) AS comment_counts
+			ON Group_Post.group_post_id = comment_counts.group_post_id
 		WHERE
 		Group_Post.group_id= ? 
 			GROUP BY 
