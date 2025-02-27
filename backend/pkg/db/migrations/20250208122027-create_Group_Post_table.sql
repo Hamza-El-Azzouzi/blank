@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Group_Post` (
   `group_post_id` text PRIMARY KEY,
   `group_id` text,

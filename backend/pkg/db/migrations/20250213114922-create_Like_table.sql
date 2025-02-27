@@ -1,29 +1,22 @@
 -- +migrate Up
-CREATE TABLE `Like` (
-        `like_id` text PRIMARY KEY NOT NULL,
-        `user_id` text NOT NULL,
-        `post_id` TEXT,
+CREATE TABLE
+    `Like` (
+        `like_id` TEXT PRIMARY KEY,
+        `user_id` TEXT NOT NULL,
         `comment_id` TEXT,
-        `created_at` timestamp DEFAULT (DATETIME ('now', 'localtime')),
-        FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE,
-        FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`) ON UPDATE CASCADE ON DELETE CASCADE,
-        FOREIGN KEY (`comment_id`) REFERENCES `Comment` (`comment_id`) ON UPDATE CASCADE ON DELETE CASCADE,
-        CONSTRAINT unique_user_post_comment UNIQUE (`user_id`, `post_id`, `comment_id`),
+        `post_id` TEXT,
+        `group_post_id` INT,
+        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`) on DELETE CASCADE ON UPDATE CASCADE,  
+        FOREIGN KEY (`post_id`) REFERENCES `Post` (`post_id`) on DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (`comment_id`) REFERENCES `Comment` (`comment_id`) on DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (`group_post_id`) REFERENCES `Group_Post` (`group_post_id`) on DELETE CASCADE ON UPDATE CASCADE
         CHECK (
-            (
-                `post_id` IS NOT NULL
-                AND `comment_id` IS NULL
-            )
-            OR (
-                `post_id` IS NULL
-                AND `comment_id` IS NOT NULL
-            )
+            ((`comment_id` IS NOT NULL AND `post_id` IS NULL AND `group_post_id` IS NULL) OR
+            (`comment_id` IS NULL AND `post_id` IS NOT NULL AND `group_post_id` IS NULL) OR
+            (`comment_id` IS NULL AND `post_id` IS NULL AND `group_post_id` IS NOT NULL))
         )
     );
-
-CREATE INDEX idx_like_post_id ON `Like` (`post_id`);
-
-CREATE INDEX idx_like_comment_id ON `Like` (`comment_id`);
 
 -- +migrate Down
 DROP TABLE `Like`;

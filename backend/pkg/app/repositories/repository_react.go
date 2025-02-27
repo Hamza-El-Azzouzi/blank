@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 
 	"blank/pkg/app/models"
 
@@ -13,21 +14,25 @@ type ReactReposetorie struct {
 }
 
 func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) error {
-	var id *string
 	var existingreactionID uuid.UUID
-	if target == "post" {
-		id = react.PostID
-	} else {
-		id = react.CommentID
+	var row *sql.Row
+	switch target {
+	case "Post":
+		row = r.DB.QueryRow("SELECT like_id FROM Like WHERE post_id = ? AND user_id = ?", react.Post_id, react.UserID)
+	case "Group_Post":
+		row = r.DB.QueryRow("SELECT like_id FROM Like WHERE group_post_id = ? AND user_id = ?", react.Group_Post_id, react.UserID)
+	case "Comment":
+		row = r.DB.QueryRow("SELECT like_id FROM Like WHERE comment_id = ? AND user_id = ?", react.Comment_id, react.UserID)
+	default:
+		return fmt.Errorf("invalid target type: %s", target)
 	}
-	row := r.DB.QueryRow("SELECT like_id FROM Like WHERE "+target+"_id = ?  AND user_id = ?", id, react.UserID)
 	switch err := row.Scan(&existingreactionID); err {
 	case sql.ErrNoRows:
-		preparedQuery, err := r.DB.Prepare("INSERT INTO Like (like_id, user_id, post_id, comment_id) VALUES (?, ?, ?, ?)")
+		preparedQuery, err := r.DB.Prepare("INSERT INTO Like (like_id, user_id, comment_id, post_id,group_post_id) VALUES (?, ?, ?, ?,?)")
 		if err != nil {
 			return err
 		}
-		_, err = preparedQuery.Exec(react.ID, react.UserID, react.PostID, react.CommentID)
+		_, err = preparedQuery.Exec(react.ID, react.UserID, react.Comment_id,react.Post_id,react.Group_Post_id)
 		if err != nil {
 			return err
 		}
@@ -37,7 +42,7 @@ func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) erro
 		if err != nil {
 			return err
 		}
-		_, err = preparedQuery.Exec(existingreactionID, react.UserID)
+		_, err = preparedQuery.Exec(existingreactionID, react.UserID, target)
 		if err != nil {
 			return err
 		}
@@ -49,13 +54,25 @@ func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) erro
 
 func (r *ReactReposetorie) GetReacts(Id, target string) (any, error) {
 	var like int
-	errcountlike := r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE "+target+"_id = ?", Id).Scan(&like)
-	if errcountlike != nil {
-		return nil, errcountlike
+	var err error
+
+	switch target {
+	case "Post":
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE post_id = ?", Id).Scan(&like)
+	case "Group_Post":
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE group_post_id = ?", Id).Scan(&like)
+	case "Comment":
+		err = r.DB.QueryRow("SELECT COUNT(*) FROM Like WHERE comment_id = ?", Id).Scan(&like)
+	default:
+		return nil, fmt.Errorf("invalid target type: %s", target)
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	data := map[string]any{
-		"id":        Id,
+		"id":         Id,
 		"like_count": like,
 	}
 	return data, nil

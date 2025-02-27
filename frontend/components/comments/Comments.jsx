@@ -5,12 +5,13 @@ import "./comments.css"
 import { RiCloseLargeLine } from "react-icons/ri"
 import * as cookies from '@/lib/cookie'
 import Toast from '../toast/Toast'
+import { FiImage } from 'react-icons/fi';
 import Loading from '../loading/Loading'
 import { fetchBlob } from '@/lib/fetch_blob'
 import { BiLoaderCircle } from 'react-icons/bi'
 import Comment from './Comment'
 
-export default function Comments({ postID, setCommentsCount, onClose }) {
+export default function Comments({ postID, setCommentsCount, onClose, target }) {
     const [comments, setComments] = useState([])
     const [user, setUser] = useState({})
     const [toasts, setToasts] = useState([]);
@@ -21,14 +22,27 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
     const [cookieValue, setCookieValue] = useState(null)
     const [loading, setLoading] = useState(true)
     const [loadingMore, setLoadingMore] = useState(false)
-
+    const [image, setImage] = useState(null);
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    const removeImage = () => {
+        setImage(null);
+    };
     useEffect(function getSessionID() {
         setCookieValue(cookies.GetCookie("sessionId"))
     }, [cookieValue])
 
     useEffect(function checkInputChanging() {
-        setIsChanged(commentContent !== "")
-    }, [commentContent])
+        setIsChanged(commentContent !== "" || image !== null)
+    }, [commentContent,image])
 
     useEffect(function fetchAuthenticatedUserInfo() {
         if (!cookieValue) return
@@ -77,10 +91,10 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
             showToast('warning', 'Comment size should be less than 200 characters');
             return
         }
-
         const newComment = {
             user: user,
             content: commentContent,
+            image:image,
             formatted_date: new Date().toLocaleString()
         }
 
@@ -92,8 +106,10 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                 'Authorization': `Bearer ${cookieValue}`
             },
             body: JSON.stringify({
-                post_id: postID,
-                content: commentContent
+                commentable_id: postID,
+                content: commentContent,
+                target: target,
+                image
             })
         })
             .then(res => res.json())
@@ -104,6 +120,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                         setComments(data => [newComment, ...data])
                         setCommentContent("")
                         setCommentsCount(comments.length + 1)
+                        setImage(null);
                     } else {
                         throw new Error(data.message)
                     }
@@ -116,7 +133,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
 
     const handleFetchComments = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/comment/${postID}/${page}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/comment/${postID}/${page}/${target}`, {
                 credentials: "include",
                 headers: { 'Authorization': `Bearer ${cookieValue}` }
             })
@@ -128,6 +145,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                     setNoMore(true)
                 }
                 data = await Promise.all(data.map(async (comment) => {
+
                     return {
                         ...comment,
                         user: {
@@ -135,7 +153,10 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                             avatar: comment.user.avatar
                                 ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + comment.user.avatar)
                                 : '/default-avatar.jpg'
-                        }
+                        },
+                        image: comment.image
+                            ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + comment.image)
+                            : ''
                     }
                 }))
 
@@ -183,6 +204,7 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                                     key={comment.comment_id}
                                     comment={comment}
                                     cookieValue={cookieValue}
+                                    target={target}
                                 />
                             ))
                             : <span className='no-comments'>No comments to display!</span>
@@ -194,8 +216,22 @@ export default function Comments({ postID, setCommentsCount, onClose }) {
                         : ""
                     }
                 </div>
+                {image && (
+                    <div className="image-preview-wrapper">
+                        <img src={image} alt="Preview" className="preview-image" />
+                        <button type="button" onClick={removeImage} className="remove-image" aria-label="Remove image">
+                            ×
+                        </button>
+                    </div>
+                )}
                 <form onSubmit={handleSubmit} className="comments-form" method='POST'>
+
                     <input max={200} value={commentContent} onChange={handleChange} type="text" placeholder="Write a comment..." />
+                    <label className="upload-image-label">
+                        <FiImage className="action-icon" />
+                        <input type="file" accept="image/*"
+                            onChange={handleImageChange} className="hidden-input" />
+                    </label>
                     <button type="submit">Comment</button>
                 </form>
             </div>

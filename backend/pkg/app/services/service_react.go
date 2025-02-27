@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"fmt"
 
 	"blank/pkg/app/models"
@@ -13,6 +14,7 @@ type ReactService struct {
 	ReactRepo   *repositories.ReactReposetorie
 	PostRepo    *repositories.PostRepository
 	CommentRepo *repositories.CommentRepositorie
+	GroupRepo   *repositories.GroupRepository
 }
 
 func (r *ReactService) GetReacts(ID, target string) (any, error) {
@@ -23,26 +25,45 @@ func (r *ReactService) GetReacts(ID, target string) (any, error) {
 	return data, nil
 }
 
-func (r *ReactService) Create(userID uuid.UUID, postID, commentID string, target string) error {
-	likeID, err := uuid.NewV4()
-	if err != nil {
-		return fmt.Errorf("failed to generate UUID: %v", err)
-	}
-	var postIDPtr, commentIDPtr *string
-	if postID != "" && r.PostRepo.PostExist(postID) {
-		postIDPtr = &postID
-	}
-	if commentID != "" && r.CommentRepo.CommentExist(commentID) {
-		commentIDPtr = &commentID
-	}
-	if postIDPtr == nil && commentIDPtr == nil {
-		return fmt.Errorf("post or comment doesn't exist")
-	}
-	react := &models.Reacts{
-		ID:        likeID,
-		UserID:    userID,
-		PostID:    postIDPtr,
-		CommentID: commentIDPtr,
+func (r *ReactService) Create(userID uuid.UUID, likeable_id, target string) error {
+	likeID := uuid.Must(uuid.NewV4())
+	var react *models.Reacts
+	switch target {
+	case "Post":
+		if !r.PostRepo.PostExist(likeable_id) {
+			return fmt.Errorf("post with ID %s does not exist", likeable_id)
+		}
+		react = &models.Reacts{
+			ID:            likeID.String(),
+			UserID:        userID,
+			Post_id:       sql.NullString{String: likeable_id, Valid: true},
+			Comment_id:    sql.NullString{Valid: false},
+			Group_Post_id: sql.NullString{Valid: false},
+		}
+	case "Comment":
+		if !r.CommentRepo.CommentExist(likeable_id) {
+			return fmt.Errorf("comment with ID %s does not exist", likeable_id)
+		}
+		react = &models.Reacts{
+			ID:            likeID.String(),
+			UserID:        userID,
+			Post_id:       sql.NullString{Valid: false},
+			Group_Post_id: sql.NullString{Valid: false},
+			Comment_id:    sql.NullString{String: likeable_id, Valid: true},
+		}
+	case "Group_Post":
+		if !r.GroupRepo.PostGroupExist(likeable_id) {
+			return fmt.Errorf("group post with ID %s does not exist", likeable_id)
+		}
+		react = &models.Reacts{
+			ID:            likeID.String(),
+			UserID:        userID,
+			Comment_id:    sql.NullString{Valid: false},
+			Post_id:       sql.NullString{Valid: false},
+			Group_Post_id: sql.NullString{String: likeable_id, Valid: true},
+		}
+	default:
+		return fmt.Errorf("invalid target type: %s", target)
 	}
 
 	r.ReactRepo.CreateReact(react, target)

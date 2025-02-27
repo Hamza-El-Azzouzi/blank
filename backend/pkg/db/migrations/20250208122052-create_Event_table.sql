@@ -1,5 +1,6 @@
 
 -- +migrate Up
+
 CREATE TABLE `Event` (
   `event_id` text PRIMARY KEY,
   `group_id` text,

@@ -1,4 +1,5 @@
 -- +migrate Up
+
 CREATE TABLE
     `Session` (
         "session_id" TEXT PRIMARY KEY,

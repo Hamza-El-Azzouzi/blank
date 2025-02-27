@@ -71,6 +71,9 @@
     border-color: var(--border);
     color: var(--text-tertiary);
 }
+.error-message{
+    color: var(--error);
+}
 
 @media (max-width: 640px) {
     .event-card {

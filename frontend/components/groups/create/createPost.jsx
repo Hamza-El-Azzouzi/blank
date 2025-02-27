@@ -3,11 +3,16 @@
 import React, { useState } from 'react';
 import { FiImage, FiX } from 'react-icons/fi';
 import '../../posts/posts.css';
+// import { useParams } from 'next/navigation';
+import { GetCookie } from '@/lib/cookie';
+import { fetchBlob } from '@/lib/fetch_blob';
 
-const CreatePost = () => {
+const CreatePost = ({groupID, onPostCreated }) => {
+    const [error,setError] = useState("")
     const [content, setContent] = useState('');
-    const [imagePreview, setImagePreview] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
 
+    const cookieValue = GetCookie("sessionId")
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type.startsWith('image/')) {
@@ -18,9 +23,62 @@ const CreatePost = () => {
             reader.readAsDataURL(file);
         }
     };
+    const handlePost = async () => {
+        setError("")
+        const postData = {
+            "groupId" : groupID ,
+            content,
+            "image": imagePreview,
+        };
+        if (!content.trim() && !imagePreview) {
+            setError('Post must contain either text or an image');
+            return;
+        }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+        if (content.length > 400) {
+            setError('Content exceeds maximum length of 400 characters');
+            return;
+        }
+
+        if (imagePreview && imagePreview.length > 3*1024*1024) {
+            setError('Image size is too large');
+            return;
+        }
+      
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/create/post`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${cookieValue}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create post');
+            }
+
+            const post = await response.json();
+            const newPost = {
+                post_id: post.data.post_id,
+                author: `${post.data.first_name} ${post.data.last_name}`,
+                avatar: post.data.avatar ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.data.avatar) : '/default-avatar.jpg',
+                content: post.data.content,
+                image: post.data.image ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.data.image) : null,
+                formatted_date: post.data.formatted_date,
+                like_count: post.data.like_count,
+                comment_count: post.data.comment_count,
+                isLiked: post.data.HasLiked,
+            };
+            
+            if (onPostCreated) onPostCreated(newPost);
+
+            setContent('');
+            setImagePreview(null);
+        } catch (error) {
+            console.error('Error creating post:', error);
+        }
     };
 
     const removeImage = () => {
@@ -29,7 +87,7 @@ const CreatePost = () => {
 
     return (
         <div className="create-post-container">
-            <form onSubmit={handleSubmit}>
+            <form>
                 <textarea placeholder="What's on your mind?" value={content}
                     onChange={(e) => setContent(e.target.value)} className="post-textarea"
                     maxLength={400} />
@@ -52,11 +110,13 @@ const CreatePost = () => {
                         </label>
                     </div>
 
-                    <button type="submit" className="post-submit-button"
+                    <button type="Button" className="post-submit-button"
+                        onClick={handlePost}
                         disabled={!content.trim() && !imagePreview}>
                         Post
                     </button>
                 </div>
+                {error && <div className="error-message">*{error}</div>}
             </form>
         </div>
     );

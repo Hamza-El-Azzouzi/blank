@@ -6,7 +6,7 @@ import './eventCard.css';
 
 const EventCard = ({ event, onResponseChange }) => {
     const handleResponse = (response) => {
-        onResponseChange(event.id, response);
+        onResponseChange(event.event_id, response);
     };
 
     return (
@@ -19,20 +19,22 @@ const EventCard = ({ event, onResponseChange }) => {
                         <FiCalendar /> {event.date} at {event.time}
                     </span>
                     <span className="event-attendees">
-                        <FiUsers /> {event.attendees} attending
+                        <FiUsers /> {event.going_count} attending
                     </span>
                 </div>
             </div>
             <div className="event-response-buttons">
                 <button
-                    className={`response-button ${event.going ? 'going' : ''}`}
+                    className={`response-button ${event.is_going ? 'going' : ''}`}
                     onClick={() => handleResponse('going')}
+                    disabled={event.is_going}
                 >
                     Going
                 </button>
                 <button
-                    className={`response-button ${event.going === false ? 'not-going' : ''}`}
+                    className={`response-button ${!event.is_going ? 'not-going' : ''}`}
                     onClick={() => handleResponse('not-going')}
+                    disabled={!event.is_going}
                 >
                     Not Going
                 </button>

@@ -6,7 +6,7 @@ import * as cookies from '@/lib/cookie';
 import './posts.css';
 import Comments from '../comments/Comments';
 
-const Post = ({ post }) => {
+const Post = ({ post, target}) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
   const [commentsCount, setCommentsCount] = useState(post.comment_count || 0);
@@ -23,7 +23,7 @@ const Post = ({ post }) => {
         },
         body: JSON.stringify({
           targetId: post.post_id,
-          targetType: "post"
+          targetType: target  
         })
       });
 
@@ -105,7 +105,7 @@ const Post = ({ post }) => {
       </div>
 
       {showComments &&
-        <Comments postID={post.post_id} setCommentsCount={setCommentsCount} onClose={() => setShowComments(false)} />
+      <Comments postID={post.post_id} setCommentsCount={setCommentsCount} onClose={() => setShowComments(false)} target={target} />
       }
     </div>
   );

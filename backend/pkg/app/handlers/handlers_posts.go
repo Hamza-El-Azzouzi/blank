@@ -88,7 +88,6 @@ func (p *PostHandler) PostsByUser(w http.ResponseWriter, r *http.Request) {
 	}
 	posts, err := p.PostService.PostsByUser(userID, authUserID, nPagination)
 	if err != nil {
-
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}

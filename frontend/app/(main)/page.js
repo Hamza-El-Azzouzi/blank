@@ -76,11 +76,12 @@ export default function Home() {
   return (
     <div className="feed-container">
       <CreatePost onPostCreated={handleNewPost} />
-      <Posts
-        posts={posts}
-        loading={loading}
-        endReached={endReached}
-        onLoadMore={handleLoadMore}
+      <Posts 
+        posts={posts} 
+        loading={loading} 
+        endReached={endReached} 
+        onLoadMore={handleLoadMore} 
+        target="Post"
       />
     </div>
   );

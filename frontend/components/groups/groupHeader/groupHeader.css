@@ -18,6 +18,8 @@
     color: var(--text-primary);
     font-size: 24px;
     margin-bottom: 12px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .group-description {
@@ -25,6 +27,8 @@
     font-size: 14px;
     line-height: 1.5;
     margin-bottom: 16px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .group-meta {

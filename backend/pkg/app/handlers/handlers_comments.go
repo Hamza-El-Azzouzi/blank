@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"html"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -27,7 +26,7 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 5 {
+	if len(pathParts) != 6 {
 		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
 		return
 	}
@@ -49,6 +48,7 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	postID = r.PathValue("post_id")
+	target := pathParts[5]
 	_, err = uuid.FromString(postID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
@@ -56,8 +56,9 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 	}
 
 	postExist = c.PostService.PostExist(postID)
-	if !postExist {
+	if !postExist && target == "Post" {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
+		return
 	}
 
 	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
@@ -66,13 +67,12 @@ func (c *CommentHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	comments, err = c.CommentService.CommentsByPost(userID, postID, page)
+	comments, err = c.CommentService.CommentsByPost(userID, postID, target, page)
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	
+
 	utils.SendResponses(w, http.StatusOK, "", comments)
 }
 
@@ -91,14 +91,14 @@ func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	postExist := c.PostService.PostExist(commentData.PostID)
-	if !postExist {
+	postExist := c.PostService.PostExist(commentData.Commentable_id)
+	if !postExist && commentData.Target == "Post" {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid post ID", nil)
 		return
 	}
 
 	commentData.Content = html.EscapeString(strings.TrimSpace(commentData.Content))
-	if commentData.Content == "" || len(commentData.Content) > 200 {
+	if (commentData.Content == "" && commentData.Image == "") || len(commentData.Content) > 200{
 		utils.SendResponses(w, http.StatusBadRequest, "Comment can't be empty or longer than  200 characters", nil)
 		return
 	}
@@ -109,7 +109,7 @@ func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	insertedID, err := c.CommentService.SaveComment(userID, commentData.PostID, commentData.Content)
+	insertedID, err := c.CommentService.SaveComment(userID, commentData.Commentable_id, commentData.Content, commentData.Target, commentData.Image)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
@@ -142,16 +142,19 @@ func (c *CommentHandler) CommentLiker(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid comment ID", nil)
 		return
 	}
-
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 6 {
+		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
+		return
+	}
 	userID, err = uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
-
+	// target := pathParts[5]
 	err = c.CommentService.LikeComment(userID, commentID)
 	if err != nil {
-		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
