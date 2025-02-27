@@ -39,16 +39,16 @@ func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]mo
 			WHEN comment_counts.comment_count > 100 THEN '+100'
 			ELSE COALESCE(CAST(comment_counts.comment_count AS TEXT), '0')
 		END AS comment_count,
-		(SELECT COUNT(*) FROM Like WHERE Like.likeable_id = Post.post_id AND Like.likeable_type = "Post")  AS like_count,
-		EXISTS(SELECT 1 FROM Like WHERE Like.likeable_id = Post.post_id AND Like.user_id = ? AND Like.likeable_type = "Post") AS has_liked,
+		(SELECT COUNT(*) FROM Like WHERE Like.post_id = Post.post_id) AS like_count,
+		EXISTS(SELECT 1 FROM Like WHERE Like.post_id = Post.post_id AND Like.user_id = ?) AS has_liked,
 		COUNT(*) OVER() AS total_count
 	FROM 
 		Post
 	JOIN 
 		User ON Post.user_id = User.user_id
 	LEFT JOIN 
-		(SELECT commentable_id, COUNT(*) AS comment_count FROM Comment WHERE Comment.commentable_type = "Post" GROUP BY commentable_id) AS comment_counts
-		ON Post.post_id = comment_counts.commentable_id
+		(SELECT post_id, COUNT(*) AS comment_count FROM Comment GROUP BY post_id) AS comment_counts
+		ON Post.post_id = comment_counts.post_id
 	WHERE
 		(Post.privacy_level = 'public')
 		OR (Post.privacy_level = 'almost private' AND EXISTS(SELECT 1 FROM Follow WHERE Follow.follower_id = ? AND Follow.following_id = Post.user_id AND status = 'accepted'))
@@ -106,9 +106,9 @@ func (r *PostRepository) PostsByUser(userID, authUserID uuid.UUID, pagination in
 			p.image,
 			p.created_at,
 			p.privacy_level,
-			(SELECT COUNT(*) FROM Like WHERE Like.likeable_id = p.post_id AND Like.likeable_type = "Post") AS like_count,
-			(SELECT COUNT(*) FROM Comment c WHERE c.commentable_id = p.post_id AND c.commentable_type = "Post") AS comments_count,
-			EXISTS(SELECT 1 FROM Like WHERE Like.likeable_id = p.post_id AND Like.user_id = ? AND Like.likeable_type = "Post") AS has_liked,
+			(SELECT COUNT(*) FROM Like WHERE Like.post_id = p.post_id) AS like_count,
+			(SELECT COUNT(*) FROM Comment c WHERE c.post_id = p.post_id) AS comments_count,
+			EXISTS(SELECT 1 FROM Like WHERE Like.post_id = p.post_id AND Like.user_id = ?) AS has_liked,
 			p.user_id
 		FROM
 			Post p

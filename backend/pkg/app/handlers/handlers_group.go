@@ -377,6 +377,7 @@ func (g *GroupHandler) GroupPosts(w http.ResponseWriter, r *http.Request) {
 			return
 		default:
 			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
 		}
 	}
 	utils.SendResponses(w, http.StatusOK, "Created successfully", groupPost)

@@ -40,7 +40,7 @@ const CreatePost = ({groupID, onPostCreated }) => {
             return;
         }
 
-        if (imagePreview && imagePreview.length > 1*1024*1024) {
+        if (imagePreview && imagePreview.length > 3*1024*1024) {
             setError('Image size is too large');
             return;
         }
