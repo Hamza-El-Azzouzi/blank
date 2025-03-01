@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"html"
 	"net/http"
 	"strconv"
@@ -140,6 +141,7 @@ type SessionData struct {
 }
 
 func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Triggred here")
 	if r.Method != http.MethodPost {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
@@ -151,6 +153,7 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userID, exist := h.SessionService.CheckSession(session.Value)
+	fmt.Println("Hander Integrity",exist,userID)
 	if !exist {
 		utils.SendResponses(w, http.StatusForbidden, "User Not Found", nil)
 	} else {

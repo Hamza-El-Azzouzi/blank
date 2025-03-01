@@ -34,6 +34,7 @@ export default function SignIn() {
       .then(() => {
         showToast('success', 'Success! Operation completed.');
         router.push("/");
+
       }).catch((error) => {
         setError(error.message)
       })
