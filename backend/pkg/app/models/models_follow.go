@@ -7,7 +7,7 @@ type FollowRequest struct {
 
 type FollowListResponse struct {
 	FollowList []FollowList `json:"follow_list"`
-	TotalCount int          `json:"total_count"`
+	LastUserId string       `json:"last_user_id"`
 }
 
 type FollowList struct {

@@ -11,7 +11,6 @@ import UserNotFound from '@/components/profile/NotFound';
 import PrivateAccount from '@/components/profile/PrivateAccount';
 
 export default function ProfilePage({ params }) {
-
   const [cookieValue, setCookieValue] = useState(null);
   const [userID, setUserID] = useState();
   const [profile, setProfile] = useState({
@@ -26,6 +25,7 @@ export default function ProfilePage({ params }) {
     is_owner: false,
     nickname: "",
     follow_status: "",
+    is_following: false,
   });
 
   const [posts, setPosts] = useState([]);
@@ -134,10 +134,10 @@ export default function ProfilePage({ params }) {
   };
 
   return (
-    <div className="container">
+    <div className="profile-container">
       {!notFound ?
         <>
-          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID}/>
+          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />
 
           {!profile.is_owner && !profile.is_public && !profile.is_following
             ? <PrivateAccount />
