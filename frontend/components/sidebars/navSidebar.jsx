@@ -1,13 +1,12 @@
-// components/sidebars/navSidebar.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { FiHome, FiBell, FiUsers, FiUser, FiMessageSquare, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiBell, FiUsers, FiUser, FiLogOut } from 'react-icons/fi';
 import { BiSearch } from 'react-icons/bi';
 import './sidebar.css';
 import * as cookies from '@/lib/cookie';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { fetchBlob } from '@/lib/fetch_blob'; 
+import { fetchBlob } from '@/lib/fetch_blob';
 
 const NavSidebar = () => {
   const cookieValue = cookies.GetCookie("sessionId");
@@ -17,6 +16,9 @@ const NavSidebar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimeoutRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const searchResultsRef = useRef(null);
 
   useEffect(() => {
     if (cookieValue) {
@@ -80,14 +82,14 @@ const NavSidebar = () => {
     }, 300);
   }, []);
 
-  const performSearch = async (query) => {
+  const performSearch = async (query, pageNum = 1) => {
     if (query.length < 1) {
       setSearchResults([]);
       return;
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchusers?q=${query}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchusers?q=${query}&page=${pageNum}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -99,25 +101,60 @@ const NavSidebar = () => {
         throw new Error('Search failed');
       }
 
-      const data = await response.json(); 
-      if (data.data && data.data.length > 0) {
-        const users = await Promise.all(data.data.map(async (user) => {
+      const data = await response.json();
+      if (data.data && Array.isArray(data.data.users)) {
+        const users = await Promise.all(data.data.users.map(async (user) => {
           user.avatar = user.avatar
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
             : '/default-avatar.jpg';
           return user;
         }));
-        setSearchResults(users || []);
+
+        setSearchResults(prev => {
+          if (pageNum === 1) {
+            return users;
+          }
+          return [...prev, ...users];
+        });
+        
+        setHasMore(data.data.hasMore);
+        setPage(pageNum);
       } else {
-        setSearchResults([]);
+        if (pageNum === 1) {
+          setSearchResults([]);
+        }
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Search error:', error);
-      setSearchResults([]);
+      if (pageNum === 1) {
+        setSearchResults([]);
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleScroll = useCallback(() => {
+    if (!searchResultsRef.current || isLoading || !hasMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = searchResultsRef.current;
+    if (scrollHeight - scrollTop <= clientHeight + 1) {
+      performSearch(searchQuery, page + 1);
+    }
+  }, [isLoading, hasMore, searchQuery, page]);
+
+  useEffect(() => {
+    const currentRef = searchResultsRef.current;
+    if (currentRef) {
+      currentRef.addEventListener('scroll', handleScroll);
+    }
+    return () => {
+      if (currentRef) {
+        currentRef.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     return () => {
@@ -130,11 +167,12 @@ const NavSidebar = () => {
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
+    setPage(1); 
     if (query.length < 1) {
       setSearchResults([]);
+      setHasMore(true);
       return;
     }
-    setIsLoading(true);
     debouncedSearch(query);
   };
 
@@ -152,28 +190,31 @@ const NavSidebar = () => {
           />
         </div>
         {searchQuery && (
-          <div className="search-results">
-            {isLoading ? (
+          <div className="search-results" ref={searchResultsRef}>
+            {isLoading && searchResults.length === 0 ? (
               <div className="search-result-item">Loading...</div>
             ) : searchResults.length > 0 ? (
-              searchResults.map((user) => (
-                <Link
-                  key={user.user_id}
-                  href={`/profile/${user.user_id}`}
-                  className="search-result-item"
-                  onClick={() => setSearchQuery('')}
-                >
-                  <div className="search-result-avatar">
-                    <Image
-                      src={user.avatar}
-                      alt={`${user.first_name} ${user.last_name}`}
-                      width={32}
-                      height={32}
-                    />
-                  </div>
-                  <span>{user.first_name} {user.last_name}</span>
-                </Link>
-              ))
+              <>
+                {searchResults.map((user) => (
+                  <Link
+                    key={user.user_id}
+                    href={`/profile/${user.user_id}`}
+                    className="search-result-item"
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <div className="search-result-avatar">
+                      <Image
+                        src={user.avatar}
+                        alt={`${user.first_name} ${user.last_name}`}
+                        width={32}
+                        height={32}
+                      />
+                    </div>
+                    <span>{user.first_name} {user.last_name}</span>
+                  </Link>
+                ))}
+                {isLoading && <div className="search-result-item loading">Loading more...</div>}
+              </>
             ) : (
               <div className="search-result-item">No results found</div>
             )}
@@ -199,12 +240,6 @@ const NavSidebar = () => {
             <Link href="/notifications" className="nav-link">
               <FiBell className="nav-icon" />
               <span>Notifications</span>
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/messages" className="nav-link">
-              <FiMessageSquare className="nav-icon" />
-              <span>Messages</span>
             </Link>
           </li>
           <li className="nav-item">

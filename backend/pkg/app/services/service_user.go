@@ -59,19 +59,25 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 			return err
 		}
 	}
-
 	return nil
 }
 
-func (u *UserService) SearchUsers(query string) ([]models.UserInfo, error) {
+const usersPerPage = 10
+
+func (u *UserService) SearchUsers(query string, page int) ([]models.UserInfo, bool, error) {
 	if query == "" {
-		return []models.UserInfo{}, nil
+		return []models.UserInfo{}, false, nil
 	}
-	allUser, errUser := u.UserRepo.SearchUsers(query)
-	if errUser != nil {
-		return nil, errUser
+
+	offset := (page - 1) * usersPerPage
+	users, total, err := u.UserRepo.SearchUsers(query, usersPerPage, offset)
+	if err != nil {
+		return nil, false, err
 	}
-	return allUser, nil
+
+	hasMore := total > (offset + len(users))
+
+	return users, hasMore, nil
 }
 
 func (u *UserService) UserExist(userID uuid.UUID) bool {

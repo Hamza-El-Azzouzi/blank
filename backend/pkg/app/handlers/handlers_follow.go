@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -216,15 +216,36 @@ func (f *FollowHandler) FollowerList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := r.URL.Query().Get("page")
-	offset, err := strconv.Atoi(page)
-	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid page value", nil)
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
 
-	offset = offset*20 - 20
-	userId := r.Context().Value("user_id").(string)
+	userId := r.PathValue("userId")
+	userID, err := uuid.FromString(userId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(userID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+		return
+	}
+
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+		if !f.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
 
 	followers, err := f.FollowService.GetFollowers(userId, offset)
 	if err != nil {
@@ -242,15 +263,37 @@ func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := r.URL.Query().Get("page")
-	offset, err := strconv.Atoi(page)
-	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid page value", nil)
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
 
-	offset = offset*20 - 20
-	userId := r.Context().Value("user_id").(string)
+	userId := r.PathValue("userId")
+	userID, err := uuid.FromString(userId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if !f.UserService.UserExist(userID) {
+		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+		return
+	}
+
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+
+		if !f.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
 
 	following, err := f.FollowService.GetFollowing(userId, offset)
 	if err != nil {
@@ -260,4 +303,62 @@ func (f *FollowHandler) FollowingList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	utils.SendResponses(w, http.StatusOK, "success", following)
+}
+
+func (f *FollowHandler) SearchFollowers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+
+		if !f.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
+	userId := r.PathValue("userId")
+	query := r.URL.Query().Get("q")
+
+	users, errUsers := f.FollowService.SearchFollowers(userId, offset, query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
+}
+
+func (f *FollowHandler) SearchFollowing(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+
+		if !f.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
+	userId := r.PathValue("userId")
+	query := r.URL.Query().Get("q")
+
+	users, errUsers := f.FollowService.SearchFollowing(userId, offset, query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }

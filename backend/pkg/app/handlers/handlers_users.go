@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"blank/pkg/app/models"
@@ -175,11 +176,27 @@ func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := r.URL.Query().Get("q")
+	page := r.URL.Query().Get("page")
+	pageNum := 1
 
-	users, errUsers := u.UserService.SearchUsers(query)
+	if page != "" {
+		var err error
+		pageNum, err = strconv.Atoi(page)
+		if err != nil || pageNum < 1 {
+			pageNum = 1
+		}
+	}
+
+	users, hasMore, errUsers := u.UserService.SearchUsers(query, pageNum)
 	if errUsers != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	utils.SendResponses(w, http.StatusOK, "success", users)
+
+	response := map[string]interface{}{
+		"users":   users,
+		"hasMore": hasMore,
+	}
+
+	utils.SendResponses(w, http.StatusOK, "success", response)
 }

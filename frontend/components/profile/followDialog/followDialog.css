@@ -17,7 +17,6 @@
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
-    max-height: 80vh;
     padding: 20px;
 }
 
@@ -25,6 +24,36 @@
     color: var(--text-primary);
     margin-bottom: 20px;
     text-align: center;
+}
+
+.followers-search {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 0 10px;
+}
+
+.followers-search-input {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.followers-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(13, 106, 255, 0.2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
 }
 
 .follow-list {
@@ -36,8 +65,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px;
+    padding: 4px 10px;
     border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s ease;
+}
+
+.follow-item:hover {
+    background-color: var(--bg-hover);
 }
 
 .follow-user-info {
@@ -46,15 +80,42 @@
     gap: 12px;
 }
 
+.follow-user-info a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.follow-user-info a:hover {
+    background-color: var(--bg-tertiary);
+}
+
 .follow-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.follow-user-info a:hover .follow-avatar {
+    border-color: var(--primary);
 }
 
 .follow-name {
     color: var(--text-primary);
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.follow-user-info a:hover .follow-name {
+    color: var(--primary);
 }
 
 .follow-remove-btn {

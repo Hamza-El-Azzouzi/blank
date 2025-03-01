@@ -1,9 +1,9 @@
-.container {
-    max-width: 1600px;
+.profile-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 800px;
     margin: auto;
-    color: var(--text-primary);
 }
-
 
 .profile-tabs {
     display: flex;
@@ -36,7 +36,6 @@
     background-color: var(--primary);
 }
 
-
 .profile-details {
     padding: 10px 20px 20px 0;
     border-radius: 5px;
@@ -60,7 +59,6 @@
     flex-direction: column;
     gap: 0.75rem;
 }
-
 
 .profile-data {
     display: inline-block;
@@ -165,14 +163,25 @@
     z-index: 1000;
 }
 
-.dialog-content h3 {
+.profile-dialog-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.profile-dialog-content h3 {
     color: var(--text-primary);
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
     font-weight: 600;
 }
 
-.avatar-container {
+.profile-dialog-content .avatar-container {
     display: block;
     width: 100px;
     height: 100px;
@@ -198,42 +207,44 @@
     display: none;
 }
 
-.dialog-content form {
+.profile-dialog-content form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.dialog-content input[type="text"],
-.dialog-content input[type="email"],
-.dialog-content input[type="date"],
-.dialog-content textarea {
+.profile-dialog-content input[type="text"],
+.profile-dialog-content input[type="email"],
+.profile-dialog-content input[type="date"],
+.profile-dialog-content textarea {
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border);
     border-radius: 6px;
+    padding: 0.75rem;
     color: var(--text-primary);
     font-size: 1rem;
     width: 100%;
     transition: border-color 0.2s;
+    height: 50px;
 }
 
-.dialog-content input:focus,
-.dialog-content textarea:focus {
+.profile-dialog-content input:focus,
+.profile-dialog-content textarea:focus {
     outline: none;
     border-color: var(--primary);
 }
 
-.dialog-content textarea {
+.profile-dialog-content textarea {
     min-height: 100px;
     resize: none;
 }
 
-.dialog-content input::placeholder,
-.dialog-content textarea::placeholder {
+.profile-dialog-content input::placeholder,
+.profile-dialog-content textarea::placeholder {
     color: var(--text-tertiary);
 }
 
-.dialog-content label {
+.profile-dialog-content label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -241,23 +252,23 @@
     cursor: pointer;
 }
 
-.dialog-content input[type="radio"] {
+.profile-dialog-content input[type="radio"] {
     accent-color: var(--primary);
     cursor: pointer;
 }
 
-.dialog-content p {
+.profile-dialog-content p {
     color: var(--text-tertiary);
     font-size: 0.875rem;
     margin-bottom: 0.2rem;
 }
 
-.dialog-content .form-action {
+.profile-dialog-content .form-action {
     display: flex;
     justify-content: space-between;
 }
 
-.form-action>button {
+.profile-dialog-content button {
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;
@@ -265,30 +276,35 @@
     width: 45%;
     transition: all 0.2s;
 }
+.profile-dialog-content div {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0.5rem 0;
+}
 
-.dialog-content button[type="button"] {
+.profile-dialog-content button[type="button"] {
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
     border: 1px solid var(--border);
 }
 
-.dialog-content button[type="button"]:hover {
+.profile-dialog-content button[type="button"]:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
     border-color: var(--border-light);
 }
 
-.dialog-content button[type="submit"] {
+.profile-dialog-content button[type="submit"] {
     background-color: var(--primary);
     color: var(--text-primary);
     border: none;
 }
 
-.dialog-content button[type="submit"]:hover {
+.profile-dialog-content button[type="submit"]:hover {
     background-color: var(--primary-hover);
 }
 
-.dialog-content button[type="submit"]:disabled {
+.profile-dialog-content button[type="submit"]:disabled {
     background-color: var(--bg-tertiary);
     color: var(--text-tertiary);
     cursor: not-allowed;

@@ -54,88 +54,71 @@ func (f *FollowRepositorie) GetFollowStatus(follow models.FollowRequest) (string
 	return status, err
 }
 
-func (f *FollowRepositorie) GetFollowers(userId string, offset int) (*models.FollowListResponse, error) {
+func (f *FollowRepositorie) GetFollowers(userId, offset string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
             u.first_name,
             u.last_name,
-            u.avatar,
-            COUNT(*) OVER() as total_count
+            u.avatar
         FROM Follow f
         JOIN User u ON f.follower_id = u.user_id
         WHERE f.following_id = ? AND f.status = "accepted"
-        ORDER BY u.first_name ASC
-        LIMIT 20 OFFSET ?`
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
 
-	rows, err := f.DB.Query(query, userId, offset)
+	rows, err := f.DB.Query(query, userId, offset, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var response models.FollowListResponse
 	var followers []models.FollowList
-	var totalCount int
 
 	for rows.Next() {
 		var follower models.FollowList
-		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar, &totalCount)
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
 		if err != nil {
 			return nil, err
 		}
 		followers = append(followers, follower)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	response.FollowList = followers
-	response.TotalCount = totalCount
-	return &response, nil
+	return followers, nil
 }
 
-func (f *FollowRepositorie) GetFollowing(userId string, offset int) (*models.FollowListResponse, error) {
+func (f *FollowRepositorie) GetFollowing(userId, offset string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
             u.first_name,
             u.last_name,
-            u.avatar,
-            COUNT(*) OVER() as total_count
+            u.avatar
         FROM Follow f
         JOIN User u ON f.following_id = u.user_id
         WHERE f.follower_id = ? AND f.status = "accepted"
-        ORDER BY u.first_name ASC
-        LIMIT 20 OFFSET ?`
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
 
-	rows, err := f.DB.Query(query, userId, offset)
+	rows, err := f.DB.Query(query, userId, offset, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var response models.FollowListResponse
 	var following []models.FollowList
-	var totalCount int
-
 	for rows.Next() {
 		var follower models.FollowList
-		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar, &totalCount)
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
 		if err != nil {
 			return nil, err
 		}
 		following = append(following, follower)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	response.FollowList = following
-	response.TotalCount = totalCount
-	return &response, nil
+	return following, nil
 }
 
 func (f *FollowRepositorie) DeleteFollow(followData models.FollowRequest) error {
@@ -145,4 +128,71 @@ func (f *FollowRepositorie) DeleteFollow(followData models.FollowRequest) error 
 	}
 	_, err = preparedQuery.Exec(followData.FollowerId, followData.FollowingId)
 	return err
+}
+
+func (f *FollowRepositorie) SearchFollowers(userId, offset, searchQuery string) ([]models.FollowList, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM Follow f
+        JOIN User u ON f.follower_id = u.user_id
+        WHERE f.following_id = ? AND f.status = "accepted" AND (u.first_name LIKE ? OR u.last_name LIKE ?)
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
+
+	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", offset, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []models.FollowList
+
+	for rows.Next() {
+		var follower models.FollowList
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		followers = append(followers, follower)
+	}
+	return followers, nil
+}
+
+func (f *FollowRepositorie) SearchFollowing(userId, offset, searchQuery string) ([]models.FollowList, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM Follow f
+        JOIN User u ON f.following_id = u.user_id
+        WHERE f.follower_id = ? AND f.status = "accepted" AND (u.first_name LIKE ? OR u.last_name LIKE ?)
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
+
+	rows, err := f.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", offset, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followings []models.FollowList
+
+	for rows.Next() {
+		var following models.FollowList
+		err := rows.Scan(&following.UserId, &following.FirstName, &following.LastName, &following.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		followings = append(followings, following)
+	}
+
+	return followings, nil
 }

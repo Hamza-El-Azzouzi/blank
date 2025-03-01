@@ -12,6 +12,7 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
     const [dialogType, setDialogType] = useState(null);
 
     const handleOpenDialog = (type) => {
+        if (!profile.is_public && !profile.is_owner && !profile.is_following) return;
         setDialogType(type);
         setShowFollowDialog(true);
     };
@@ -37,7 +38,8 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 setProfile(prev => ({
                     ...prev,
                     followers: prev.followers + (res.data.follow_status === "Following" ? 1 : 0),
-                    follow_status: res.data.follow_status
+                    follow_status: res.data.follow_status,
+                    is_following: res.data.follow_status === "Following"
                 }));
             }
         } catch (error) {
@@ -61,7 +63,8 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 setProfile(prev => ({
                     ...prev,
                     followers: prev.followers - (prev.follow_status === "Following" ? 1 : 0),
-                    follow_status: "Follow"
+                    follow_status: "Follow",
+                    is_following: false
                 }));
             }
         } catch (error) {
@@ -105,12 +108,14 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 </button>
             )}
 
-            {showFollowDialog && profile.is_owner && (
+            {showFollowDialog && (
                 <FollowDialog
                     type={dialogType}
                     onClose={() => setShowFollowDialog(false)}
                     cookieValue={cookieValue}
                     setProfile={setProfile}
+                    userID={userID}
+                    isOwner={profile.is_owner}
                 />
             )}
 
