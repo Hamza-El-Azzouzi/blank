@@ -179,12 +179,15 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     margin-bottom: 10px;
-    background-color: var(--bg-secondary);
+    /* background-color: var(--bg-secondary); */
 }
 
-.sidebar-contact-item.unseen {
-    background-color: var(--bg-tertiary);
-
+.sidebar-contact-item.unseen .contact-name,
+.sidebar-contact-item.unseen .last-message,
+.sidebar-contact-item.unseen .message-time {
+    font-weight: 600;
+    color: var(--text-primary);
+    /* background-color: var(--bg-tertiary); */
 }
 
 .sidebar-contact-item:hover {
@@ -207,6 +210,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-secondary);
 }
 
 .contact-header .message-time {
@@ -218,7 +222,7 @@
 
 .contact-details .last-message {
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -246,6 +250,10 @@
     border-radius: 50%;
     border-top-color: var(--primary);
     animation: spinner 1s linear infinite;
+}
+
+.contacts-list a {
+    text-decoration: none;
 }
 
 @keyframes spinner {
