@@ -161,7 +161,7 @@ const CreatePost = ({ onPostCreated }) => {
         try {
             const userId = await getUserID();
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchfollowers?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchfollowers/${userId}?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
                 {
                     method: 'GET',
                     credentials: 'include',
@@ -207,6 +207,7 @@ const CreatePost = ({ onPostCreated }) => {
     }, []);
 
     const handleSearch = (e) => {
+        setDisplayedFollowers([]);
         const query = e.target.value;
         setSearchQuery(query);
         setLastSearchId('');

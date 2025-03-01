@@ -53,6 +53,15 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                     });
                     return uniqueUsers;
                 });
+                setDisplayedUsers(prev => {
+                    const uniqueUsers = [...prev];
+                    newUsers.forEach(newUser => {
+                        if (!uniqueUsers.some(u => u.user_id === newUser.user_id)) {
+                            uniqueUsers.push(newUser);
+                        }
+                    });
+                    return uniqueUsers;
+                });
 
                 if (data.data.last_user_id) {
                     setLastUserId(data.data.last_user_id);
@@ -60,8 +69,6 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                 } else {
                     setHasMore(false);
                 }
-
-                setHasMore(newUsers.length === 20);
             } else {
                 setHasMore(false);
             }
@@ -84,15 +91,16 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
             setLastSearchId('');
             setSearchResults([]);
             setHasMoreSearch(true);
+            setDisplayedUsers([]); 
         }
 
         if (!hasMoreSearch && !isNewSearch) return;
-        
+
         setIsSearchLoading(true);
         try {
             const endpoint = type === 'followers' ? 'searchfollowers' : 'searchfollowing';
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/${endpoint}/${userID}?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -101,7 +109,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
             );
 
             const data = await response.json();
-            if (data.data.follow_list) {
+            if (data.data.follow_list && data.data.follow_list.length > 0) {
                 const newSearchResults = await Promise.all(
                     data.data.follow_list.map(async (user) => ({
                         ...user,
@@ -111,14 +119,20 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                     }))
                 );
 
-                setSearchResults(prev => isNewSearch ? newSearchResults : [...prev, ...newSearchResults]);
-                setDisplayedUsers(prev => isNewSearch ? newSearchResults : [...prev, ...newSearchResults]);
-                
                 if (data.data.last_user_id) {
                     setLastSearchId(data.data.last_user_id);
                     setHasMoreSearch(newSearchResults.length === 20);
                 } else {
                     setHasMoreSearch(false);
+                }
+
+                setSearchResults(prev => isNewSearch ? newSearchResults : [...prev, ...newSearchResults]);
+                setDisplayedUsers(prev => isNewSearch ? newSearchResults : [...prev, ...newSearchResults]);
+            } else {
+                setHasMoreSearch(false);
+                if (isNewSearch) {
+                    setSearchResults([]);
+                    setDisplayedUsers([]);
                 }
             }
         } catch (error) {
@@ -139,6 +153,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
     }, []);
 
     const handleSearch = (e) => {
+        setDisplayedUsers([]);
         const query = e.target.value;
         setSearchQuery(query);
         setLastSearchId('');
@@ -224,12 +239,6 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
         };
     }, []);
 
-    useEffect(() => {
-        if (users.length > 0) {
-            setDisplayedUsers(users);
-        }
-    }, [users]);
-
     return (
         <div className="follow-dialog-overlay" onClick={onClose}>
             <div className="follow-dialog" onClick={e => e.stopPropagation()}>
@@ -247,9 +256,10 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                 </div>
 
                 <div className="follow-list">
+                    {console.log(displayedUsers.length)}
                     {isSearchLoading && !displayedUsers.length ? (
                         <div className="follow-loading">Loading...</div>
-                    ) : searchQuery && !displayedUsers.length ? (
+                    ) : searchQuery && displayedUsers.length === 0 ? (
                         <div className="follow-empty-message">No results found</div>
                     ) : (
                         <>

@@ -323,7 +323,7 @@ func (f *FollowHandler) SearchFollowers(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
-	userId := r.Context().Value("user_id").(string)
+	userId := r.PathValue("userId")
 	query := r.URL.Query().Get("q")
 
 	users, errUsers := f.FollowService.SearchFollowers(userId, offset, query)
@@ -352,7 +352,7 @@ func (f *FollowHandler) SearchFollowing(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
-	userId := r.Context().Value("user_id").(string)
+	userId := r.PathValue("userId")
 	query := r.URL.Query().Get("q")
 
 	users, errUsers := f.FollowService.SearchFollowing(userId, offset, query)
