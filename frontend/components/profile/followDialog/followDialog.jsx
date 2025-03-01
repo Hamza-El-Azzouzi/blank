@@ -256,7 +256,6 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                 </div>
 
                 <div className="follow-list">
-                    {console.log(displayedUsers.length)}
                     {isSearchLoading && !displayedUsers.length ? (
                         <div className="follow-loading">Loading...</div>
                     ) : searchQuery && displayedUsers.length === 0 ? (
