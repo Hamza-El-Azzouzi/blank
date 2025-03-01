@@ -9,7 +9,6 @@ import { MdPeopleAlt } from "react-icons/md";
 export default function MainLayout({ children }) {
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
-  const [toasts, setToasts] = useState([]);
   const leftSidebarRef = useRef(null);
   const rightSidebarRef = useRef(null);
   const leftToggleRef = useRef(null);
@@ -28,21 +27,30 @@ export default function MainLayout({ children }) {
       }
     };
 
-    const handleNavLinkClick = () => {
+    const handleLinkClick = () => {
       setLeftOpen(false);
+      setRightOpen(false);
     };
 
     document.addEventListener('mousedown', handleClickOutside);
 
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-      link.addEventListener('click', handleNavLinkClick);
+      link.addEventListener('click', handleLinkClick);
+    });
+
+    const contactLinks = document.querySelectorAll('.sidebar-contact-item');
+    contactLinks?.forEach(link => {
+      link.addEventListener('click', handleLinkClick);
     });
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       navLinks.forEach(link => {
-        link.removeEventListener('click', handleNavLinkClick);
+        link.removeEventListener('click', handleLinkClick);
+      });
+      contactLinks?.forEach(link => {
+        link.addEventListener('click', handleLinkClick);
       });
     };
   }, [leftOpen, rightOpen]);
@@ -80,14 +88,6 @@ export default function MainLayout({ children }) {
           <MdPeopleAlt className="mobile-nav-icon" />
         </button>
       </nav>
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
     </div>
   );
 }
