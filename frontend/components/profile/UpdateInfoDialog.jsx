@@ -66,7 +66,6 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
       const data = await response.json();
       if (data.message === 'success') {
         if (!formData.avatar) formData.avatar = '/default-avatar.jpg'
-        // Preserve followers & following values
         formData.followers = user.followers;
         formData.following = user.following;
         formData.is_owner = user.is_owner;
@@ -83,7 +82,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
 
   return (
     <div className="dialog-overlay">
-      <div className="dialog-content">
+      <div className="profile-dialog-content">
         <label htmlFor="avatar-upload" className="avatar-container">
           <img src={formData.avatar || '/default-avatar.jpg'} alt="Avatar" className="avatar-update" />
         </label>

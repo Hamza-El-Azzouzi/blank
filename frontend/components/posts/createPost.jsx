@@ -1,6 +1,5 @@
-// components/posts/createPost.jsx
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FiImage, FiSearch } from 'react-icons/fi';
 import { Dialog, DialogTitle, Button, Checkbox } from './Dialog';
 import './posts.css';
@@ -8,7 +7,7 @@ import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 
 const CreatePost = ({ onPostCreated }) => {
-    const [cookieValue, setCookieValue] = useState(null);
+    const cookieValue = cookies.GetCookie("sessionId");
     const [followers, setFollowers] = useState([]);
     const [displayedFollowers, setDisplayedFollowers] = useState([]);
     const [selectedFollowers, setSelectedFollowers] = useState([]);
@@ -19,15 +18,49 @@ const CreatePost = ({ onPostCreated }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [lastUserId, setLastUserId] = useState('');
+    const debounceTimeoutRef = useRef(null);
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [lastSearchId, setLastSearchId] = useState('');
+    const [hasMoreSearch, setHasMoreSearch] = useState(true);
+
+    const getUserID = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                body: JSON.stringify({
+                    name: "token",
+                    value: cookieValue
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to fetch user ID');
+            }
+
+            return data.data
+        } catch (error) {
+            console.error('Error fetching profile path:', error);
+        }
+    };
 
     useEffect(() => {
-        setCookieValue(cookies.GetCookie("sessionId"));
-    }, [cookieValue]);
-
-    useEffect(() => {
+        if (!showFollowersDialog || !cookieValue) return;
         const fetchFollowers = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/followerlist?page=${page}`, {
+                const userId = await getUserID();
+                const url = page === 1
+                    ? `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/followerlist/${userId}`
+                    : `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/followerlist/${userId}?offset=${lastUserId}`;
+
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`,
                     },
@@ -38,32 +71,25 @@ const CreatePost = ({ onPostCreated }) => {
                 let followersData = data.data.follow_list || [];
                 followersData = await Promise.all(followersData.map(async (user) => {
                     user.avatar = user.avatar
-                      ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
-                      : '/default-avatar.jpg';
+                        ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
+                        : '/default-avatar.jpg';
                     return user;
                 }));
+
                 if (followersData.length < 20) {
                     setHasMore(false);
-                }
-                if (page === 1) {
-                    setFollowers(followersData);
-                    setDisplayedFollowers(followersData);
                 } else {
-                    setFollowers(prev => [...prev, ...followersData]);
-                    setDisplayedFollowers(prev => [...prev, ...followersData]);
+                    setLastUserId(data.data.last_user_id);
                 }
+                setFollowers(prev => page === 1 ? followersData : [...prev, ...followersData]);
+                setDisplayedFollowers(prev => page === 1 ? followersData : [...prev, ...followersData]);
             } catch (error) {
                 console.error('Error fetching followers:', error);
-                setFollowers([]);
-                setDisplayedFollowers([]);
-                setHasMore(false);
             }
         };
 
-        if (cookieValue) {
-            fetchFollowers();
-        }
-    }, [cookieValue, page]);
+        fetchFollowers();
+    }, [cookieValue, page, showFollowersDialog]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -88,31 +114,111 @@ const CreatePost = ({ onPostCreated }) => {
         const value = e.target.value;
         setPrivacy(value);
         if (value === 'private') {
+            setPage(1);
             setShowFollowersDialog(true);
         }
     };
 
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
-        if (scrollHeight - scrollTop === clientHeight && hasMore) {
-            setPage(prev => prev + 1);
+        if (scrollHeight - scrollTop === clientHeight) {
+            if (searchQuery) {
+                if (hasMoreSearch && !isSearchLoading) {
+                    performSearch(searchQuery);
+                }
+            } else if (hasMore) {
+                setPage(prev => prev + 1);
+            }
         }
     };
 
-    const handleSearch = (e) => {
-        const query = e.target.value.toLowerCase();
-        setSearchQuery(query);
-        setPage(1);
-
-        if (query) {
-            const filtered = followers.filter(follower =>
-                follower.name.toLowerCase().includes(query) ||
-                follower.username.toLowerCase().includes(query)
-            );
-            setDisplayedFollowers(filtered);
-        } else {
-            setDisplayedFollowers(followers);
+    const debouncedSearch = useCallback((query) => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
         }
+
+        debounceTimeoutRef.current = setTimeout(() => {
+            performSearch(query, true);
+        }, 300);
+    }, []);
+
+    const performSearch = async (query, isNewSearch = false) => {
+        if (query.length < 1) {
+            setDisplayedFollowers(followers);
+            setSearchResults([]);
+            setIsSearchLoading(false);
+            return;
+        }
+
+        if (isNewSearch) {
+            setLastSearchId('');
+            setSearchResults([]);
+            setHasMoreSearch(true);
+        }
+
+        if (!hasMoreSearch && !isNewSearch) return;
+
+        try {
+            const userId = await getUserID();
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/searchfollowers/${userId}?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
+                {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${cookieValue}`
+                    }
+                }
+            );
+
+            if (!response.ok) throw new Error('Failed to fetch followers');
+            const data = await response.json();
+
+            let followersData = data.data.follow_list || [];
+            followersData = await Promise.all(followersData.map(async (user) => {
+                user.avatar = user.avatar
+                    ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
+                    : '/default-avatar.jpg';
+                return user;
+            }));
+
+            if (data.data.last_user_id) {
+                setLastSearchId(data.data.last_user_id);
+                setHasMoreSearch(followersData.length === 20);
+            } else {
+                setHasMoreSearch(false);
+            }
+
+            setSearchResults(prev => isNewSearch ? followersData : [...prev, ...followersData]);
+            setDisplayedFollowers(prev => isNewSearch ? followersData : [...prev, ...followersData]);
+        } catch (error) {
+            console.error('Search error:', error);
+        } finally {
+            setIsSearchLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const handleSearch = (e) => {
+        setDisplayedFollowers([]);
+        const query = e.target.value;
+        setSearchQuery(query);
+        setLastSearchId('');
+        if (query.length < 1) {
+            setDisplayedFollowers(followers);
+            setSearchResults([]);
+            setIsSearchLoading(false);
+            return;
+        }
+        setIsSearchLoading(true);
+        debouncedSearch(query);
     };
 
     const handleFollowerSelect = (followerId) => {
@@ -228,24 +334,36 @@ const CreatePost = ({ onPostCreated }) => {
                     />
                 </div>
                 <div className="followers-list" onScroll={handleScroll}>
-                    {displayedFollowers.map((follower) => (
-                        <div
-                            key={follower.user_id}
-                            className={`follower-item ${selectedFollowers.includes(follower.user_id) ? 'selected' : ''}`}
-                            onClick={() => handleFollowerSelect(follower.user_id)}
-                        >
-                            <div className="follower-info">
-                                <img src={follower.avatar} alt={follower.first_name} className="follower-avatar" />
-                                <div className="follower-details">
-                                    <div className="follower-name">{follower.first_name} {follower.last_name}</div>
+                    {isSearchLoading && !displayedFollowers.length ? (
+                        <div className="follower-item">Loading...</div>
+                    ) : searchQuery && displayedFollowers.length === 0 ? (
+                        <div className="follower-item">No results found</div>
+                    ) : (
+                        <>
+                            {displayedFollowers.map((follower) => (
+                                <div
+                                    key={follower.user_id}
+                                    className={`follower-item ${selectedFollowers.includes(follower.user_id) ? 'selected' : ''}`}
+                                    onClick={() => handleFollowerSelect(follower.user_id)}
+                                >
+                                    <div className="follower-info">
+                                        <img src={follower.avatar} alt={follower.first_name} className="follower-avatar" />
+                                        <div className="follower-details">
+                                            <div className="follower-name">{follower.first_name} {follower.last_name}</div>
+                                        </div>
+                                    </div>
+                                    <Checkbox
+                                        checked={selectedFollowers.includes(follower.user_id)}
+                                        onChange={() => handleFollowerSelect(follower.user_id)}
+                                    />
                                 </div>
-                            </div>
-                            <Checkbox
-                                checked={selectedFollowers.includes(follower.user_id)}
-                                onChange={() => handleFollowerSelect(follower.user_id)}
-                            />
-                        </div>
-                    ))}
+                            ))}
+                            {((!searchQuery && hasMore) || (searchQuery && hasMoreSearch)) && 
+                                (isSearchLoading || page > 1) && (
+                                <div className="follower-item loading">Loading more...</div>
+                            )}
+                        </>
+                    )}
                 </div>
                 <div className="dialog-footer">
                     <Button variant="secondary" onClick={() => setShowFollowersDialog(false)}>

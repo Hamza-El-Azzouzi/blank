@@ -23,9 +23,6 @@ func (p *PostService) PostSave(userId uuid.UUID, content string, privacy string,
 	if err != nil {
 		return err
 	}
-	if !p.UserRepo.IsProfilePublic(userId.String()) && privacy == "public" {
-		privacy = "almost private"
-	}
 
 	post := &models.Post{
 		ID:      postId,

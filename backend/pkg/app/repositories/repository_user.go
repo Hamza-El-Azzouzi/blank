@@ -126,26 +126,38 @@ func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int)
 	return allUser, nil
 }
 
-func (r *UserRepository) SearchUsers(searchQuery string) ([]models.UserInfo, error) {
+func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]models.UserInfo, int, error) {
 	users := []models.UserInfo{}
-	query := "SELECT user_id, first_name, last_name, avatar FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
-
-	rows, err := r.DB.Query(query, "%"+searchQuery+"%", "%"+searchQuery+"%")
+	var total int
+	countQuery := "SELECT COUNT(*) FROM User WHERE first_name LIKE ? OR last_name LIKE ?"
+	err := r.DB.QueryRow(countQuery, "%"+searchQuery+"%", "%"+searchQuery+"%").Scan(&total)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
+		return nil, 0, err
 	}
+	query := `
+        SELECT user_id, first_name, last_name, avatar 
+        FROM User 
+        WHERE first_name LIKE ? OR last_name LIKE ?
+        ORDER BY first_name, last_name
+        LIMIT ? OFFSET ?
+    `
+
+	rows, err := r.DB.Query(query, "%"+searchQuery+"%", "%"+searchQuery+"%", limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
 	for rows.Next() {
 		user := models.UserInfo{}
 		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		users = append(users, user)
 	}
-	return users, nil
+
+	return users, total, nil
 }
 
 func (r *UserRepository) GetAllUserInfo(user_id uuid.UUID) (*models.UserInfo, error) {
