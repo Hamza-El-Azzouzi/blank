@@ -25,7 +25,7 @@ func main() {
 
 	userRepo, postRepo, commentRepo, likeRepo, sessionRepo, messageRepo, groupRepo, followRepo := app.InitRepositories(database)
 
-	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService, followService := app.InitServices(userRepo,
+	authService, postService, commentService, likeService, sessionService, messageService, userService, groupService, followService, webSocketService := app.InitServices(userRepo,
 		postRepo,
 		commentRepo,
 		likeRepo,
@@ -36,7 +36,7 @@ func main() {
 
 	authMiddleware := &middleware.AuthMiddleware{AuthService: authService, SessionService: sessionService}
 
-	authHandler, postHandler, likeHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler := app.InitHandlers(authService,
+	authHandler, postHandler, likeHandler, MessageHandler, userHandler, groupHandler, commentHandler, followHandler, webSocketHandler := app.InitHandlers(authService,
 		postService,
 		commentService,
 		likeService,
@@ -45,12 +45,13 @@ func main() {
 		messageService,
 		userService,
 		groupService,
-		followService)
+		followService,
+		webSocketService)
 
 	mux := http.NewServeMux()
 	protectedMux := authMiddleware.Protect(mux)
 
-	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler, groupHandler, followHandler, commentHandler)
+	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler, groupHandler, followHandler, commentHandler, webSocketHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 

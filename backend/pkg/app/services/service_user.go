@@ -54,7 +54,6 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 			return fmt.Errorf("invalid image")
 		}
 		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
-		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
 		if err != nil {
 			return err
 		}

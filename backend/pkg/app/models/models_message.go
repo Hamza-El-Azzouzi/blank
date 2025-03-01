@@ -12,11 +12,9 @@ type Chat struct {
 	Sender  string `json:"session"`
 	Reciver string `json:"id"`
 }
-type Message struct {
-	SenderID   string `json:"senderID"`
-	ReceiverID string `json:"receiverID"`
-	Content    string `json:"content"`
-}
+
+
+
 type HistoryChat struct {
 	SnederID   string `json:"senderID"`
 	ReceiverID string `json:"receiverID"`

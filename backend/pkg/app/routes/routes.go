@@ -18,6 +18,7 @@ func SetupRoutes(mux *http.ServeMux,
 	groupHandler *handlers.GroupHandler,
 	followHandler *handlers.FollowHandler,
 	commentHandler *handlers.CommentHandler,
+	webSocketHandler *handlers.WebSocketHandler,
 ) {
 	// serve files routes
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
@@ -74,15 +75,11 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
 
-	// chat routes
-	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
-	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
-	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
-	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
-	mux.HandleFunc("/api/users/", authHandler.GetUsers)
-	mux.HandleFunc("/api/messages", authHandler.GetUsers)
+	
+	// WebSocket handler
+	mux.HandleFunc("/ws", webSocketHandler.Connect)
 
-	// serve root
+ 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)

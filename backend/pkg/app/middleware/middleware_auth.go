@@ -53,18 +53,38 @@ func (h *AuthMiddleware) Protect(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: No session token provided", nil)
-			return
-		}
 
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: Invalid token format", nil)
-			return
+		var sessionID string
+
+		if r.Header.Get("Upgrade") == "websocket" {
+			authHeader := r.Header.Get("Cookie")
+
+			if authHeader == "" {
+				utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: No session token provided", nil)
+				return
+			}
+			tokenParts := strings.Split(authHeader, "=")
+			if len(tokenParts) != 2 || tokenParts[0] != "sessionId" {
+				utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: Invalid token format", nil)
+				return
+			}
+			sessionID = tokenParts[1]
+		} else {
+			authHeader := r.Header.Get("Authorization")
+
+			if authHeader == "" {
+				utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: No session token provided", nil)
+				return
+			}
+
+			tokenParts := strings.Split(authHeader, " ")
+			if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+				utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: Invalid token format", nil)
+				return
+			}
+			sessionID = tokenParts[1]
 		}
-		sessionID := tokenParts[1]
+		
 		user_id, ok := h.SessionService.CheckSession(sessionID)
 		if !ok {
 			utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: Invalid session", nil)

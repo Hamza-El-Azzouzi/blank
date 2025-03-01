@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+	"github.com/gorilla/websocket"
 )
 
 type User struct {
@@ -38,18 +39,23 @@ type LoginData struct {
 }
 
 type UserInfo struct {
-	UserID       string `json:"user_id"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Nickname     string `json:"nickname,omitempty"`
-	Email        string `json:"email,omitempty"`
-	About        string `json:"about,omitempty"`
-	DateOfBirth  string `json:"date_of_birth,omitempty"`
-	Avatar       string `json:"avatar,omitempty"`
-	IsPublic     bool   `json:"is_public"`
-	IsOwner      bool   `json:"is_owner,omitempty"`
-	Following    int    `json:"following"`
-	Followers    int    `json:"followers"`
-	FollowStatus string `json:"follow_status"`
-	IsFollowing bool   `json:"is_following"`
+	UserID       uuid.UUID `json:"user_id"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	Nickname     string    `json:"nickname,omitempty"`
+	Email        string    `json:"email,omitempty"`
+	About        string    `json:"about,omitempty"`
+	DateOfBirth  string    `json:"date_of_birth,omitempty"`
+	Avatar       string    `json:"avatar,omitempty"`
+	IsPublic     bool      `json:"is_public"`
+	IsOwner      bool      `json:"is_owner,omitempty"`
+	Following    int       `json:"following"`
+	Followers    int       `json:"followers"`
+	FollowStatus string    `json:"follow_status"`
+	IsFollowing  bool      `json:"is_following"`
+}
+
+type ConnectedUser struct {
+	Connections []*websocket.Conn
+	User        *UserInfo
 }
