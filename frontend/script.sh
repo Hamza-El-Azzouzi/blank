@@ -5,3 +5,4 @@ docker container ps
 docker images
 docker logs blank-ui-container
 docker system prune -a
+docker logs -f blank-ui-container
