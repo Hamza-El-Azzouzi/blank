@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -63,9 +64,8 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		}
 		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
 			Type:      "follow_request",
-			UserID:    userID,
-			UserName:  user.FirstName + " " + user.LastName,
-			Avatar:    user.Avatar,
+			UserID:    uuid.NullUUID{UUID: userID, Valid: true},
+			UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
 			Label:     fmt.Sprintf(`New follow request from %s %s`, user.FirstName, user.LastName),
 			CreatedAt: time.Now(),
 		})

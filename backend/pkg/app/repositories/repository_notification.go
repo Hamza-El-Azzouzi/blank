@@ -72,29 +72,27 @@ func (n *NotificationRepository) CreateUserNotification(notification models.Noti
 	return nil
 }
 
-
 func (n *NotificationRepository) GetNotifications(userID uuid.UUID, offset, limit int) ([]models.Notification, error) {
 	querySelect := `
 		SELECT
 			n.notification_id,
 			n.type,
 			n.group_id,
-			g.title
+			g.title,
 			n.user_id,
 			u.first_name || ' ' || u.last_name as username,
-			u.avatar,
 			n.seen,
-			n.created_at,
+			n.created_at
 		FROM
 			Notification n
 			LEFT JOIN User u ON n.receiver_id = u.user_id
 			LEFT JOIN 'Group' g ON n.group_id = g.group_id
 		WHERE
-			n.receiver_id = "hhh"
+			n.receiver_id = ?
 		ORDER BY
 			n.created_at DESC
-		LIMIT 10
-		OFFSET 0;
+		LIMIT ?
+		OFFSET ?;
 		`
 
 	rows, queryErr := n.DB.Query(querySelect, userID, limit, offset)
@@ -112,7 +110,6 @@ func (n *NotificationRepository) GetNotifications(userID uuid.UUID, offset, limi
 			&notif.GroupTitle,
 			&notif.UserID,
 			&notif.UserName,
-			&notif.Avatar,
 			&notif.Seen,
 			&notif.CreatedAt,
 		)

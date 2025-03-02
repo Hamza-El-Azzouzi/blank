@@ -3,8 +3,6 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -19,7 +17,6 @@ type WebSocketHandler struct {
 	UserService         *services.UserService
 	GroupService        *services.GroupService
 	SessionService      *services.SessionService
-	NotificationService *services.NotificationService
 	Upgrader            websocket.Upgrader
 }
 
@@ -81,45 +78,4 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-}
-
-func (ws *WebSocketHandler) CommentsGetter(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
-		return
-	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 6 {
-		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
-		return
-	}
-	var (
-		notifications []models.Notification
-		page          int
-		err           error
-	)
-	strPage := pathParts[4]
-	if strPage == "" {
-		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
-		return
-	}
-	page, err = strconv.Atoi(strPage)
-	if err != nil {
-		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
-		return
-	}
-
-	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
-	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
-		return
-	}
-
-	notifications, err = ws.NotificationService.Notifications(userID, page)
-	if err != nil {
-		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-		return
-	}
-
-	utils.SendResponses(w, http.StatusOK, "", notifications)
 }

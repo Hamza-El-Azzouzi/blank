@@ -12,7 +12,8 @@ import (
 )
 
 type UserService struct {
-	UserRepo *repositories.UserRepository
+	UserRepo         *repositories.UserRepository
+	NotificationRepo *repositories.NotificationRepository
 }
 
 func (u *UserService) GetUserInfo(userID, authUserID uuid.UUID) (*models.UserInfo, error) {
@@ -89,4 +90,40 @@ func (u *UserService) GetAuthenticatedUser(authUserID uuid.UUID) (*models.UserIn
 
 func (u *UserService) GetPublicUserInfo(authUserID uuid.UUID) (*models.UserInfo, error) {
 	return u.UserRepo.GetPublicUserInfo(authUserID)
+}
+
+func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.NotificationResponse, error) {
+	limit := 20
+	offset := page * limit
+
+	notifications, err := u.NotificationRepo.GetNotifications(userID, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+	var cleanNotifications []models.NotificationResponse
+
+	for _, notif := range notifications {
+		cleanNotif := models.NotificationResponse{
+			ID:            notif.ID.String(),
+			ReceiverID:    userID.String(),
+			Type:          notif.Type,
+			Seen:          notif.Seen,
+			FormattedDate: notif.FormattedDate,
+		}
+
+		if notif.UserID.Valid {
+			cleanNotif.UserID = notif.UserID.UUID.String()
+		}
+		if notif.UserName.Valid {
+			cleanNotif.UserName = notif.UserName.String
+		}
+		if notif.GroupID.Valid {
+			cleanNotif.GroupID = notif.GroupID.UUID.String()
+		}
+		if notif.GroupTitle.Valid {
+			cleanNotif.GroupTitle = notif.GroupTitle.String
+		}
+		cleanNotifications = append(cleanNotifications, cleanNotif)
+	}
+	return cleanNotifications, nil
 }

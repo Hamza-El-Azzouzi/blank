@@ -35,6 +35,7 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
+	mux.HandleFunc("/api/notifications/", userHandler.NotificationsGetter)
 
 	// comments routes
 	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)

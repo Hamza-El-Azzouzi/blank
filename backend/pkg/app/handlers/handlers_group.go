@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -208,9 +209,8 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 
 	g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
 		Type:      "join_request",
-		GroupID:   GroupID,
-		UserName:  user.FirstName + " " + user.LastName,
-		Avatar:    user.Avatar,
+		GroupID:   uuid.NullUUID{UUID: GroupID, Valid: true},
+		UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
 		Label:     fmt.Sprintf(`%s %s requested to join %s`, user.FirstName, user.LastName, groupTitle),
 		CreatedAt: time.Now(),
 	})
@@ -469,8 +469,8 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	g.WebSocketService.SendNotification(groupMembers, models.Notification{
 		Type:       "event",
-		GroupID:    groupID,
-		GroupTitle: eventCreation.Group_title,
+		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
+		GroupTitle: sql.NullString{String: eventCreation.Group_title, Valid: true},
 		Label:      fmt.Sprintf(`New event created "%s" in "%s"`, eventCreation.Title, eventCreation.Group_title),
 		CreatedAt:  time.Now(),
 	})
