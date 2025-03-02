@@ -597,3 +597,15 @@ func (g *GroupRepository) GroupExist(groupID uuid.UUID) (bool, error) {
 	}
 	return false, nil
 }
+
+func (g *GroupRepository) GetGroupTitle(groupID string) (string, error) {
+	var title string
+	query := `SELECT title FROM 'Group' WHERE group_id = ?`
+	row := g.DB.QueryRow(query, groupID)
+	err := row.Scan(&title)
+	if err != nil {
+		return "", err
+	}
+
+	return title, nil
+}

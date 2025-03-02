@@ -13,11 +13,12 @@ import (
 )
 
 type WebSocketService struct {
-	UserRepo       *repositories.UserRepository
-	GroupRepo      *repositories.GroupRepository
-	MessageRepo    *repositories.MessageRepository
-	ConnectedUsers map[uuid.UUID]*models.ConnectedUser
-	Mutex          sync.Mutex
+	UserRepo         *repositories.UserRepository
+	GroupRepo        *repositories.GroupRepository
+	MessageRepo      *repositories.MessageRepository
+	NotificationRepo *repositories.NotificationRepository
+	ConnectedUsers   map[uuid.UUID]*models.ConnectedUser
+	Mutex            sync.Mutex
 }
 
 func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, models.Notification) {
@@ -133,6 +134,19 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification models.Notification) error {
 	ws.Mutex.Lock()
 	defer ws.Mutex.Unlock()
+
+	// save the notification in the database for each receiver
+	if notification.Type != "message" {
+		for _, receiver := range dists {
+			notification.ReceiverID = receiver
+			if notification.Type == "event"  {				
+				err := ws.NotificationRepo.CreateGroupNotification(notification)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 
 	for _, dist := range dists {
 		if user, ok := ws.ConnectedUsers[dist]; ok {

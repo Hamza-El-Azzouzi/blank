@@ -22,6 +22,7 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 	*repositories.MessageRepository,
 	*repositories.GroupRepository,
 	*repositories.FollowRepositorie,
+	*repositories.NotificationRepository,
 ) {
 	return &repositories.UserRepository{DB: db},
 		&repositories.PostRepository{DB: db},
@@ -30,7 +31,8 @@ func InitRepositories(db *sql.DB) (*repositories.UserRepository,
 		&repositories.SessionsRepositorie{DB: db},
 		&repositories.MessageRepository{DB: db},
 		&repositories.GroupRepository{DB: db},
-		&repositories.FollowRepositorie{DB: db}
+		&repositories.FollowRepositorie{DB: db},
+		&repositories.NotificationRepository{DB: db}
 }
 
 func InitServices(userRepo *repositories.UserRepository,
@@ -40,6 +42,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	sessionRepo *repositories.SessionsRepositorie,
 	messageRepo *repositories.MessageRepository,
 	groupRepo *repositories.GroupRepository,
+	notificationRepo *repositories.NotificationRepository,
 	followRepo *repositories.FollowRepositorie) (*services.AuthService,
 	*services.PostService,
 	*services.CommentService,
@@ -49,6 +52,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	*services.UserService,
 	*services.GroupService,
 	*services.FollowService,
+	*services.NotificationService,
 	*services.WebSocketService,
 ) {
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
@@ -60,11 +64,13 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.UserService{UserRepo: userRepo},
 		&services.GroupService{GroupRepo: groupRepo},
 		&services.FollowService{FollowRepo: followRepo, UserRepo: userRepo},
+		&services.NotificationService{NotificationRepo: notificationRepo},
 		&services.WebSocketService{
-			UserRepo:       userRepo,
-			MessageRepo:    messageRepo,
-			GroupRepo:      groupRepo,
-			ConnectedUsers: make(map[uuid.UUID]*models.ConnectedUser),
+			UserRepo:         userRepo,
+			MessageRepo:      messageRepo,
+			GroupRepo:        groupRepo,
+			NotificationRepo: notificationRepo,
+			ConnectedUsers:   make(map[uuid.UUID]*models.ConnectedUser),
 		}
 }
 
@@ -78,6 +84,7 @@ func InitHandlers(authService *services.AuthService,
 	userService *services.UserService,
 	groupService *services.GroupService,
 	followService *services.FollowService,
+	notificationService *services.NotificationService,
 	webSocketService *services.WebSocketService) (*handlers.AuthHandler,
 	*handlers.PostHandler,
 	*handlers.ReactHandler,
@@ -123,7 +130,8 @@ func InitHandlers(authService *services.AuthService,
 		FollowService: followService,
 	}
 	groupHandler := &handlers.GroupHandler{
-		GroupService: groupService,
+		GroupService:     groupService,
+		WebSocketService: webSocketService,
 	}
 
 	followHandler := &handlers.FollowHandler{
@@ -132,10 +140,12 @@ func InitHandlers(authService *services.AuthService,
 	}
 
 	websocketHandler := &handlers.WebSocketHandler{
-		WebSocketService: webSocketService,
-		UserService:      userService,
-		GroupService:     groupService,
-		SessionService:   sessionService,
+		WebSocketService:    webSocketService,
+		UserService:         userService,
+		GroupService:        groupService,
+		SessionService:      sessionService,
+		NotificationService: notificationService,
+
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true

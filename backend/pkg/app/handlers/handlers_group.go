@@ -2,17 +2,22 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type GroupHandler struct {
-	GroupService *services.GroupService
+	GroupService     *services.GroupService
+	WebSocketService *services.WebSocketService
 }
 
 func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
@@ -422,6 +427,24 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	groupID, _ := uuid.FromString(event.Group_id)
+	userID, _ := uuid.FromString(user_id)
+
+	groupMembers, err := g.GroupService.GetGroupMembers(userID, groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	g.WebSocketService.SendNotification(groupMembers, models.Notification{
+		Type:       "event",
+		GroupID:    groupID,
+		GroupTitle: eventCreation.Group_title,
+		Label:      fmt.Sprintf(`New event created "%s" in "%s"`, eventCreation.Title, eventCreation.Group_title),
+		CreatedAt:  time.Now(),
+	})
+
 	utils.SendResponses(w, http.StatusCreated, "Event created successfully", eventCreation)
 }
 
