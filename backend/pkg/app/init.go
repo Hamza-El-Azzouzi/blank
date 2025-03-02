@@ -135,8 +135,9 @@ func InitHandlers(authService *services.AuthService,
 	}
 
 	followHandler := &handlers.FollowHandler{
-		FollowService: followService,
-		UserService:   userService,
+		FollowService:    followService,
+		UserService:      userService,
+		WebSocketService: webSocketService,
 	}
 
 	websocketHandler := &handlers.WebSocketHandler{

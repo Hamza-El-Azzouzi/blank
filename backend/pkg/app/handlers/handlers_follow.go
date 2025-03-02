@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -13,8 +15,9 @@ import (
 )
 
 type FollowHandler struct {
-	FollowService *services.FollowService
-	UserService   *services.UserService
+	FollowService    *services.FollowService
+	UserService      *services.UserService
+	WebSocketService *services.WebSocketService
 }
 
 func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
@@ -44,11 +47,30 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	follow.FollowerId = r.Context().Value("user_id").(string)
-	err = f.FollowService.RequestFollow(follow)
+	privacy, err := f.FollowService.RequestFollow(follow)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
+
+	if privacy == "private" {
+		userID, _ := uuid.FromString(follow.FollowerId)
+		FollowedUserID, _ := uuid.FromString(follow.FollowingId)
+		user, err := f.UserService.UserRepo.GetPublicUserInfo(userID)
+		if err != nil {
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+			return
+		}
+		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
+			Type:      "new_follow",
+			UserID:    userID,
+			UserName:  user.FirstName + " " + user.LastName,
+			Avatar:    user.Avatar,
+			Label:     fmt.Sprintf(`New follow request from %s %s`, user.FirstName, user.LastName),
+			CreatedAt: time.Now(),
+		})
+	}
+
 	followStatus := make(map[string]string)
 	followStatus["follow_status"], err = f.FollowService.GetFollowStatus(follow)
 	if err != nil {

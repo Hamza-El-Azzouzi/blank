@@ -12,11 +12,11 @@ type FollowService struct {
 	UserRepo   *repositories.UserRepository
 }
 
-func (f *FollowService) RequestFollow(follow models.FollowRequest) error {
+func (f *FollowService) RequestFollow(follow models.FollowRequest) (string, error) {
 	if f.UserRepo.IsProfilePublic(follow.FollowingId) {
-		return f.FollowRepo.CreateFollow(follow)
+		return "public", f.FollowRepo.CreateFollow(follow)
 	}
-	return f.FollowRepo.RequestFollow(follow)
+	return "private", f.FollowRepo.RequestFollow(follow)
 }
 
 func (f *FollowService) AcceptFollow(follow models.FollowRequest) error {
