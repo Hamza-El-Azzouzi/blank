@@ -17,6 +17,7 @@ import (
 
 type GroupHandler struct {
 	GroupService     *services.GroupService
+	UserService      *services.UserService
 	WebSocketService *services.WebSocketService
 }
 
@@ -185,6 +186,35 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	userID, _ := uuid.FromString(user_id)
+	GroupID, err := uuid.FromString(pathParts[3])
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	OwnerID, groupTitle, err := g.GroupService.GetGroupOwner(GroupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	user, err := g.UserService.GetPublicUserInfo(userID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
+		Type:      "join_request",
+		GroupID:   GroupID,
+		UserName:  user.FirstName + " " + user.LastName,
+		Avatar:    user.Avatar,
+		Label:     fmt.Sprintf(`%s %s requested to join %s`, user.FirstName, user.LastName, groupTitle),
+		CreatedAt: time.Now(),
+	})
+
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
 

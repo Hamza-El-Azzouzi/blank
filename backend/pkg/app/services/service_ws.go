@@ -137,11 +137,20 @@ func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification mod
 
 	// save the notification in the database for each receiver
 	if notification.Type != "message" {
+		notification.ID = uuid.Must(uuid.NewV4())
 		for _, receiver := range dists {
 			notification.ReceiverID = receiver
-			if notification.Type == "event"  {				
+			if notification.Type == "event" ||
+				notification.Type == "join_request" ||
+				notification.Type == "group_invitation" {
 				err := ws.NotificationRepo.CreateGroupNotification(notification)
 				if err != nil {
+					return err
+				}
+			} else if notification.Type == "follow_request"{
+				err := ws.NotificationRepo.CreateUserNotification(notification)
+				if err != nil {
+					log.Println(err)
 					return err
 				}
 			}

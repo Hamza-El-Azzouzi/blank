@@ -131,6 +131,7 @@ func InitHandlers(authService *services.AuthService,
 	}
 	groupHandler := &handlers.GroupHandler{
 		GroupService:     groupService,
+		UserService:      userService,
 		WebSocketService: webSocketService,
 	}
 

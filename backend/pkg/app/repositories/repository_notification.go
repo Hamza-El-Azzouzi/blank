@@ -42,6 +42,37 @@ func (n *NotificationRepository) CreateGroupNotification(notification models.Not
 	return nil
 }
 
+func (n *NotificationRepository) CreateUserNotification(notification models.Notification) error {
+	query := `
+		INSERT INTO Notification (
+			notification_id, 
+			receiver_id, 
+			type, 
+			user_id
+		) 
+		VALUES (?, ?, ?, ?)
+	`
+
+	prp, err := n.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer prp.Close()
+
+	_, err = prp.Exec(
+		notification.ID,
+		notification.ReceiverID,
+		notification.Type,
+		notification.UserID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
 func (n *NotificationRepository) GetNotifications(userID uuid.UUID, offset, limit int) ([]models.Notification, error) {
 	querySelect := `
 		SELECT

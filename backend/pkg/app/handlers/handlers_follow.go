@@ -56,13 +56,13 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 	if privacy == "private" {
 		userID, _ := uuid.FromString(follow.FollowerId)
 		FollowedUserID, _ := uuid.FromString(follow.FollowingId)
-		user, err := f.UserService.UserRepo.GetPublicUserInfo(userID)
+		user, err := f.UserService.GetPublicUserInfo(userID)
 		if err != nil {
 			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 			return
 		}
 		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
-			Type:      "new_follow",
+			Type:      "follow_request",
 			UserID:    userID,
 			UserName:  user.FirstName + " " + user.LastName,
 			Avatar:    user.Avatar,

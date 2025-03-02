@@ -86,3 +86,7 @@ func (u *UserService) UserExist(userID uuid.UUID) bool {
 func (u *UserService) GetAuthenticatedUser(authUserID uuid.UUID) (*models.UserInfo, error) {
 	return u.UserRepo.GetAllUserInfo(authUserID)
 }
+
+func (u *UserService) GetPublicUserInfo(authUserID uuid.UUID) (*models.UserInfo, error) {
+	return u.UserRepo.GetPublicUserInfo(authUserID)
+}
