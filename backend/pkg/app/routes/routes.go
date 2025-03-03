@@ -73,11 +73,14 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/createEvent", groupHandler.CreateEvent)
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
-	
+
 	// message handler
 	mux.HandleFunc("/api/chat/contacts", messageHnadler.GetContactUsers)
 	mux.HandleFunc("/api/chat/{user_id}", messageHnadler.GetUserMessages)
 	mux.HandleFunc("/api/chat/markAsRead/{user_id}", messageHnadler.MarkMessagesAsSeen)
+	mux.HandleFunc("/api/chat/groups", messageHnadler.GetGroupChats)
+	mux.HandleFunc("/api/chat/group/{group_id}", messageHnadler.GetGroupMessages)
+	mux.HandleFunc("/api/chat/group/markAsRead/{group_id}", messageHnadler.MarkGroupMessagesAsSeen)
 
 	// WebSocket handler
 	mux.HandleFunc("/ws", webSocketHandler.Connect)

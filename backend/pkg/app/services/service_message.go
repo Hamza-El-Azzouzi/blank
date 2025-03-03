@@ -21,3 +21,15 @@ func (m *MessageService) GetUserMessages(authUserID, userID string, offset int) 
 func (m *MessageService) MarkMessagesAsSeen(receiverID, senderID string) error {
 	return m.MessageRepo.MarkMessagesAsSeen(receiverID, senderID)
 }
+
+func (m *MessageService) GetGroupChats(userID string, offset int) ([]models.GroupChatInfo, error) {
+	return m.MessageRepo.GetGroupChats(userID, offset)
+}
+
+func (m *MessageService) GetGroupMessages(groupID string, offset int) ([]models.GroupMessageHistory, error) {
+	return m.MessageRepo.GetGroupMessages(groupID, offset)
+}
+
+func (m *MessageService) MarkGroupMessagesAsSeen(userID, groupID string) error {
+	return m.MessageRepo.MarkGroupMessagesAsSeen(userID, groupID)
+}

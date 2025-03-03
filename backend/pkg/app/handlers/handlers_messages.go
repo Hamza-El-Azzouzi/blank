@@ -100,3 +100,86 @@ func (m *MessageHandler) MarkMessagesAsSeen(w http.ResponseWriter, r *http.Reque
 
 	utils.SendResponses(w, http.StatusOK, "Messages marked as seen", nil)
 }
+
+func (m *MessageHandler) GetGroupChats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	userID := r.Context().Value("user_id").(string)
+
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
+		}
+	}
+
+	groupChats, err := m.MessageService.GetGroupChats(userID, offset)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get group chats", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "Success", groupChats)
+}
+
+func (m *MessageHandler) GetGroupMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	groupID := r.PathValue("group_id")
+	_, err := uuid.FromString(groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid group id", nil)
+		return
+	}
+
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
+		}
+	}
+
+	messages, err := m.MessageService.GetGroupMessages(groupID, offset)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get messages", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "success", messages)
+}
+
+func (m *MessageHandler) MarkGroupMessagesAsSeen(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	userID := r.Context().Value("user_id").(string)
+	groupID := r.PathValue("group_id")
+	_, err := uuid.FromString(groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid group id", nil)
+		return
+	}
+
+	err = m.MessageService.MarkGroupMessagesAsSeen(userID, groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to mark messages as seen", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "Messages marked as seen", nil)
+}

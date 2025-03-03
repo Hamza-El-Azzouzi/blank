@@ -159,3 +159,133 @@ func (m *MessageRepository) MarkMessagesAsSeen(receiverID, senderID string) erro
 	_, err := m.DB.Exec(query, senderID, receiverID)
 	return err
 }
+
+func (m *MessageRepository) GetGroupChats(userID string, offset int) ([]models.GroupChatInfo, error) {
+	query := `
+	SELECT 
+		g.group_id,
+		g.title AS group_name,
+		m.content AS LastMessage,
+		m.created_at AS LastMessageTime,
+		u.last_name AS sender_last_name,
+		CASE
+			WHEN m.sender_id = ? THEN 1
+			ELSE m.seen
+		END AS IsSeen
+	FROM ` + "`Group`" + ` g
+	JOIN Group_Membership gm ON g.group_id = gm.group_id
+	LEFT JOIN Message m
+		ON m.message_id = (
+			SELECT message_id
+			FROM Message
+			WHERE group_id = g.group_id
+			ORDER BY created_at DESC
+			LIMIT 1
+		)
+	LEFT JOIN User u ON m.sender_id = u.user_id
+	WHERE 
+		gm.user_id = ?
+		AND gm.status = 'accepted'
+	ORDER BY g.title
+	LIMIT 20 OFFSET ?
+	`
+
+	rows, err := m.DB.Query(query, userID, userID, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupChats []models.GroupChatInfo
+	for rows.Next() {
+		var gc models.GroupChatInfo
+		var lastMessage, senderLastName sql.NullString
+		var lastMessageTime sql.NullTime
+		var isSeen sql.NullBool
+
+		if err := rows.Scan(
+			&gc.GroupID,
+			&gc.GroupName,
+			&lastMessage,
+			&lastMessageTime,
+			&senderLastName,
+			&isSeen); err != nil {
+			return nil, err
+		}
+
+		if lastMessage.Valid {
+			gc.LastMessage = lastMessage.String
+		}
+		if lastMessageTime.Valid {
+			gc.LastMessageTime = lastMessageTime.Time
+		}
+		if senderLastName.Valid {
+			gc.SenderLastName = senderLastName.String
+		}
+		if isSeen.Valid {
+			gc.IsSeen = isSeen.Bool
+		}
+
+		groupChats = append(groupChats, gc)
+	}
+
+	return groupChats, nil
+}
+
+func (m *MessageRepository) GetGroupMessages(groupID string, offset int) ([]models.GroupMessageHistory, error) {
+	query := `
+    SELECT
+		m.message_id,
+		m.sender_id,
+		m.group_id,
+		m.content,
+		m.seen,
+		m.created_at,
+		u.first_name,
+		u.last_name,
+		u.avatar
+    FROM Message m
+	JOIN User u ON m.sender_id = u.user_id
+    WHERE m.group_id = ?
+    ORDER BY m.created_at DESC
+	LIMIT 20 OFFSET ?
+    `
+
+	rows, err := m.DB.Query(query, groupID, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []models.GroupMessageHistory
+	for rows.Next() {
+		var msg models.GroupMessageHistory
+		err := rows.Scan(
+			&msg.MessageID,
+			&msg.SenderID,
+			&msg.GroupID,
+			&msg.Content,
+			&msg.Seen,
+			&msg.CreatedAt,
+			&msg.SenderFirstName,
+			&msg.SenderLastName,
+			&msg.SenderAvatar)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, msg)
+	}
+
+	return messages, nil
+}
+
+func (m *MessageRepository) MarkGroupMessagesAsSeen(userID, groupID string) error {
+	query := `
+    UPDATE Message
+    SET seen = 1
+    WHERE group_id = ? AND sender_id != ? AND seen = 0
+    `
+
+	_, err := m.DB.Exec(query, groupID, userID)
+	return err
+}
