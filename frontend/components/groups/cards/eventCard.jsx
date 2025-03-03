@@ -1,4 +1,3 @@
-// components/groups/eventCard.jsx
 "use client"
 import React from 'react';
 import { FiCalendar, FiUsers } from 'react-icons/fi';

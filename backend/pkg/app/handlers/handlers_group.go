@@ -162,10 +162,6 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
-	if pathParts[4] != "invited" && pathParts[4] != "requested" {
-		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
-		return
-	}
 	user_id, ok := r.Context().Value("user_id").(string)
 	if !ok {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
@@ -181,6 +177,10 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
+}
+
+func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (g *GroupHandler) GroupDelete(w http.ResponseWriter, r *http.Request) {

@@ -458,7 +458,6 @@ func (g *GroupRepository) CreateEvent(event models.Event, event_id, group_id, us
 	return event, nil
 }
 
-// TODO: khas tzad l count
 func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Event, error) {
 	selectQuery := `
 	SELECT 

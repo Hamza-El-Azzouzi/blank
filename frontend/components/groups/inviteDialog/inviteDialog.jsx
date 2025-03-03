@@ -149,7 +149,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const handleInvite = async (userId) => {
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/invite`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/invite`,
                 {
                     method: 'POST',
                     headers: {

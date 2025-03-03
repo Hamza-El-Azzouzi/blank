@@ -1,4 +1,3 @@
-// components/groups/groupHeader.jsx
 "use client"
 import React, { useState } from 'react';
 import { FiUsers } from 'react-icons/fi';
@@ -46,10 +45,6 @@ const GroupHeader = ({ group }) => {
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };
-    const handleSearch = (e) => {
-        const term = e.target.value.toLowerCase();
-        setSearchTerm(term);
-    };
     const handleJoinGroup = (e) => {
         e.preventDefault()
             fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/requested`, {
@@ -66,7 +61,7 @@ const GroupHeader = ({ group }) => {
                     }
                     return response.json();
                 })
-                .then((data) => {
+                .then(() => {
                     showToast('success', 'Success! Operation completed.');
                     setIsDisabled(true);
                     group.IsPending = true
@@ -93,7 +88,7 @@ const GroupHeader = ({ group }) => {
                 }
                 return response.json();
             })
-            .then((data) => {
+            .then(() => {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/groups")
             
