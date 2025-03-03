@@ -13,7 +13,7 @@ const UserSidebar = () => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const cookieValue = GetCookie("sessionId");
   const loadMoreRef = useRef(null);
   const observerRef = useRef(null);
@@ -23,15 +23,40 @@ const UserSidebar = () => {
     ? pathname.split('/').pop()
     : null;
 
+  useEffect(() => {
+    const handleMessageSent = () => {
+      fetchContacts(0);
+    };
+
+    window.addEventListener('refrech_contacts', handleMessageSent);
+
+    return () => {
+      window.removeEventListener('refrech_contacts', handleMessageSent);
+    };
+  }, []);
+
   const handleNewMessage = useCallback(() => {
     fetchContacts(0);
   }, []);
 
-  useWebSocket(currentChatUserId, handleNewMessage);
+  useWebSocket(null, handleNewMessage, null);
 
   useEffect(() => {
     fetchContacts(page);
   }, [page]);
+
+  useEffect(() => {
+    if (currentChatUserId) {
+      setContacts(prevContacts => {
+        return prevContacts.map(contact => {
+          if (contact.user_id === currentChatUserId) {
+            return { ...contact, is_seen: true };
+          }
+          return contact;
+        });
+      });
+    }
+  }, [currentChatUserId]);
 
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore) return;
@@ -53,19 +78,6 @@ const UserSidebar = () => {
       }
     };
   }, [hasMore]);
-
-  useEffect(() => {
-    if (currentChatUserId) {
-      setContacts(prevContacts => {
-        return prevContacts.map(contact => {
-          if (contact.user_id === currentChatUserId) {
-            return { ...contact, is_seen: true };
-          }
-          return contact;
-        });
-      });
-    }
-  }, [currentChatUserId]);
 
   const fetchContacts = async (pageNum) => {
     try {
@@ -96,7 +108,16 @@ const UserSidebar = () => {
         if (pageNum === 0) {
           setContacts(processedContacts);
         } else {
-          setContacts(prev => [...prev, ...processedContacts]);
+          setContacts(prev => {
+            const uniqueContacts = [...prev];
+
+            processedContacts.forEach(newContact => {
+              if (!uniqueContacts.some(c => c.user_id === newContact.user_id)) {
+                uniqueContacts.push(newContact);
+              }
+            });
+            return uniqueContacts;
+          });
         }
 
         setHasMore(data.data.length === 20);

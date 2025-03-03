@@ -68,7 +68,7 @@ export default function MainLayout({ children }) {
         link.removeEventListener('click', handleLinkClick);
       });
       contactLinks?.forEach(link => {
-        link.addEventListener('click', handleLinkClick);
+        link.removeEventListener('click', handleLinkClick);
       });
     };
   }, [leftOpen, rightOpen]);

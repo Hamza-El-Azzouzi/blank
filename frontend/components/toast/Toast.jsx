@@ -6,7 +6,7 @@ import { MdError } from "react-icons/md";
 import { IoIosWarning, IoMdInformationCircleOutline } from "react-icons/io";
 import { GrStatusGood } from "react-icons/gr";
 
-const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
+const Toast = ({ message, type = 'notification', duration = 3000, onClose }) => {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {

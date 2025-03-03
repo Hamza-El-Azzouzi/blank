@@ -19,33 +19,11 @@ export default function ChatPage() {
     const [contact, setContact] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
     const containerRef = useRef(null);
+    const messageSeenTimeout = useRef(null);
 
     const cookieValue = GetCookie("sessionId");
     const params = useParams();
     const userId = params.userID;
-
-    const handleNewMessage = useCallback((message) => {
-        setMessages(prev => [...prev, {
-            message_id: message.id,
-            sender_id: message.sender_id,
-            receiver_id: message.receiver_id,
-            content: message.content,
-            seen: false,
-            created_at: new Date().toISOString()
-        }]);
-
-        setTimeout(() => {
-            if (containerRef.current) {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
-            }
-        }, 5);
-    }, []);
-
-    const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
-
-    useEffect(() => {
-        console.log("Current chat user ID:", userId);
-    }, [userId]);
 
     useEffect(() => {
         const fetchCurrentUserId = async () => {
@@ -102,8 +80,41 @@ export default function ChatPage() {
         fetchContact();
         fetchMessages(0);
         markMessagesAsSeen();
+
+        return () => {
+            if (messageSeenTimeout.current) {
+                clearTimeout(messageSeenTimeout.current);
+            }
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, cookieValue]);
+
+    const handleNewMessage = useCallback((message) => {
+        setMessages(prev => [...prev, {
+            message_id: message.id,
+            sender_id: message.sender_id,
+            receiver_id: message.receiver_id,
+            content: message.content,
+            seen: false,
+            created_at: message.created_at || new Date().toISOString()
+        }]);
+
+        setTimeout(() => {
+            if (containerRef.current) {
+                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }
+        }, 5);
+
+        if (messageSeenTimeout.current) {
+            clearTimeout(messageSeenTimeout.current);
+        }
+
+        messageSeenTimeout.current = setTimeout(() => {
+            markMessagesAsSeen();
+        }, 500);
+    }, []);
+
+    const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
 
     const fetchMessages = async (pageNum) => {
         try {
@@ -163,6 +174,8 @@ export default function ChatPage() {
     };
 
     const markMessagesAsSeen = async () => {
+        if (!userId) return;
+
         try {
             await fetch(
                 `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/markAsRead/${userId}`,
@@ -195,6 +208,8 @@ export default function ChatPage() {
         setMessages(prev => [...prev, tempMessage]);
 
         sendWebSocketMessage(userId, messageContent, 'to_user');
+
+        window.dispatchEvent(new CustomEvent('refrech_contacts'));
 
         setTimeout(() => {
             containerRef.current.scrollTop = containerRef.current.scrollHeight;

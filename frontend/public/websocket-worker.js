@@ -12,24 +12,8 @@ self.onconnect = function (e) {
 
     port.onmessage = function (event) {
         const data = event.data;
-
-        switch (data.type) {
-            case 'message':
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify(data.message))
-                }
-                break;
-
-            case 'close':
-                if (tabs.length <= 1) {
-                    closeWebSocket();
-                }
-
-                const index = tabs.indexOf(port);
-                if (index > -1) {
-                    tabs.splice(index, 1);
-                }
-                break;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(data.message))
         }
     };
 };
@@ -65,15 +49,18 @@ function initWebSocket() {
     }
 }
 
-function closeWebSocket() {
-    if (ws) {
-        ws.close();
-        ws = null;
-    }
-}
-
 function broadcastToTabs(message) {
-    tabs.forEach(port => {
-        port.postMessage(message);
+    const currentTabs = [...tabs];
+    
+    currentTabs.forEach(port => {
+        try {
+            port.postMessage(message);
+        } catch (error) {
+            console.error('Error sending message to tab:', error);
+            const index = tabs.indexOf(port);
+            if (index > -1) {
+                tabs.splice(index, 1);
+            }
+        }
     });
 }
