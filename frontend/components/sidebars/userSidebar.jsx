@@ -1,11 +1,13 @@
 "use client"
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { GetCookie } from '@/lib/cookie';
 import './sidebar.css';
 import { formatTime } from '@/lib/format_time';
+import { usePathname } from 'next/navigation';
+import { useWebSocket } from '@/lib/useWebSocket';
 
 const UserSidebar = () => {
   const [contacts, setContacts] = useState([]);
@@ -15,6 +17,17 @@ const UserSidebar = () => {
   const cookieValue = GetCookie("sessionId");
   const loadMoreRef = useRef(null);
   const observerRef = useRef(null);
+  const pathname = usePathname();
+
+  const currentChatUserId = pathname.startsWith('/chat/')
+    ? pathname.split('/').pop()
+    : null;
+
+  const handleNewMessage = useCallback(() => {
+    fetchContacts(0);
+  }, []);
+
+  useWebSocket(currentChatUserId, handleNewMessage);
 
   useEffect(() => {
     fetchContacts(page);
@@ -41,6 +54,19 @@ const UserSidebar = () => {
     };
   }, [hasMore]);
 
+  useEffect(() => {
+    if (currentChatUserId) {
+      setContacts(prevContacts => {
+        return prevContacts.map(contact => {
+          if (contact.user_id === currentChatUserId) {
+            return { ...contact, is_seen: true };
+          }
+          return contact;
+        });
+      });
+    }
+  }, [currentChatUserId]);
+
   const fetchContacts = async (pageNum) => {
     try {
       setLoading(true);
@@ -60,6 +86,10 @@ const UserSidebar = () => {
           contact.avatar = contact.avatar
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + contact.avatar)
             : '/default-avatar.jpg';
+
+          if (currentChatUserId && contact.user_id === currentChatUserId) {
+            contact.is_seen = true;
+          }
           return contact;
         }));
 

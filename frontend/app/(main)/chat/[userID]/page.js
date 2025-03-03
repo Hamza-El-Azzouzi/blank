@@ -1,11 +1,12 @@
 'use client'
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { FiSend } from 'react-icons/fi';
 import { GetCookie } from '@/lib/cookie';
 import { useParams } from 'next/navigation';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { formatTime } from '@/lib/format_time';
+import { useWebSocket } from '@/lib/useWebSocket';
 import './chat.css';
 
 export default function ChatPage() {
@@ -16,11 +17,59 @@ export default function ChatPage() {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [contact, setContact] = useState(null);
+    const [myUserId, setMyUserId] = useState(null);
     const containerRef = useRef(null);
 
     const cookieValue = GetCookie("sessionId");
     const params = useParams();
     const userId = params.userID;
+
+    const handleNewMessage = useCallback((message) => {
+        setMessages(prev => [...prev, {
+            message_id: message.id,
+            sender_id: message.sender_id,
+            receiver_id: message.receiver_id,
+            content: message.content,
+            seen: false,
+            created_at: new Date().toISOString()
+        }]);
+
+        setTimeout(() => {
+            if (containerRef.current) {
+                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }
+        }, 5);
+    }, []);
+
+    const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
+
+    useEffect(() => {
+        console.log("Current chat user ID:", userId);
+    }, [userId]);
+
+    useEffect(() => {
+        const fetchCurrentUserId = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: 'token', value: cookieValue })
+                    }
+                );
+
+                if (!response.ok) throw new Error('Failed to fetch user ID');
+
+                const data = await response.json();
+                setMyUserId(data.data);
+            } catch (error) {
+                console.error('Error fetching current user ID:', error);
+            }
+        };
+
+        fetchCurrentUserId();
+    }, [cookieValue]);
 
     useEffect(() => {
         if (!userId) return;
@@ -54,7 +103,7 @@ export default function ChatPage() {
         fetchMessages(0);
         markMessagesAsSeen();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId]);
+    }, [userId, cookieValue]);
 
     const fetchMessages = async (pageNum) => {
         try {
@@ -127,17 +176,25 @@ export default function ChatPage() {
         }
     };
 
-    const sendMessage = async (e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!message.trim()) return;
-
-        setMessages(prev => [...prev, {
-            receiver_id: userId,
-            content: message,
-            created_at: Date.now()
-        }]);
+        const messageContent = message.trim();
+        if (!messageContent) return;
 
         setMessage('');
+
+        const tempMessage = {
+            message_id: `temp-${Date.now()}`,
+            sender_id: myUserId,
+            receiver_id: userId,
+            content: messageContent,
+            seen: false,
+            created_at: new Date().toISOString()
+        };
+
+        setMessages(prev => [...prev, tempMessage]);
+
+        sendWebSocketMessage(userId, messageContent, 'to_user');
 
         setTimeout(() => {
             containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -172,7 +229,13 @@ export default function ChatPage() {
                     }
                 }}
             >
-                {!loading && (
+                {loadingMore && (
+                    <div className="loading-more-messages">
+                        Loading more messages...
+                    </div>
+                )}
+
+                {!loading ? (
                     <>
                         {messages.length === 0 ? (
                             <div className="no-messages">
@@ -182,7 +245,7 @@ export default function ChatPage() {
                         ) : (
                             <>
                                 {messages.map((msg, index) => (
-                                    <div key={index} className={`message ${msg.receiver_id === userId ? 'sent' : 'received'}`}>
+                                    <div key={msg.message_id || index} className={`message ${msg.sender_id === myUserId ? 'sent' : 'received'}`}>
                                         <div className="message-content">{msg.content}</div>
                                         <div className="message-time">{formatTime(msg.created_at)}</div>
                                     </div>
@@ -190,10 +253,14 @@ export default function ChatPage() {
                             </>
                         )}
                     </>
+                ) : (
+                    <div className="loading-messages">
+                        <div className="loading-spinner"></div>
+                    </div>
                 )}
             </div>
 
-            <form className="chat-page-input-form" onSubmit={sendMessage}>
+            <form className="chat-page-input-form" onSubmit={handleSendMessage}>
                 <input
                     type="text"
                     value={message}
