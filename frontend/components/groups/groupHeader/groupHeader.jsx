@@ -6,8 +6,7 @@ import './groupHeader.css';
 import { GetCookie } from '@/lib/cookie';
 import Toast from '@/components/toast/Toast';
 import { useParams, useRouter } from 'next/navigation';
-
-
+import InviteDialog from '../inviteDialog/inviteDialog';
 
 const GroupHeader = ({ group }) => {
     const { groupID } = useParams();
@@ -15,6 +14,7 @@ const GroupHeader = ({ group }) => {
     const cookieValue = GetCookie("sessionId")
     const [toasts, setToasts] = useState([]);
     const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
+    const [showInviteDialog, setShowInviteDialog] = useState(false);
     const handleLeaveGroup = (e) => {
         e.preventDefault()
         e.preventDefault()
@@ -127,40 +127,57 @@ const GroupHeader = ({ group }) => {
                         </span>
                     </div>
                 </div>
-                {group.IsJoined ? (
-                    <button
-                        className="leave-group-btn"
-                        onClick={(e)=>{
-                            handleLeaveGroup(e)
-                        }}
-                    >
-                        Leave Group
-                    </button>
-                ) : group.IsOwner ? (
-                    <button
-                        className="leave-group-btn"
-                        onClick={(e) => { handleDestoryCommunity(e) }}
-                    >
-                        Destroy the Community
-                    </button>
-                ) : group.IsPending ? (
-                    <button
-                        className="join-group-btn"
-                        disabled
-                    >
-                        Pending
-                        
-                    </button>
-                ) : (
-                    <button
-                        className="join-group-btn"
-                        disabled={isDisabled}
-                        onClick={(e)=>{handleJoinGroup(e)}}
-                    >
-                        Join Group
-                    </button>
-                )}
+                <div className="group-actions">
+                    {(group.IsJoined || group.IsOwner) && (
+                        <button
+                            className="invite-btn"
+                            onClick={() => setShowInviteDialog(true)}
+                        >
+                            Invite Members
+                        </button>
+                    )}
+                    {group.IsJoined ? (
+                        <button
+                            className="leave-group-btn"
+                            onClick={(e)=>{
+                                handleLeaveGroup(e)
+                            }}
+                        >
+                            Leave Group
+                        </button>
+                    ) : group.IsOwner ? (
+                        <button
+                            className="leave-group-btn"
+                            onClick={(e) => { handleDestoryCommunity(e) }}
+                        >
+                            Destroy the Community
+                        </button>
+                    ) : group.IsPending ? (
+                        <button
+                            className="join-group-btn"
+                            disabled
+                        >
+                            Pending
+                            
+                        </button>
+                    ) : (
+                        <button
+                            className="join-group-btn"
+                            disabled={isDisabled}
+                            onClick={(e)=>{handleJoinGroup(e)}}
+                        >
+                            Join Group
+                        </button>
+                    )}
+                </div>
             </div>
+            {showInviteDialog && (
+                <InviteDialog
+                    onClose={() => setShowInviteDialog(false)}
+                    cookieValue={cookieValue}
+                    groupID={groupID}
+                />
+            )}
         </>
 
     );
