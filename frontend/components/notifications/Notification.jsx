@@ -1,6 +1,44 @@
 'use client';
+import { GetCookie } from "@/lib/cookie";
+import { useEffect } from "react";
+import { MdDone, MdClose } from "react-icons/md";
+
 
 export default function Notifications({ notif }) {
+    const cookieValue = GetCookie("sessionId");
+
+    useEffect(() => {
+        if (notif.seen) return
+        markNotifAsSeen()
+    }, []);
+
+    const markNotifAsSeen = async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/notifications/${notif.id}/see`, {
+                credentials: "include",
+                method: "PUT",
+                headers: { Authorization: `Bearer ${cookieValue}` },
+            });
+            let data = await res.json();
+            if (data.message !== "") {
+                console.log(data.message)
+            }
+
+        } catch (err) {
+            console.error("Error fetching notifications:", err);
+        }
+    }
+
+    const handleAccept = async (e) => {
+        e.preventDefault();
+        console.log("handleAccept");
+
+    }
+    const handleRefuse = async (e) => {
+        e.preventDefault();
+        console.log("handleAccept");
+    }
+
     switch (notif.type) {
         case "follow_request":
             notif.label = <p>New follow request from {notif.user_name}</p>
@@ -19,8 +57,14 @@ export default function Notifications({ notif }) {
     return (
 
         <div className={`notification-item ${notif.seen ? 'seen' : ''}`} >
-            {notif.label}
-            <span className="notification-date">{notif.formatted_date}</span>
+            <div className="notification-info">
+                {notif.label}
+                <span className="notification-date">{notif.formatted_date}</span>
+            </div>
+            <div className="notification-action">
+                <button className="refuse" onClick={handleRefuse}><MdClose className="icon" /> Refuse</button>
+                <button className="accept" onClick={handleAccept}><MdDone className="icon" /> Accept</button>
+            </div>
         </div>
     )
 }

@@ -35,7 +35,10 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
+
+	// notifications routes
 	mux.HandleFunc("/api/notifications/", userHandler.NotificationsGetter)
+	mux.HandleFunc("/api/notifications/{id}/see", userHandler.SeeNotification)
 
 	// comments routes
 	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)
@@ -76,11 +79,9 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
 
-	
 	// WebSocket handler
 	mux.HandleFunc("/ws", webSocketHandler.Connect)
 
- 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)

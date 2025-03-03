@@ -127,3 +127,7 @@ func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.Notifi
 	}
 	return cleanNotifications, nil
 }
+
+func (u *UserService) SeeNotification(userID, notifID uuid.UUID) error {
+	return u.NotificationRepo.SeeNotification(userID, notifID)
+}

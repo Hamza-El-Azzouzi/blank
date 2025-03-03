@@ -64,31 +64,29 @@ const NotificationsPage = () => {
     };
 
     return (
-        <div className="notifications-page">
+        <div className="notifications" id="notifications">
             <h2>Notifications</h2>
-            <div className="notifications" id="notifications">
-                {loading && page === 0 ? (
-                    <Loading />
-                ) : notifications.length > 0 ? (
-                    notifications.map((notif) => (
-                        <Link className="link" href={
-                            notif.type === "follow_request"
-                                ? "/profile/" + notif.user_id
-                                : "/groups/" + notif.group_id
-                        }>
-                            <Notifications key={notif.id} notif={notif} />
-                        </Link>
-                    ))
-                ) : (
-                    <span className="no-notifications">No notifications to display!</span>
-                )}
-                {!noMore && loadingMore && (
-                    <span className="notifications-loading-more">
-                        <BiLoaderCircle className="loader" />
-                    </span>
-                )}
-            </div>
-        </div>
+            {loading && page === 0 ? (
+                <Loading />
+            ) : notifications.length > 0 ? (
+                notifications.map((notif) => (
+                    <Link key={notif.id} className="link" href={
+                        notif.type === "follow_request"
+                            ? "/profile/" + notif.user_id
+                            : "/groups/" + notif.group_id
+                    }>
+                        <Notifications notif={notif} />
+                    </Link>
+                ))
+            ) : (
+                <span className="no-notifications">No notifications to display!</span>
+            )}
+            {!noMore && loadingMore && (
+                <span className="notifications-loading-more">
+                    <BiLoaderCircle className="loader" />
+                </span>
+            )}
+        </div >
     );
 };
 

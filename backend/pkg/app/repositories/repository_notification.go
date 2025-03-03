@@ -121,3 +121,23 @@ func (n *NotificationRepository) GetNotifications(userID uuid.UUID, offset, limi
 	}
 	return notifications, nil
 }
+
+func (n *NotificationRepository) SeeNotification(userID, notifID uuid.UUID) error {
+	queryUpdate := `
+	UPDATE Notification
+	SET
+		seen = 1
+	WHERE receiver_id = ?
+      AND notification_id = ?;
+	`
+	preparedQuery, err := n.DB.Prepare(queryUpdate)
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec(userID, notifID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

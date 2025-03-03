@@ -243,3 +243,36 @@ func (u *UserHandler) NotificationsGetter(w http.ResponseWriter, r *http.Request
 
 	utils.SendResponses(w, http.StatusOK, "", notifications)
 }
+
+func (u *UserHandler) SeeNotification(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	notifID, err := uuid.FromString(r.PathValue("id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid notification ID", nil)
+		return
+	}
+
+	err = u.UserService.SeeNotification(userID, notifID)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "", nil)
+}

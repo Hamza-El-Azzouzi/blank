@@ -1,16 +1,12 @@
-/* Notifications Component Styles */
 .notifications {
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .notification-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 12px;
     border-radius: 6px;
     background-color: var(--bg-tertiary);
@@ -18,10 +14,16 @@
     transition: all 0.2s ease;
 }
 
+.notification-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .notification-item p,
 .notification-item p:active {
     text-decoration: none !important;
-    color: var(--text-primary) !important;  
+    color: var(--text-primary) !important;
 }
 
 .notification-item:hover {
@@ -77,4 +79,42 @@
 
 .loading-container:not(.seen) {
     background-color: var(--bg-tertiary) !important;
+}
+
+.notification-action {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.notification-action .icon {
+    font-size: 1.2rem;
+}
+
+.notification-action .refuse,
+.notification-action .accept {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: none;
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notification-action .refuse {
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.notification-action .refuse:hover,
+.notification-action .accept:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.notification-action .accept {
+    border: 1px solid var(--success);
+    color: var(--success);
 }
