@@ -9,10 +9,13 @@ import (
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type GroupHandler struct {
 	GroupService *services.GroupService
+	UserService  *services.UserService
 }
 
 func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
@@ -180,7 +183,78 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
 
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	user_id, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
+	}
+	err := g.GroupService.JoinGroup(pathParts[3], user_id, pathParts[4])
+	if err != nil {
+		switch err.Error() {
+		case "forbidden":
+			utils.SendResponses(w, http.StatusForbidden, err.Error(), nil)
+		default:
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		}
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
+}
+
+func (g *GroupHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
+	}
+
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+		if !g.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
+
+	followers, err := g.GroupService.GetFollowers(userId, offset)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	utils.SendResponses(w, http.StatusOK, "success", followers)
+}
+
+func (g *GroupHandler) SearchFollowers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *GroupHandler) GroupDelete(w http.ResponseWriter, r *http.Request) {

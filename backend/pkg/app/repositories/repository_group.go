@@ -135,7 +135,7 @@ GROUP BY g.group_id, g.title, g.description, u.nickname;
 	return groups, nil
 }
 
-func (g *GroupRepository) GroupDerails(user_id, group_id string) (models.GroupDetails, error) {
+func (g *GroupRepository) GroupDetails(user_id, group_id string) (models.GroupDetails, error) {
 	var group models.GroupDetails
 	selectQuery := `SELECT 
 	g.group_id,
@@ -193,7 +193,7 @@ func (g *GroupRepository) IsGroupMember(group_id, user_id string) (bool, error) 
 func (g *GroupRepository) PostGroupExist(post_id string) bool {
 	exist := 0
 	query := `SELECT count(*) FROM Group_Post WHERE group_post_id = ?`
-	err := g.DB.QueryRow(query, post_id, ).Scan(&exist)
+	err := g.DB.QueryRow(query, post_id).Scan(&exist)
 	if err != nil {
 		return false
 	}
@@ -202,11 +202,11 @@ func (g *GroupRepository) PostGroupExist(post_id string) bool {
 	}
 	return false
 }
+
 func (g *GroupRepository) IsOwner(group_id, user_id string) (bool, error) {
 	exist := 0
 	query := "SELECT count(*) FROM `Group` WHERE group_id = ? AND creator_id = ?"
 	err := g.DB.QueryRow(query, group_id, user_id).Scan(&exist)
-	
 	if err != nil {
 		return false, err
 	}
@@ -223,6 +223,40 @@ func (g *GroupRepository) JoinGroup(group_id, user_id, isInvited string) error {
 		return err
 	}
 	return nil
+}
+
+func (g *GroupRepository) GetFollowers(userId, offset string) ([]models.FollowList, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM Follow f
+        JOIN User u ON f.follower_id = u.user_id
+        WHERE f.following_id = ? AND f.status = "accepted"
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
+
+	rows, err := g.DB.Query(query, userId, offset, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []models.FollowList
+
+	for rows.Next() {
+		var follower models.FollowList
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		followers = append(followers, follower)
+	}
+
+	return followers, nil
 }
 
 func (g *GroupRepository) GroupDelete(group_id string) error {
@@ -296,10 +330,9 @@ func (g *GroupRepository) GroupResponseDeclined(group_id, user_id string) (int, 
 func (g *GroupRepository) GroupCreatePost(post_id string, group models.GroupPost, user_id, FileName string) (models.GroupPost, error) {
 	query := "INSERT INTO `Group_Post` (group_post_id,group_id,user_id,content,image) VALUES (?,?,?,?,?)"
 	var groupInfo models.GroupPost
-	
+
 	_, err := g.DB.Exec(query, post_id, group.Group_id, user_id, group.Content, FileName)
 	if err != nil {
-		
 		return models.GroupPost{}, err
 	}
 
@@ -390,9 +423,7 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 		LIMIT 20 OFFSET ?;
 	`
 	rows, err := g.DB.Query(querySelect, user_id, group_id, pagination)
-	
 	if err != nil {
-		
 		return nil, fmt.Errorf("error querying posts with user info: %v", err)
 	}
 	defer rows.Close()
@@ -420,7 +451,6 @@ func (g *GroupRepository) GroupPost(group_id, user_id string, pagination int) ([
 	}
 	err = rows.Err()
 	if err != nil {
-		
 		return []models.GroupPost{}, err
 	}
 	return groupInfos, nil
@@ -511,7 +541,7 @@ func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Ev
 		event.Time = dateTime.Format("15:04")
 		events = append(events, event)
 	}
-	
+
 	return events, nil
 }
 
@@ -554,4 +584,3 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 
 	return event, nil
 }
-

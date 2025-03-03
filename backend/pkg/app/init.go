@@ -52,7 +52,7 @@ func InitServices(userRepo *repositories.UserRepository,
 	return &services.AuthService{UserRepo: userRepo, MessageRepo: messageRepo},
 		&services.PostService{PostRepo: postRepo, UserRepo: userRepo},
 		&services.CommentService{CommentRepo: commentRepo, PostRepo: postRepo},
-		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo,GroupRepo: groupRepo},
+		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo, GroupRepo: groupRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
 		&services.UserService{UserRepo: userRepo},
@@ -114,6 +114,7 @@ func InitHandlers(authService *services.AuthService,
 	}
 	groupHandler := &handlers.GroupHandler{
 		GroupService: groupService,
+		UserService:  userService,
 	}
 
 	followHandler := &handlers.FollowHandler{
