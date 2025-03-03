@@ -354,3 +354,27 @@ func (u *UserRepository) IsFollowing(authUserID, userID uuid.UUID) (bool, error)
 
 	return isFollowing, nil
 }
+
+func (u *UserRepository) CheckFollowRequestPending(receiverID, userID uuid.UUID) (bool, error) {
+	isPending := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+					Follow f
+				WHERE
+					f.follower_id = ?
+					AND f.following_id = ?
+					AND f.status = "pending"
+			) AS is_pending
+	`
+
+	err := u.DB.QueryRow(query, userID, receiverID).Scan(&isPending)
+	if err != nil {
+		return false, err
+	}
+
+	return isPending, nil
+}

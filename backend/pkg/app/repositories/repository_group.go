@@ -620,3 +620,7 @@ func (g *GroupRepository) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, error) {
 
 	return ownerID, nil
 }
+
+func (g *GroupRepository) CheckGroupInvitationPending(notifID, ReceiverID, UserID uuid.UUID) (bool, error) {
+	return false, nil
+}

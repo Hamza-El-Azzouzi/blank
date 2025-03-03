@@ -60,7 +60,7 @@ func InitServices(userRepo *repositories.UserRepository,
 		&services.ReactService{ReactRepo: reactRepo, PostRepo: postRepo, CommentRepo: commentRepo, GroupRepo: groupRepo},
 		&services.SessionService{SessionRepo: sessionRepo},
 		&services.MessageService{MessageRepo: messageRepo, UserRepo: userRepo},
-		&services.UserService{UserRepo: userRepo, NotificationRepo: notificationRepo},
+		&services.UserService{UserRepo: userRepo, NotificationRepo: notificationRepo, GroupRepo: groupRepo},
 		&services.GroupService{GroupRepo: groupRepo},
 		&services.FollowService{FollowRepo: followRepo, UserRepo: userRepo},
 		&services.WebSocketService{

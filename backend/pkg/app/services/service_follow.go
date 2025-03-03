@@ -2,9 +2,12 @@ package services
 
 import (
 	"database/sql"
+	"fmt"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type FollowService struct {
@@ -19,12 +22,32 @@ func (f *FollowService) RequestFollow(follow models.FollowRequest) (string, erro
 	return "private", f.FollowRepo.RequestFollow(follow)
 }
 
-func (f *FollowService) AcceptFollow(follow models.FollowRequest) error {
-	return f.FollowRepo.AcceptFollow(follow)
+func (f *FollowService) AcceptFollow(followingID, followerID uuid.UUID) error {
+	pending, err := f.UserRepo.CheckFollowRequestPending(followerID, followingID)
+	if err != nil {
+		return err
+	}
+	if !pending {
+		fmt.Errorf("the follow request is not pending")
+	}
+	return f.FollowRepo.AcceptFollow(models.FollowRequest{
+		FollowerId:  followerID.String(),
+		FollowingId: followingID.String(),
+	})
 }
 
-func (f *FollowService) RefuseFollow(follow models.FollowRequest) error {
-	return f.FollowRepo.RefuseFollow(follow)
+func (f *FollowService) RefuseFollow(followingID, followerID uuid.UUID) error {
+	pending, err := f.UserRepo.CheckFollowRequestPending(followerID, followingID)
+	if err != nil {
+		return err
+	}
+	if !pending {
+		fmt.Errorf("the follow request is not pending")
+	}
+	return f.FollowRepo.RefuseFollow(models.FollowRequest{
+		FollowerId:  followerID.String(),
+		FollowingId: followingID.String(),
+	})
 }
 
 func (f *FollowService) GetFollowStatus(follow models.FollowRequest) (string, error) {

@@ -95,19 +95,19 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	followingID, err := uuid.FromString(follow.FollowingId)
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 
-	if !f.UserService.UserExist(followingID) {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+	followerID, err := uuid.FromString(follow.FollowerId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid follower ID", nil)
 		return
 	}
 
-	follow.FollowerId = r.Context().Value("user_id").(string)
-	err = f.FollowService.AcceptFollow(follow)
+	err = f.FollowService.AcceptFollow(userID, followerID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
@@ -130,23 +130,24 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	followingID, err := uuid.FromString(follow.FollowingId)
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 
-	if !f.UserService.UserExist(followingID) {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+	followerID, err := uuid.FromString(follow.FollowerId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid follower ID", nil)
 		return
 	}
 
-	follow.FollowerId = r.Context().Value("user_id").(string)
-	err = f.FollowService.RefuseFollow(follow)
+	err = f.FollowService.RefuseFollow(userID, followerID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
+
 	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 

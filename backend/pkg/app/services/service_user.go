@@ -13,6 +13,7 @@ import (
 
 type UserService struct {
 	UserRepo         *repositories.UserRepository
+	GroupRepo        *repositories.GroupRepository
 	NotificationRepo *repositories.NotificationRepository
 }
 
@@ -109,6 +110,37 @@ func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.Notifi
 			Type:          notif.Type,
 			Seen:          notif.Seen,
 			FormattedDate: notif.FormattedDate,
+		}
+
+		switch notif.Type {
+		case "follow_request":
+			pending, err := u.UserRepo.CheckFollowRequestPending(userID, notif.UserID.UUID)
+			if err != nil {
+				return nil, err
+			}
+			if pending {
+				lastNotifID, err := u.NotificationRepo.LastNotification(userID, notif.UserID.UUID, notif.Type)
+				if err != nil {
+					return nil, err
+				}
+				if lastNotifID == notif.ID {
+					cleanNotif.AllowAction = true
+				}
+			}
+		case "group_invitation":
+			// pending, err := u.GroupRepo.CheckGroupInvitationPending(notif.ID, userID, notif.UserID.UUID)
+			// if err != nil {
+			// 	return nil, err
+			// }
+			// if pending {
+			// 	lastNotifID, err := u.NotificationRepo.LastNotification(userID, notif.UserID.UUID, notif.Type)
+			// 	if err != nil {
+			// 		return nil, err
+			// 	}
+			// 	if lastNotifID == notif.ID {
+			// 		cleanNotif.AllowAction = true
+			// 	}
+			// }
 		}
 
 		if notif.UserID.Valid {

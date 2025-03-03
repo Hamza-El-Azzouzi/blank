@@ -31,6 +31,7 @@ type NotificationResponse struct {
 	GroupID       string `json:"group_id,omitempty"`
 	GroupTitle    string `json:"group_title,omitempty"`
 	Seen          bool   `json:"seen"`
+	AllowAction   bool   `json:"allow_action,omitempty"`
 	FormattedDate string `json:"formatted_date"`
 }
 
