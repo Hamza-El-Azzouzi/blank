@@ -7,23 +7,24 @@ import { useParams } from 'next/navigation';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { formatTime } from '@/lib/format_time';
 import { useWebSocket } from '@/lib/useWebSocket';
-import './chat.css';
+import '../../[userID]/chat.css';
+import './group-chat.css';
 
-export default function ChatPage() {
+export default function GroupChatPage() {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
-    const [contact, setContact] = useState(null);
+    const [group, setGroup] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
     const containerRef = useRef(null);
     const messageSeenTimeout = useRef(null);
 
     const cookieValue = GetCookie("sessionId");
     const params = useParams();
-    const userId = params.userID;
+    const groupID = params.groupID;
 
     useEffect(() => {
         const fetchCurrentUserId = async () => {
@@ -50,34 +51,33 @@ export default function ChatPage() {
     }, [cookieValue]);
 
     useEffect(() => {
-        if (!userId) return;
+        if (!groupID) return;
 
-        const fetchContact = async () => {
+        const fetchGroupInfo = async () => {
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-info/${userId}`,
+                    `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}`,
                     {
                         method: 'GET',
-                        headers: { 'Authorization': `Bearer ${cookieValue}` },
+                        headers: {
+                            'Authorization': `Bearer ${cookieValue}`,
+                            'Content-Type': 'application/json'
+                        },
                     }
                 );
 
-                if (!response.ok) throw new Error('Failed to fetch user');
+                if (!response.ok) throw new Error('Failed to fetch group');
 
                 const data = await response.json();
-                if (data) {
-                    const userData = data.data;
-                    userData.avatar = userData.avatar
-                        ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + userData.avatar)
-                        : '/default-avatar.jpg';
-                    setContact(userData);
+                if (data && data.data) {
+                    setGroup(data.data);
                 }
             } catch (error) {
-                console.error('Error fetching contact:', error);
+                console.error('Error fetching group:', error);
             }
         };
 
-        fetchContact();
+        fetchGroupInfo();
         fetchMessages(0);
         markMessagesAsSeen();
 
@@ -87,18 +87,21 @@ export default function ChatPage() {
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId, cookieValue]);
+    }, [groupID]);
 
     const handleNewMessage = useCallback((message) => {
-        if (message?.sender_id !== userId) return
-        
+        if (message?.receiver_id !== groupID) return
+
         setMessages(prev => [...prev, {
             message_id: message.id,
             sender_id: message.sender_id,
-            receiver_id: message.receiver_id,
+            group_id: message.receiver_id,
             content: message.content,
             seen: false,
-            created_at: message.created_at || new Date().toISOString()
+            created_at: message.created_at || new Date().toISOString(),
+            sender_first_name: message.sender_first_name || "User",
+            sender_last_name: message.sender_last_name || "",
+            sender_avatar: message.sender_avatar || "/default-avatar.jpg"
         }]);
 
         setTimeout(() => {
@@ -116,14 +119,14 @@ export default function ChatPage() {
         }, 500);
     }, []);
 
-    const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
+    const sendWebSocketMessage = useWebSocket(groupID, handleNewMessage, null);
 
     const fetchMessages = async (pageNum) => {
         try {
             pageNum === 0 ? setLoading(true) : setLoadingMore(true);
 
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/${userId}?offset=${pageNum}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/group/${groupID}?offset=${pageNum}`,
                 {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${cookieValue}` },
@@ -135,13 +138,24 @@ export default function ChatPage() {
             const data = await response.json();
 
             if (data.data && data.data.length > 0) {
-                const reversedMessages = [...data.data].reverse();
+                const processedMessages = await Promise.all(data.data.map(async (msg) => {
+                    if (msg.sender_avatar) {
+                        msg.sender_avatar = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + msg.sender_avatar);
+                    } else {
+                        msg.sender_avatar = '/default-avatar.jpg';
+                    }
+                    return msg;
+                }));
+
+                const reversedMessages = [...processedMessages].reverse();
+
                 if (pageNum === 0) {
                     setMessages(reversedMessages);
                     setTimeout(() => {
-                        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                        if (containerRef.current) {
+                            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                        }
                     }, 4);
-
                 } else {
                     const container = containerRef.current;
                     const scrollHeight = container?.scrollHeight || 0;
@@ -176,11 +190,11 @@ export default function ChatPage() {
     };
 
     const markMessagesAsSeen = async () => {
-        if (!userId) return;
+        if (!groupID) return;
 
         try {
             await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/markAsRead/${userId}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/group/markAsRead/${groupID}`,
                 {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${cookieValue}` },
@@ -201,40 +215,35 @@ export default function ChatPage() {
         const tempMessage = {
             message_id: `temp-${Date.now()}`,
             sender_id: myUserId,
-            receiver_id: userId,
+            group_id: groupID,
             content: messageContent,
             seen: false,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
         };
 
         setMessages(prev => [...prev, tempMessage]);
 
-        sendWebSocketMessage(userId, messageContent, 'to_user');
+        sendWebSocketMessage(groupID, messageContent, 'to_group');
 
         window.dispatchEvent(new CustomEvent('refrech_contacts'));
 
         setTimeout(() => {
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            if (containerRef.current) {
+                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }
         }, 5);
     };
 
     return (
         <div className="chat-page">
-            <div className="chat-page-header">
+            <div className="chat-page-header group-chat-header">
                 <div className="chat-page-contact-info">
-                    {contact && (
-                        <>
-                            <Image
-                                src={contact.avatar}
-                                alt={`${contact.first_name} ${contact.last_name}`}
-                                width={40}
-                                height={40}
-                                className="chat-page-avatar"
-                            />
-                            <h2>{contact.first_name} {contact.last_name}</h2>
-                        </>
-                    )}
+                    <div className="group-avatar-icon header-group-icon">
+                        G
+                    </div>
+                    <h2>{group?.Name}</h2>
                 </div>
+                {group && <div className="group-members-count">{group?.Member_count} members</div>}
             </div>
 
             <div
@@ -257,12 +266,22 @@ export default function ChatPage() {
                         {messages.length === 0 ? (
                             <div className="no-messages">
                                 <p>No messages yet</p>
-                                <p>Start a conversation with {contact.first_name}!</p>
+                                <p>Start the conversation in {group.Name}!</p>
                             </div>
                         ) : (
                             <>
-                                {messages.map((msg, index) => (
-                                    <div key={msg.message_id || index} className={`message ${msg.sender_id === myUserId ? 'sent' : 'received'}`}>
+                                {messages.map((msg) => (
+                                    <div key={msg.message_id} className={`message ${msg.sender_id === myUserId ? 'sent' : 'received'}`}>
+                                        {msg.sender_id !== myUserId && (
+                                            <div className="message-sender-info">
+                                                <div className="message-sender-avatar">
+                                                    <Image src={msg.sender_avatar} alt={`${msg.sender_first_name}`} width={24} height={24} />
+                                                </div>
+                                                <span className="message-sender-name">
+                                                    {msg.sender_first_name} {msg.sender_last_name}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="message-content">{msg.content}</div>
                                         <div className="message-time">{formatTime(msg.created_at)}</div>
                                     </div>

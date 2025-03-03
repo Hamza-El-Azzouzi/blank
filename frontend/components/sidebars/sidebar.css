@@ -150,6 +150,33 @@
     padding-bottom: 10px;
 }
 
+.contacts-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.contacts-tab {
+    flex: 1;
+    padding: 10px 5px;
+    text-align: center;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.contacts-tab.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+.contacts-tab:hover:not(.active) {
+    color: var(--text-secondary);
+}
+
 .contacts-list {
     list-style: none;
     margin: 0;
@@ -169,6 +196,29 @@
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+.group-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.group-avatar-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.group-sender {
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .sidebar-contact-item {

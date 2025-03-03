@@ -13,7 +13,7 @@ self.onconnect = function (e) {
     port.onmessage = function (event) {
         const data = event.data;
         if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify(data.message))
+            ws.send(JSON.stringify(data))
         }
     };
 };

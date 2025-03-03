@@ -31,21 +31,25 @@ function initWorker() {
     }
 }
 
-export function useWebSocket(currentChatUserId = null, onNewMessage = null, showToast = null) {
+export function useWebSocket(currentChatId = null, onNewMessage = null, showToast = null) {
     const handlerIdRef = useRef(null);
 
     useEffect(() => {
         initWorker();
 
         const handleMessage = (data) => {
+            console.log(data);
+
             if (data.type === 'message') {
-                if (currentChatUserId && data.message.sender_id === currentChatUserId && onNewMessage) {
+                if (currentChatId && onNewMessage) {
                     onNewMessage(data.message);
-                }
-                else if (showToast) {
+
+                } else if (showToast) {
                     showToast(data.label, 'message');
+
+                } else if (onNewMessage) {
+                    onNewMessage(data)
                 }
-                else if (onNewMessage) onNewMessage()
             }
             else if (showToast) {
                 showToast(data.label, data.type);
@@ -62,19 +66,16 @@ export function useWebSocket(currentChatUserId = null, onNewMessage = null, show
             }
         };
 
-    }, [currentChatUserId, onNewMessage, showToast]);
+    }, [currentChatId, onNewMessage, showToast]);
 
     const sendMessage = (receiverId, content, receiverType) => {
         if (!worker) return;
 
         worker.port.postMessage({
-            type: 'message',
-            message: {
-                receiver_id: receiverId,
-                receiver_type: receiverType, // to_user or to_group
-                content: content,
-                session_id: GetCookie('sessionId')
-            }
+            receiver_id: receiverId,
+            receiver_type: receiverType, // to_user or to_group
+            content: content,
+            session_id: GetCookie('sessionId')
         });
     };
 
