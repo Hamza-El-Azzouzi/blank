@@ -714,6 +714,26 @@ func (g *GroupRepository) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, error) {
 	return ownerID, nil
 }
 
-func (g *GroupRepository) CheckGroupInvitationPending(notifID, ReceiverID, UserID uuid.UUID) (bool, error) {
-	return false, nil
+func (g *GroupRepository) CheckGroupInvitationPending(notifID, userID, groupID uuid.UUID) (bool, error) {
+	isPending := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+					Group_Membership gm
+				WHERE
+					gm.group_id = ?
+					AND gm.user_id = ?
+					AND gm.status = "invite"
+			) AS is_pending
+	`
+
+	err := g.DB.QueryRow(query, groupID, userID).Scan(&isPending)
+	if err != nil {
+		return false, err
+	}
+
+	return isPending, nil
 }

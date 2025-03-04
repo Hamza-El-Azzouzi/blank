@@ -9,7 +9,7 @@ function initWorker() {
     if (worker) return;
 
     try {
-        worker = new SharedWorker('/websocket-worker.js');
+        worker = new SharedWorker('/websocket-worker.js', "Social Network");
         worker.port.start();
         console.log('WebSocket worker initialized');
 

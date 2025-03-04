@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -235,6 +236,26 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	groupInvite.GroupId = pathParts[3]
+
+	invitedUserID, err := uuid.FromString(groupInvite.UserId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(groupInvite.GroupId)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	_, groupTitle, err := g.GroupService.GetGroupOwner(groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
 	err = g.GroupService.JoinGroup(groupInvite.GroupId, groupInvite.UserId, pathParts[4])
 	if err != nil {
 		switch err.Error() {
@@ -245,6 +266,14 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	g.WebSocketService.SendNotification([]uuid.UUID{invitedUserID}, models.Notification{
+		Type:      "group_invitation",
+		GroupID:   uuid.NullUUID{UUID: groupID, Valid: true},
+		Label:     fmt.Sprintf(`you are invited to join %s`, groupTitle),
+		CreatedAt: time.Now(),
+	})
+
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
 
@@ -413,7 +442,6 @@ func (g *GroupHandler) GroupResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	memberCount, err := g.GroupService.GroupResponse(pathParts[3], user_id, groupResponse)
 	if err != nil {
-
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
