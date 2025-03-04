@@ -86,6 +86,7 @@
 
 .group-actions {
     display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
@@ -97,6 +98,7 @@
     border: none;
     cursor: pointer;
     font-size: 14px;
+    width: 100%;
 }
 
 .invite-btn:hover {

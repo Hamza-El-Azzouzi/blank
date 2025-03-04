@@ -146,30 +146,36 @@ const GroupHeader = ({ group }) => {
                     </div>
                 </div>
                 <div className="group-actions">
-                    {(group.IsJoined || group.IsOwner) && (
-                        <button
-                            className="invite-btn"
-                            onClick={() => setShowInviteDialog(true)}
-                        >
-                            Invite Members
-                        </button>
-                    )}
                     {group.IsJoined ? (
-                        <button
-                            className="leave-group-btn"
-                            onClick={(e)=>{
-                                handleLeaveGroup(e)
-                            }}
-                        >
-                            Leave Group
-                        </button>
+                        <>
+                            <button
+                                className="leave-group-btn"
+                                onClick={(e)=>{ handleLeaveGroup(e) }}
+                            >
+                                Leave Group
+                            </button>
+                            <button
+                                className="invite-btn"
+                                onClick={() => setShowInviteDialog(true)}
+                            >
+                                Invite Members
+                            </button>
+                        </>
                     ) : group.IsOwner ? (
-                        <button
-                            className="leave-group-btn"
-                            onClick={(e) => { handleDestoryCommunity(e) }}
-                        >
-                            Destroy the Community
-                        </button>
+                        <>
+                            <button
+                                className="leave-group-btn"
+                                onClick={(e) => { handleDestoryCommunity(e) }}
+                            >
+                                Destroy the Community
+                            </button>
+                            <button
+                                className="invite-btn"
+                                onClick={() => setShowInviteDialog(true)}
+                            >
+                                Invite Members
+                            </button>
+                        </>
                     ) : group.IsPending ? (
                         <button
                             className="join-group-btn pending"
