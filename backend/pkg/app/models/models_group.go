@@ -58,6 +58,7 @@ type GroupPost struct {
 type Event struct {
 	Event_id    string `json:"event_id"`
 	Group_id    string `json:"group_id"`
+	Group_title string `json:"group_title"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Date        string `json:"date"`

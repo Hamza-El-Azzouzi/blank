@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"html"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"blank/pkg/app/middleware"
@@ -155,53 +154,3 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusOK, "success", userID)
 	}
 }
-
-func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 4 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	pagination := pathParts[3]
-	if pagination == "" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	nPagination, err := strconv.Atoi(pagination)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	sessionId, err := r.Cookie("sessionId")
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	if sessionId.Value == "" {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	_, existSessions := h.SessionService.CheckSession(sessionId.Value)
-	if !existSessions {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-	allUser, errUser := h.AuthService.GetUsers(sessionId.Value, nPagination)
-	if errUser != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&allUser)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
-

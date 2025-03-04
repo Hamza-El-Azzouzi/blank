@@ -18,6 +18,7 @@ func SetupRoutes(mux *http.ServeMux,
 	groupHandler *handlers.GroupHandler,
 	followHandler *handlers.FollowHandler,
 	commentHandler *handlers.CommentHandler,
+	webSocketHandler *handlers.WebSocketHandler,
 ) {
 	// serve files routes
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
@@ -34,6 +35,10 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
+
+	// notifications routes
+	mux.HandleFunc("/api/notifications/", userHandler.NotificationsGetter)
+	mux.HandleFunc("/api/notifications/{id}/see", userHandler.SeeNotification)
 
 	// comments routes
 	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)
@@ -78,15 +83,17 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
 
-	// chat routes
-	mux.HandleFunc("/api/online-users", messageHnadler.GetOnlineUsers)
-	mux.HandleFunc("/api/getmessages", messageHnadler.GetMessages)
-	mux.HandleFunc("/api/checkUnreadMesg", messageHnadler.UnReadMessages)
-	mux.HandleFunc("/api/markAsRead", messageHnadler.MarkReadMessages)
-	mux.HandleFunc("/api/users/", authHandler.GetUsers)
-	mux.HandleFunc("/api/messages", authHandler.GetUsers)
+	// message handler
+	mux.HandleFunc("/api/chat/contacts", messageHnadler.GetContactUsers)
+	mux.HandleFunc("/api/chat/{user_id}", messageHnadler.GetUserMessages)
+	mux.HandleFunc("/api/chat/markAsRead/{user_id}", messageHnadler.MarkMessagesAsSeen)
+	mux.HandleFunc("/api/chat/groups", messageHnadler.GetGroupChats)
+	mux.HandleFunc("/api/chat/group/{group_id}", messageHnadler.GetGroupMessages)
+	mux.HandleFunc("/api/chat/group/markAsRead/{group_id}", messageHnadler.MarkGroupMessagesAsSeen)
 
-	// serve root
+	// WebSocket handler
+	mux.HandleFunc("/ws", webSocketHandler.Connect)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
