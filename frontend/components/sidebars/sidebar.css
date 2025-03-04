@@ -66,6 +66,7 @@
 }
 
 .search-result-item {
+    flex: 1;
     display: flex;
     align-items: center;
     padding: 12px 16px;
@@ -165,8 +166,12 @@
     text-decoration: none;
     color: var(--primary);
     padding: 12px 16px;
-    font-size: 22px;
+    font-size: 21px;
     text-align: center;
+}
+
+.send-message-icon-search:hover {
+    background-color: var(--bg-tertiary);
 }
 
 .contacts-tab {

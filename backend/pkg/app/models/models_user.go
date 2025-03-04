@@ -47,13 +47,13 @@ type UserInfo struct {
 	About          string    `json:"about,omitempty"`
 	DateOfBirth    string    `json:"date_of_birth,omitempty"`
 	Avatar         string    `json:"avatar,omitempty"`
-	IsPublic       bool      `json:"is_public"`
+	IsPublic       bool      `json:"is_public,omitempty"`
 	IsOwner        bool      `json:"is_owner,omitempty"`
-	Following      int       `json:"following"`
-	Followers      int       `json:"followers"`
-	FollowStatus   string    `json:"follow_status"`
-	IsFollowing    bool      `json:"is_following"`
-	CanSendMessage bool      `json:"can_send_message"`
+	Following      int       `json:"following,omitempty"`
+	Followers      int       `json:"followers,omitempty"`
+	FollowStatus   string    `json:"follow_status,omitempty"`
+	IsFollowing    bool      `json:"is_following,omitempty"`
+	CanSendMessage bool      `json:"can_send_message,omitempty"`
 }
 
 type ConnectedUser struct {

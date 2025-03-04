@@ -78,21 +78,26 @@ func (u *UserService) SearchUsers(query string, page int, authUserID uuid.UUID) 
 
 	hasMore := total > (offset + len(users))
 
-	for _, user := range users {
-		isFollowing, err := u.UserRepo.IsFollowing(authUserID, user.UserID)
+	for i := range users {
+		if users[i].UserID == authUserID {
+			users[i].CanSendMessage = false
+			continue
+		}
+
+		isFollowing, err := u.UserRepo.IsFollowing(authUserID, users[i].UserID)
 		if err != nil {
 			return nil, false, err
 		}
 
-		isFollower, err := u.UserRepo.IsFollowing(user.UserID, authUserID)
+		isFollower, err := u.UserRepo.IsFollowing(users[i].UserID, authUserID)
 		if err != nil {
 			return nil, false, err
 		}
 
-		if user.IsPublic || isFollowing || isFollower {
-			user.CanSendMessage = true
+		if users[i].IsPublic || isFollowing || isFollower {
+			users[i].CanSendMessage = true
 		} else {
-			user.CanSendMessage = false
+			users[i].CanSendMessage = false
 		}
 	}
 

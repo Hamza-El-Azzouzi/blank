@@ -104,6 +104,8 @@ const NavSidebar = () => {
 
       const data = await response.json();
       if (data.data && Array.isArray(data.data.users)) {
+        console.log(data.data.users);
+
         const users = await Promise.all(data.data.users.map(async (user) => {
           user.avatar = user.avatar
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
@@ -197,13 +199,8 @@ const NavSidebar = () => {
             ) : searchResults.length > 0 ? (
               <>
                 {searchResults.map((user) => (
-                  <div className='search-result-item-wrapper'>
-                    <Link
-                      key={user.user_id}
-                      href={`/profile/${user.user_id}`}
-                      className="search-result-item"
-                      onClick={() => setSearchQuery('')}
-                    >
+                  <div className='search-result-item-wrapper' key={user.user_id}>
+                    <Link href={`/profile/${user.user_id}`} className="search-result-item" onClick={() => setSearchQuery('')}>
                       <div className="search-result-avatar">
                         <Image
                           src={user.avatar}
@@ -214,9 +211,11 @@ const NavSidebar = () => {
                       </div>
                       <span>{user.first_name} {user.last_name}</span>
                     </Link>
-                    <Link className='send-message-icon-search' key={user.user_id} href={`/chat/${user.user_id}`} onClick={() => setSearchQuery('')}>
-                      <LuMessageCircleMore />
-                    </Link>
+                    {user.can_send_message && (
+                      <Link className='send-message-icon-search' href={`/chat/${user.user_id}`} onClick={() => setSearchQuery('')}>
+                        <LuMessageCircleMore />
+                      </Link>
+                    )}
                   </div>
                 ))}
                 {isLoading && <div className="search-result-item loading">Loading more...</div>}
