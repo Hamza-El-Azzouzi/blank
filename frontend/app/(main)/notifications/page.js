@@ -10,7 +10,7 @@ import Link from "next/link";
 const NotificationsPage = () => {
     const [notifications, setNotifications] = useState([]);
     const [page, setPage] = useState(0);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [noMore, setNoMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
 
@@ -23,7 +23,7 @@ const NotificationsPage = () => {
     }, [page, cookieValue]);
 
     useEffect(() => {
-        const container = document.getElementById("notifications");
+        const container = document.getElementById("main-content");
         if (!container) return;
         container.addEventListener("scroll", handleScroll);
         return () => container.removeEventListener("scroll", handleScroll);
@@ -56,7 +56,7 @@ const NotificationsPage = () => {
     };
 
     const handleScroll = () => {
-        const container = document.getElementById("notifications");
+        const container = document.getElementById("main-content");
         if (!container) return;
         if (Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight - 1) {
             setPage((prevPage) => prevPage + 1);

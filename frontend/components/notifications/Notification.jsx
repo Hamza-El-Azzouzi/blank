@@ -1,7 +1,10 @@
 'use client';
 import { GetCookie } from "@/lib/cookie";
 import { useEffect, useState } from "react";
-import { MdDone, MdClose } from "react-icons/md";
+import { MdDone, MdClose, MdGroupAdd, MdNotificationAdd } from "react-icons/md";
+import { BsFillCalendarEventFill } from "react-icons/bs";
+import { HiViewGridAdd } from "react-icons/hi";
+import { IoPersonAdd } from "react-icons/io5";
 
 
 export default function Notifications({ notif }) {
@@ -44,6 +47,7 @@ export default function Notifications({ notif }) {
             let data = await res.json();
             if (data.message == "success") {
                 setAllowActions(false)
+                notif.seen = true
             } else {
                 console.log(data.message)
             }
@@ -66,6 +70,7 @@ export default function Notifications({ notif }) {
             let data = await res.json();
             if (data.message == "success") {
                 setAllowActions(false)
+                notif.seen = true
             } else {
                 console.log(data.message)
             }
@@ -77,17 +82,24 @@ export default function Notifications({ notif }) {
 
     switch (notif.type) {
         case "follow_request":
-            notif.label = <p>New follow request from <strong>{notif.user_name}</strong></p>
+            notif.icon = <IoPersonAdd className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon} New follow request from <strong>{notif.user_name}</strong></span>
             break;
         case "group_invitation":
-            notif.label = <p>You've been invited to join <strong>{notif.group_title}</strong></p>
+            notif.icon = <MdGroupAdd className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon} You've been invited to join <strong>{notif.group_title}</strong></span>
             break;
         case "join_request":
-            notif.label = <p><strong>{notif.user_name}</strong> requested to join <strong>{notif.group_title}</strong></p>
+            notif.icon = <HiViewGridAdd className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon}<strong>{notif.user_name}</strong> requested to join <strong>{notif.group_title}</strong></span>
             break;
         case "event":
-            notif.label = <p>New event created by <strong>{notif.user_name}</strong> in <strong>{notif.group_title}</strong></p>
+            notif.icon = <BsFillCalendarEventFill className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon} An event created by <strong>{notif.user_name}</strong> in <strong>{notif.group_title}</strong></span>
             break;
+        default:
+            notif.icon = <MdNotificationAdd className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon} New notification from <strong>{notif.group_title || notif.user_name}</strong></span>
     }
 
     return (

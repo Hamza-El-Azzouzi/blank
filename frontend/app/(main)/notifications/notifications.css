@@ -20,6 +20,18 @@
     justify-content: space-between;
 }
 
+.notif-label{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notif-icon{
+    display: inline-block;
+    font-size: 1.5rem ;
+    /* padding: 10px; */
+}
+
 .notification-item p,
 .notification-item p:active {
     text-decoration: none !important;
@@ -75,10 +87,6 @@
 
 .notification-item[data-type="event"] {
     border-left-color: var(--success);
-}
-
-.loading-container:not(.seen) {
-    background-color: var(--bg-tertiary) !important;
 }
 
 .notification-action {
