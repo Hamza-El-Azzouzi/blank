@@ -70,8 +70,7 @@ func (g *GroupService) GroupsSearch(user_id, term string) ([]models.GroupDetails
 }
 
 func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetails, error) {
-
-	groupDetails, err := g.GroupRepo.GroupDerails(user_id, group_id)
+	groupDetails, err := g.GroupRepo.GroupDetails(user_id, group_id)
 	if err != nil {
 		return models.GroupDetails{}, err
 	}
@@ -107,6 +106,39 @@ func (g *GroupService) JoinGroup(group_id, user_id, isInvited string) error {
 	return g.GroupRepo.JoinGroup(group_id, user_id, isInvited)
 }
 
+func (g *GroupService) GetFollowers(groupId, userId, offset string) (*models.FollowListResponse, error) {
+	followers, err := g.GroupRepo.GetFollowers(groupId, userId, offset)
+	if err != nil {
+		return nil, err
+	}
+	var response models.FollowListResponse
+	response.FollowList = followers
+	if len(followers) > 20 {
+		response.LastUserId = followers[19].UserId
+		response.FollowList = followers[:20]
+	}
+
+	return &response, nil
+}
+
+func (g *GroupService) SearchFollowers(groupID, userID, offset, query string) (*models.FollowListResponse, error) {
+	if query == "" {
+		return &models.FollowListResponse{}, nil
+	}
+	followers, err := g.GroupRepo.SearchFollowers(groupID, userID, offset, query)
+	if err != nil {
+		return nil, err
+	}
+	var response models.FollowListResponse
+	response.FollowList = followers
+	if len(followers) > 20 {
+		response.LastUserId = followers[19].UserId
+		response.FollowList = followers[:20]
+	}
+
+	return &response, nil
+}
+
 func (g *GroupService) GroupDelete(group_id, user_id string) error {
 	if !g.IsOwner(group_id, user_id) {
 		return fmt.Errorf("forbidden")
@@ -138,6 +170,21 @@ func (g *GroupService) GroupLeave(group_id, user_id string) (int, error) {
 	return g.GroupRepo.GroupResponseDeclined(group_id, user_id)
 }
 
+func (g *GroupService) CancelGroupRequest(group_id, user_id string) (int, error) {
+	if !g.IsPendingRequest(group_id, user_id) {
+		return 0, fmt.Errorf("forbidden")
+	}
+	return g.GroupRepo.GroupResponseDeclined(group_id, user_id)
+}
+
+func (g *GroupService) IsPendingRequest(group_id, user_id string) bool {
+	isPending, err := g.GroupRepo.IsPendingRequest(group_id, user_id)
+	if err != nil {
+		return isPending
+	}
+	return isPending
+}
+
 func (g *GroupService) GroupCreatePost(postInfo models.GroupPost, user_id string) (models.GroupPost, error) {
 	isMember := g.IsGroupMember(postInfo.Group_id, user_id)
 	IsOwner := g.IsOwner(postInfo.Group_id, user_id)
@@ -160,14 +207,14 @@ func (g *GroupService) GroupPost(group_id, user_id string, pagination int) ([]mo
 		return []models.GroupPost{}, fmt.Errorf("forbidden")
 	}
 	posts, err := g.GroupRepo.GroupPost(group_id, user_id, pagination)
-	
+
 	return posts, err
 }
 
 func (g *GroupService) CreateEvent(event models.Event, user_id string) (models.Event, error) {
 	isMember := g.IsGroupMember(event.Group_id, user_id)
 	IsOwner := g.IsOwner(event.Group_id, user_id)
-	
+
 	if !isMember && !IsOwner {
 		return models.Event{}, fmt.Errorf("forbbiden")
 	}

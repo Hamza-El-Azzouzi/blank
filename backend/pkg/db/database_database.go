@@ -51,7 +51,6 @@ func InitDB(dataSourceName string) (*sql.DB, error) {
 	if err := db.QueryRow("PRAGMA foreign_keys;").Scan(&foreignKeysEnabled); err != nil {
 		return nil, fmt.Errorf("failed to check foreign keys: %w", err)
 	}
-	fmt.Println("Foreign keys enabled:", foreignKeysEnabled)
 
 	migrations := &migrate.FileMigrationSource{
 		Dir: "./pkg/db/migrations",

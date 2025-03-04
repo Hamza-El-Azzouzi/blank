@@ -129,8 +129,6 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "internal server error", nil)
 		return
 	}
-
-	// h.MessageHandler.DisconnectClient(user.ID.String())
 	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 

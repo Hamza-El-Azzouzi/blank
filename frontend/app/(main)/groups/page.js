@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FiSearch, FiPlus } from 'react-icons/fi';
@@ -14,7 +13,7 @@ const GroupsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateGroup, setShowCreateGroup] = useState(false);
     const [toasts, setToasts] = useState([]);
-    const [groups, setGroups] = useState(new Set()); // Use Set to store unique groups
+    const [groups, setGroups] = useState(new Set()); 
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -23,7 +22,6 @@ const GroupsPage = () => {
     const observerRef = useRef(null);
     const loadMoreRef = useRef(null);
 
-    // Fetch groups when `page` changes
     useEffect(() => {
         if (searchTerm || loading || !hasMore) return;
 
@@ -44,10 +42,9 @@ const GroupsPage = () => {
 
                 const data = await response.json();
 
-                // Convert Set to prevent duplicates
                 setGroups(prevGroups => {
                     const newGroups = new Set(prevGroups);
-                   if (data.data) data.data.forEach(group => newGroups.add(JSON.stringify(group))); // Store as JSON strings to maintain uniqueness
+                   if (data.data) data.data.forEach(group => newGroups.add(JSON.stringify(group))); 
                     return newGroups;
                 });
 
@@ -65,7 +62,6 @@ const GroupsPage = () => {
         fetchGroups();
     }, [page, searchTerm, cookieValue]);
 
-    // Intersection Observer for infinite scrolling
     useEffect(() => {
         if (!loadMoreRef.current || !hasMore) return;
 
@@ -85,13 +81,12 @@ const GroupsPage = () => {
         };
     }, [loading, hasMore]);
 
-    // Reset pagination and groups when searching
     const handleSearch = async (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
         setPage(0);
         setHasMore(true);
-        setGroups(new Set()); // Reset Set for search results
+        setGroups(new Set()); 
 
         if (term.length > 50) {
             showToast('error', 'Search term cannot exceed 50 characters');
@@ -117,7 +112,7 @@ const GroupsPage = () => {
             }
 
             const data = await response.json();
-            setGroups(new Set(data.data.map(group => JSON.stringify(group)))); // Ensure uniqueness
+            setGroups(new Set(data.data.map(group => JSON.stringify(group)))); 
         } catch (error) {
             showToast('error', 'Failed to search groups');
         }
@@ -164,10 +159,9 @@ const GroupsPage = () => {
                 showToast('success', 'Success! Group created.');
                 setShowCreateGroup(false);
 
-                // Add new group without duplicates
                 setGroups(prevGroups => {
                     const newGroups = new Set(prevGroups);
-                    newGroups.add(JSON.stringify(data.data)); // Store as JSON string
+                    newGroups.add(JSON.stringify(data.data)); 
                     return newGroups;
                 });
             })
@@ -209,14 +203,11 @@ const GroupsPage = () => {
 
             <div className="groups-grid">
                 {[...groups].map(groupJson => {
-                    const group = JSON.parse(groupJson); // Convert back to object
+                    const group = JSON.parse(groupJson);
                     return <GroupCard key={group.GroupeId} group={group} onJoinClick={handleJoinGroup} />;
                 })}
             </div>
            
-
-
-            {/* This div will trigger fetching new data when it comes into view */}
             <div ref={loadMoreRef} style={{ height: '1px' }}></div>
             {showCreateGroup && (
                 <CreateGroup onClose={() => setShowCreateGroup(false)} onSubmit={handleCreateGroup} />
