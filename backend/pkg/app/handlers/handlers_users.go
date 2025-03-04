@@ -150,11 +150,6 @@ func (u *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) 
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 3 {
-		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
-		return
-	}
 
 	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {

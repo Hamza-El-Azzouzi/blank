@@ -2,13 +2,11 @@
 import NavSidebar from '@/components/sidebars/navSidebar';
 import UserSidebar from '@/components/sidebars/userSidebar';
 import './main.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { TiThMenu } from "react-icons/ti";
 import { MdPeopleAlt } from "react-icons/md";
-import { FiBell } from 'react-icons/fi';
-import Link from 'next/link';
+import { useWebSocket } from '@/lib/useWebSocket';
 import Toast from '@/components/toast/Toast';
-import * as cookies from '@/lib/cookie';
 
 export default function MainLayout({ children }) {
   const [leftOpen, setLeftOpen] = useState(false);
@@ -19,36 +17,20 @@ export default function MainLayout({ children }) {
   const leftToggleRef = useRef(null);
   const rightToggleRef = useRef(null);
 
-  const sessionId = cookies.GetCookie("sessionId");
-
-  useEffect(function handleSharedWorkerConnection() {
-    const worker = new SharedWorker("./workers/shared-worker.js", "Social Network");
-
-    worker.port.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      
-      showToast(data.type, data.label);
+  const showToast = useCallback((message, type) => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      type
     };
+    setToasts(prev => [...prev, newToast]);
 
-    worker.port.postMessage({
-      session_id: sessionId,
-      receiver_id: "839376aa-a302-43b0-87c3-6cd7fb7b6b23",
-      content: "Salam Ana Hamza",
-      receiver_type: "to_group"
-    });
-
-    return () => {
-      worker.port.close();
-    };
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== newToast.id));
+    }, 3000);
   }, []);
 
-  const showToast = (type, message) => {
-    const newToast = { id: Date.now(), type, message };
-    setToasts((prevToasts) => [...prevToasts, newToast]);
-  };
-  const removeToast = (id) => {
-    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
-  };
+  useWebSocket(null, null, showToast);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -63,21 +45,30 @@ export default function MainLayout({ children }) {
       }
     };
 
-    const handleNavLinkClick = () => {
+    const handleLinkClick = () => {
       setLeftOpen(false);
+      setRightOpen(false);
     };
 
     document.addEventListener('mousedown', handleClickOutside);
 
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
-      link.addEventListener('click', handleNavLinkClick);
+      link.addEventListener('click', handleLinkClick);
+    });
+
+    const contactLinks = document.querySelectorAll('.sidebar-contact-item');
+    contactLinks?.forEach(link => {
+      link.addEventListener('click', handleLinkClick);
     });
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       navLinks.forEach(link => {
-        link.removeEventListener('click', handleNavLinkClick);
+        link.removeEventListener('click', handleLinkClick);
+      });
+      contactLinks?.forEach(link => {
+        link.removeEventListener('click', handleLinkClick);
       });
     };
   }, [leftOpen, rightOpen]);
@@ -90,6 +81,10 @@ export default function MainLayout({ children }) {
   const handleRightToggle = () => {
     setRightOpen(!rightOpen);
     if (leftOpen) setLeftOpen(false);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
   return (
@@ -115,6 +110,7 @@ export default function MainLayout({ children }) {
           <MdPeopleAlt className="mobile-nav-icon" />
         </button>
       </nav>
+
       {toasts.map((toast) => (
         <Toast
           key={toast.id}

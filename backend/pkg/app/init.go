@@ -96,12 +96,6 @@ func InitHandlers(authService *services.AuthService,
 		MessageService: messageService,
 		AuthService:    authService,
 		SessionService: sessionService,
-		Upgrader: websocket.Upgrader{
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		},
-		Clients: map[string]*models.Client{},
 	}
 	authHandler := &handlers.AuthHandler{
 		MessageHandler: MessageHandler,
