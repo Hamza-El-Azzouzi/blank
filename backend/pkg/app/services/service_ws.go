@@ -79,7 +79,19 @@ func (ws *WebSocketService) SendMessageToUser(sender *models.UserInfo, message m
 		notification models.Notification
 	)
 
-	dists = append(dists, message.ReceiverID)
+	isPublic, err := ws.UserRepo.GetUserPrivacy(message.ReceiverID)
+	if err != nil {
+		return nil, models.Notification{}, fmt.Errorf("error getting user privacy: %v", err)
+	}
+
+	isFollowing, err := ws.UserRepo.IsFollowing(message.ReceiverID, message.SenderID)
+	if err != nil {
+		return nil, models.Notification{}, fmt.Errorf("error getting is following: %v", err)
+	}
+
+	if isPublic || isFollowing {
+		dists = append(dists, message.ReceiverID)
+	}
 
 	notification = models.Notification{
 		Type:    "message",
@@ -100,7 +112,7 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 		return nil, models.Notification{}, fmt.Errorf("group not found")
 	}
 
-	// chack if the user is member of the group
+	// check if the user is member of the group
 	isMember, err := ws.GroupRepo.IsGroupMember(message.ReceiverID.String(), message.SenderID.String())
 	if !isMember {
 		if err != nil {
@@ -122,10 +134,18 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 		return nil, models.Notification{}, err
 	}
 
+	groupName, err := ws.GroupRepo.GetGroupTitle(message.ReceiverID)
+	if err != nil {
+		return nil, models.Notification{}, err
+	}
+
 	notification = models.Notification{
-		Type:    "message",
-		Label:   "New Message from " + sender.FirstName + " " + sender.LastName,
-		Message: message,
+		Type:      "message",
+		Label:     groupName + ": New Group Message from " + sender.FirstName,
+		Message:   message,
+		FirstName: sender.FirstName,
+		LastName:  sender.LastName,
+		Avatar:    sender.Avatar,
 	}
 
 	return groupMembers, notification, nil
@@ -147,7 +167,7 @@ func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification mod
 				if err != nil {
 					return err
 				}
-			} else if notification.Type == "follow_request"{
+			} else if notification.Type == "follow_request" {
 				err := ws.NotificationRepo.CreateUserNotification(notification)
 				if err != nil {
 					log.Println(err)

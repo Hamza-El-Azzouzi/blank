@@ -23,7 +23,7 @@ func (f *FollowService) RequestFollow(follow models.FollowRequest) (string, erro
 }
 
 func (f *FollowService) AcceptFollow(followingID, followerID uuid.UUID) error {
-	pending, err := f.UserRepo.CheckFollowRequestPending(followerID, followingID)
+	pending, err := f.UserRepo.CheckFollowRequestPending(followingID, followerID)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (f *FollowService) AcceptFollow(followingID, followerID uuid.UUID) error {
 }
 
 func (f *FollowService) RefuseFollow(followingID, followerID uuid.UUID) error {
-	pending, err := f.UserRepo.CheckFollowRequestPending(followerID, followingID)
+	pending, err := f.UserRepo.CheckFollowRequestPending(followingID, followerID)
 	if err != nil {
 		return err
 	}

@@ -90,12 +90,12 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&follow)
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "failed to decode body", nil)
 		return
 	}
 	defer r.Body.Close()
 
-	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	followingID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
@@ -107,8 +107,9 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = f.FollowService.AcceptFollow(userID, followerID)
+	err = f.FollowService.AcceptFollow(followingID, followerID)
 	if err != nil {
+		fmt.Println(err)
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
@@ -130,7 +131,7 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	followingID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
@@ -142,7 +143,7 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = f.FollowService.RefuseFollow(userID, followerID)
+	err = f.FollowService.RefuseFollow(followingID, followerID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return

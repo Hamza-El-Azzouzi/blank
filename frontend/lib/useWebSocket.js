@@ -42,7 +42,7 @@ export function useWebSocket(currentChatId = null, onNewMessage = null, showToas
 
             if (data.type === 'message') {
                 if (currentChatId && onNewMessage) {
-                    onNewMessage(data.message);
+                    onNewMessage(data);
 
                 } else if (showToast) {
                     showToast(data.label, 'message');

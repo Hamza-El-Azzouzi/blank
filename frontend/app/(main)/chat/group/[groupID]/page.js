@@ -89,19 +89,19 @@ export default function GroupChatPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [groupID]);
 
-    const handleNewMessage = useCallback((message) => {
-        if (message?.receiver_id !== groupID) return
+    const handleNewMessage = useCallback((data) => {
+        if (data.message.receiver_type !== 'to_group' && data.message.receiver_id !== groupID) return
 
         setMessages(prev => [...prev, {
-            message_id: message.id,
-            sender_id: message.sender_id,
-            group_id: message.receiver_id,
-            content: message.content,
+            message_id: data.message.id,
+            sender_id: data.message.sender_id,
+            group_id: data.message.receiver_id,
+            content: data.message.content,
             seen: false,
-            created_at: message.created_at || new Date().toISOString(),
-            sender_first_name: message.sender_first_name || "User",
-            sender_last_name: message.sender_last_name || "",
-            sender_avatar: message.sender_avatar || "/default-avatar.jpg"
+            created_at: data.message.created_at || new Date().toISOString(),
+            sender_first_name: data.first_name || "User",
+            sender_last_name: data.last_name || "",
+            sender_avatar: data.avatar || "/default-avatar.jpg"
         }]);
 
         setTimeout(() => {
@@ -117,6 +117,7 @@ export default function GroupChatPage() {
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
         }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const sendWebSocketMessage = useWebSocket(groupID, handleNewMessage, null);

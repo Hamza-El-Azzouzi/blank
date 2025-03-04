@@ -89,16 +89,18 @@ export default function ChatPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, cookieValue]);
 
-    const handleNewMessage = useCallback((message) => {
-        if (message?.sender_id !== userId) return
+    const handleNewMessage = useCallback((data) => {
+        if (data.message.receiver_type !== 'to_user' || data.message.sender_id !== userId) {
+            return
+        }
         
         setMessages(prev => [...prev, {
-            message_id: message.id,
-            sender_id: message.sender_id,
-            receiver_id: message.receiver_id,
-            content: message.content,
+            message_id: data.message.id,
+            sender_id: data.message.sender_id,
+            receiver_id: data.message.receiver_id,
+            content: data.message.content,
             seen: false,
-            created_at: message.created_at || new Date().toISOString()
+            created_at: data.message.created_at || new Date().toISOString()
         }]);
 
         setTimeout(() => {
@@ -114,6 +116,7 @@ export default function ChatPage() {
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
         }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
