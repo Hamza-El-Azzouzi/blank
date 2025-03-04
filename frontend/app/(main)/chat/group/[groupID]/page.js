@@ -2,11 +2,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { FiSend } from 'react-icons/fi';
+import { BsEmojiSmile } from 'react-icons/bs';
 import { GetCookie } from '@/lib/cookie';
 import { useParams } from 'next/navigation';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { formatTime } from '@/lib/format_time';
 import { useWebSocket } from '@/lib/useWebSocket';
+import EmojiPicker from '@/components/chat/EmojiPicker';
 import '../../[userID]/chat.css';
 import './group-chat.css';
 
@@ -19,8 +21,10 @@ export default function GroupChatPage() {
     const [hasMore, setHasMore] = useState(true);
     const [group, setGroup] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const containerRef = useRef(null);
     const messageSeenTimeout = useRef(null);
+    const inputRef = useRef(null);
 
     const cookieValue = GetCookie("sessionId");
     const params = useParams();
@@ -90,7 +94,7 @@ export default function GroupChatPage() {
     }, [groupID]);
 
     const handleNewMessage = useCallback((data) => {
-        if (data.message.receiver_type !== 'to_group' && data.message.receiver_id !== groupID) return
+        if (data.message && (data.message.receiver_type !== 'to_group' || data.message.receiver_id !== groupID)) return;
 
         setMessages(prev => [...prev, {
             message_id: data.message.id,
@@ -117,7 +121,7 @@ export default function GroupChatPage() {
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
         }, 500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const sendWebSocketMessage = useWebSocket(groupID, handleNewMessage, null);
@@ -212,6 +216,7 @@ export default function GroupChatPage() {
         if (!messageContent) return;
 
         setMessage('');
+        setShowEmojiPicker(false);
 
         const tempMessage = {
             message_id: `temp-${Date.now()}`,
@@ -233,6 +238,13 @@ export default function GroupChatPage() {
                 containerRef.current.scrollTop = containerRef.current.scrollHeight;
             }
         }, 5);
+    };
+
+    const handleEmojiSelect = (emoji) => {
+        setMessage(prev => prev + emoji);
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
     };
 
     return (
@@ -267,7 +279,7 @@ export default function GroupChatPage() {
                         {messages.length === 0 ? (
                             <div className="no-messages">
                                 <p>No messages yet</p>
-                                <p>Start the conversation in {group.Name}!</p>
+                                <p>Start the conversation in {group?.Name}!</p>
                             </div>
                         ) : (
                             <>
@@ -298,13 +310,29 @@ export default function GroupChatPage() {
             </div>
 
             <form className="chat-page-input-form" onSubmit={handleSendMessage}>
-                <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Type a message..."
-                    className="chat-page-input"
-                />
+                <div className="chat-input-container">
+                    <input
+                        type="text"
+                        ref={inputRef}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="chat-page-input"
+                    />
+                    <button
+                        type="button"
+                        className="emoji-toggle-btn"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    >
+                        <BsEmojiSmile />
+                    </button>
+                    {showEmojiPicker && (
+                        <EmojiPicker
+                            onSelectEmoji={handleEmojiSelect}
+                            onClose={() => setShowEmojiPicker(false)}
+                        />
+                    )}
+                </div>
                 <button
                     type="submit"
                     className="send-message-btn"
