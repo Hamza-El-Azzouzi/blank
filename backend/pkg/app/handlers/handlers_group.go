@@ -1,18 +1,25 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
 	"blank/pkg/app/utils"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type GroupHandler struct {
-	GroupService *services.GroupService
+	GroupService     *services.GroupService
+	UserService      *services.UserService
+	WebSocketService *services.WebSocketService
 }
 
 func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
@@ -180,6 +187,34 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	userID, _ := uuid.FromString(user_id)
+	GroupID, err := uuid.FromString(pathParts[3])
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	OwnerID, groupTitle, err := g.GroupService.GetGroupOwner(GroupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	user, err := g.UserService.GetPublicUserInfo(userID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
+		Type:      "join_request",
+		GroupID:   uuid.NullUUID{UUID: GroupID, Valid: true},
+		UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+		Label:     fmt.Sprintf(`%s %s requested to join %s`, user.FirstName, user.LastName, groupTitle),
+		CreatedAt: time.Now(),
+	})
+
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
 
@@ -422,6 +457,24 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	groupID, _ := uuid.FromString(event.Group_id)
+	userID, _ := uuid.FromString(user_id)
+
+	groupMembers, err := g.GroupService.GetGroupMembers(userID, groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	g.WebSocketService.SendNotification(groupMembers, models.Notification{
+		Type:       "event",
+		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
+		GroupTitle: sql.NullString{String: eventCreation.Group_title, Valid: true},
+		Label:      fmt.Sprintf(`New event created "%s" in "%s"`, eventCreation.Title, eventCreation.Group_title),
+		CreatedAt:  time.Now(),
+	})
+
 	utils.SendResponses(w, http.StatusCreated, "Event created successfully", eventCreation)
 }
 

@@ -13,11 +13,11 @@ import (
 )
 
 type WebSocketHandler struct {
-	WebSocketService *services.WebSocketService
-	UserService      *services.UserService
-	GroupService     *services.GroupService
-	SessionService   *services.SessionService
-	Upgrader         websocket.Upgrader
+	WebSocketService    *services.WebSocketService
+	UserService         *services.UserService
+	GroupService        *services.GroupService
+	SessionService      *services.SessionService
+	Upgrader            websocket.Upgrader
 }
 
 func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +37,7 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	err = ws.WebSocketService.ConnectUser(conn, userID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-        return
+		return
 	}
 	defer ws.WebSocketService.DisconnectUser(conn, userID)
 

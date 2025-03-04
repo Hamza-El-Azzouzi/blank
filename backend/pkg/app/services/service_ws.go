@@ -13,11 +13,12 @@ import (
 )
 
 type WebSocketService struct {
-	UserRepo       *repositories.UserRepository
-	GroupRepo      *repositories.GroupRepository
-	MessageRepo    *repositories.MessageRepository
-	ConnectedUsers map[uuid.UUID]*models.ConnectedUser
-	Mutex          sync.Mutex
+	UserRepo         *repositories.UserRepository
+	GroupRepo        *repositories.GroupRepository
+	MessageRepo      *repositories.MessageRepository
+	NotificationRepo *repositories.NotificationRepository
+	ConnectedUsers   map[uuid.UUID]*models.ConnectedUser
+	Mutex            sync.Mutex
 }
 
 func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, models.Notification) {
@@ -133,6 +134,28 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification models.Notification) error {
 	ws.Mutex.Lock()
 	defer ws.Mutex.Unlock()
+
+	// save the notification in the database for each receiver
+	if notification.Type != "message" {
+		notification.ID = uuid.Must(uuid.NewV4())
+		for _, receiver := range dists {
+			notification.ReceiverID = receiver
+			if notification.Type == "event" ||
+				notification.Type == "join_request" ||
+				notification.Type == "group_invitation" {
+				err := ws.NotificationRepo.CreateGroupNotification(notification)
+				if err != nil {
+					return err
+				}
+			} else if notification.Type == "follow_request"{
+				err := ws.NotificationRepo.CreateUserNotification(notification)
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+			}
+		}
+	}
 
 	for _, dist := range dists {
 		if user, ok := ws.ConnectedUsers[dist]; ok {

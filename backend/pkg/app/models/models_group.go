@@ -54,6 +54,7 @@ type GroupPost struct {
 type Event struct {
 	Event_id    string `json:"event_id"`
 	Group_id    string `json:"group_id"`
+	Group_title string `json:"group_title"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Date        string `json:"date"`
@@ -62,5 +63,5 @@ type Event struct {
 	Is_going    bool   `json:"is_going"`
 	Going_count int    `json:"going_count"`
 	Respose     string `json:"response"`
-	TotalCount int
+	TotalCount  int
 }
