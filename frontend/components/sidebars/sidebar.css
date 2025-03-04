@@ -156,6 +156,19 @@
     border-bottom: 1px solid var(--border);
 }
 
+.search-result-item-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.send-message-icon-search {
+    text-decoration: none;
+    color: var(--primary);
+    padding: 12px 16px;
+    font-size: 22px;
+    text-align: center;
+}
+
 .contacts-tab {
     flex: 1;
     padding: 10px 5px;
