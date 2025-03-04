@@ -1,0 +1,116 @@
+.invite-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.invite-dialog {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    padding: 20px;
+}
+
+.invite-search {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.invite-search-input {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.invite-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.invite-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.invite-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.invite-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.invite-name {
+    color: var(--text-primary);
+}
+
+.invite-button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--primary);
+    color: white;
+}
+
+.invite-button.invited {
+    background-color: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    cursor: default;
+}
+
+.invite-close-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: var(--bg-tertiary);
+    border: none;
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.invite-empty-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+}
+
+.invite-loading {
+    text-align: center;
+    padding: 10px;
+    color: var(--text-secondary);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+}
+
+.invite-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(13, 106, 255, 0.2);
+}

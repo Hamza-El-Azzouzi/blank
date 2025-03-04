@@ -1,5 +1,4 @@
 export const validateForm = (formData) => {
-  // Validate First Name
   const ExpFullName = /^[a-zA-Z]{1,20}$/;
   if (!ExpFullName.test(formData.firstName || formData.first_name)) {
     return {
@@ -8,7 +7,6 @@ export const validateForm = (formData) => {
     };
   }
 
-  // Validate Last Name
   if (!ExpFullName.test(formData.lastName || formData.last_name)) {
     return {
       isValid: false,
@@ -16,7 +14,6 @@ export const validateForm = (formData) => {
     };
   }
 
-  // Validate Date of Birth
   const birthDate = new Date(formData.dateOfBirth || formData.date_of_birth);
   const today = new Date();
   const age = today.getFullYear() - birthDate.getFullYear();
@@ -25,7 +22,6 @@ export const validateForm = (formData) => {
     return false;
   }
 
-  // Validate Nickname (optional)
   const ExpNickname = /^[a-zA-Z]{1,20}$/;
   if (formData.nickname && !ExpNickname.test(formData.nickname)) {
     return {
@@ -34,7 +30,6 @@ export const validateForm = (formData) => {
     };
   }
 
-  // Validate About Me (optional)
   if (formData.aboutMe || formData.about) {
     const aboutMe = formData.aboutMe || formData.about
     if (aboutMe.trim() > 150) {
@@ -45,7 +40,6 @@ export const validateForm = (formData) => {
     }
   }
 
-  // Validate Email
   const ExpEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const cleanEmail = formData.email.trim();
   if (cleanEmail.length < 5 || cleanEmail.length > 50) {

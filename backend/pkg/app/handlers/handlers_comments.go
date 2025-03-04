@@ -152,7 +152,6 @@ func (c *CommentHandler) CommentLiker(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
-	// target := pathParts[5]
 	err = c.CommentService.LikeComment(userID, commentID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
