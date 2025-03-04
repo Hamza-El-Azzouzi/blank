@@ -597,3 +597,30 @@ func (g *GroupRepository) GroupExist(groupID uuid.UUID) (bool, error) {
 	}
 	return false, nil
 }
+
+func (g *GroupRepository) GetGroupTitle(groupID uuid.UUID) (string, error) {
+	var title string
+	query := `SELECT title FROM 'Group' WHERE group_id = ?`
+	row := g.DB.QueryRow(query, groupID)
+	err := row.Scan(&title)
+	if err != nil {
+		return "", err
+	}
+
+	return title, nil
+}
+
+func (g *GroupRepository) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, error) {
+	var ownerID uuid.UUID
+	query := "SELECT creator_id FROM `Group` WHERE group_id = ?"
+	err := g.DB.QueryRow(query, groupID).Scan(&ownerID)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return ownerID, nil
+}
+
+func (g *GroupRepository) CheckGroupInvitationPending(notifID, ReceiverID, UserID uuid.UUID) (bool, error) {
+	return false, nil
+}

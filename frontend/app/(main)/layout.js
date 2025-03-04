@@ -93,7 +93,7 @@ export default function MainLayout({ children }) {
         <NavSidebar />
       </div>
 
-      <main className="main-content">
+      <main className="main-content" id='main-content'>
         {children}
       </main>
 

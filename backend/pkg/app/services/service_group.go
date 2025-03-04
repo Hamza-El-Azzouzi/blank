@@ -70,7 +70,6 @@ func (g *GroupService) GroupsSearch(user_id, term string) ([]models.GroupDetails
 }
 
 func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetails, error) {
-
 	groupDetails, err := g.GroupRepo.GroupDerails(user_id, group_id)
 	if err != nil {
 		return models.GroupDetails{}, err
@@ -160,14 +159,14 @@ func (g *GroupService) GroupPost(group_id, user_id string, pagination int) ([]mo
 		return []models.GroupPost{}, fmt.Errorf("forbidden")
 	}
 	posts, err := g.GroupRepo.GroupPost(group_id, user_id, pagination)
-	
+
 	return posts, err
 }
 
 func (g *GroupService) CreateEvent(event models.Event, user_id string) (models.Event, error) {
 	isMember := g.IsGroupMember(event.Group_id, user_id)
 	IsOwner := g.IsOwner(event.Group_id, user_id)
-	
+
 	if !isMember && !IsOwner {
 		return models.Event{}, fmt.Errorf("forbbiden")
 	}
@@ -185,7 +184,22 @@ func (g *GroupService) CreateEvent(event models.Event, user_id string) (models.E
 		return models.Event{}, fmt.Errorf("event date must be in the future")
 	}
 	event_id := uuid.Must(uuid.NewV4()).String()
-	return g.GroupRepo.CreateEvent(event, event_id, event.Group_id, user_id)
+
+	event, err = g.GroupRepo.CreateEvent(event, event_id, event.Group_id, user_id)
+	if err != nil {
+		return models.Event{}, err
+	}
+
+	GroupID, err := uuid.FromString(event.Group_id)
+	if err != nil {
+		return models.Event{}, err
+	}
+
+	event.Group_title, err = g.GroupRepo.GetGroupTitle(GroupID)
+	if err != nil {
+		return models.Event{}, err
+	}
+	return event, nil
 }
 
 func (g *GroupService) Event(group_id, user_id string, page int) ([]models.Event, error) {
@@ -209,4 +223,20 @@ func (g *GroupService) EventResponse(group_id, event_id, user_id, response strin
 	}
 	response_id := uuid.Must(uuid.NewV4()).String()
 	return g.GroupRepo.EventResponse(response_id, event_id, user_id, response)
+}
+
+func (g *GroupService) GetGroupMembers(userID, groupID uuid.UUID) ([]uuid.UUID, error) {
+	return g.GroupRepo.GetGroupMembers(userID, groupID)
+}
+
+func (g *GroupService) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, string, error) {
+	groupOwnerID, err := g.GroupRepo.GetGroupOwner(groupID)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	groupTitle, err := g.GroupRepo.GetGroupTitle(groupID)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	return groupOwnerID, groupTitle, nil
 }
