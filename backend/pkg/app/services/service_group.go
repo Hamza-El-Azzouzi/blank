@@ -106,8 +106,26 @@ func (g *GroupService) JoinGroup(group_id, user_id, isInvited string) error {
 	return g.GroupRepo.JoinGroup(group_id, user_id, isInvited)
 }
 
-func (g *GroupService) GetFollowers(userId, offset string) (*models.FollowListResponse, error) {
-	followers, err := g.GroupRepo.GetFollowers(userId, offset)
+func (g *GroupService) GetFollowers(groupId, userId, offset string) (*models.FollowListResponse, error) {
+	followers, err := g.GroupRepo.GetFollowers(groupId, userId, offset)
+	if err != nil {
+		return nil, err
+	}
+	var response models.FollowListResponse
+	response.FollowList = followers
+	if len(followers) > 20 {
+		response.LastUserId = followers[19].UserId
+		response.FollowList = followers[:20]
+	}
+
+	return &response, nil
+}
+
+func (g *GroupService) SearchFollowers(groupID, userID, offset, query string) (*models.FollowListResponse, error) {
+	if query == "" {
+		return &models.FollowListResponse{}, nil
+	}
+	followers, err := g.GroupRepo.SearchFollowers(groupID, userID, offset, query)
 	if err != nil {
 		return nil, err
 	}

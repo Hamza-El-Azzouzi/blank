@@ -34,6 +34,10 @@ type GroupResponse struct {
 	User_id string `json:"user_id"`
 	Respose string `json:"response"`
 }
+type GroupInvite struct {
+	UserId  string `json:"user_id"`
+	GroupId string `json:"group_id"`
+}
 type GroupPost struct {
 	Post_id       string    `json:"post_id"`
 	Group_id      string    `json:"groupId"`
@@ -62,5 +66,5 @@ type Event struct {
 	Is_going    bool   `json:"is_going"`
 	Going_count int    `json:"going_count"`
 	Respose     string `json:"response"`
-	TotalCount int
+	TotalCount  int
 }

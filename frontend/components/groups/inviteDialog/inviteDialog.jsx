@@ -17,13 +17,14 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [lastSearchId, setLastSearchId] = useState('');
     const [hasMoreSearch, setHasMoreSearch] = useState(true);
+    const [initialized, setInitialized] = useState(false);
 
     const fetchUsers = async () => {
         if (loading || !hasMore) return;
         setLoading(true);
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/invitable?offset=${lastUserId}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/invitable?offset=${lastUserId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -32,9 +33,10 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
             );
 
             const data = await response.json();
-            if (data.data && data.data.length > 0) {
+            const followers = data.data.follow_list;
+            if (followers && followers.length > 0) {
                 const newUsers = await Promise.all(
-                    data.data.map(async (user) => ({
+                    followers.map(async (user) => ({
                         ...user,
                         avatar: user.avatar
                             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
@@ -45,7 +47,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
 
                 setUsers(prev => [...prev, ...newUsers]);
                 setDisplayedUsers(prev => [...prev, ...newUsers]);
-                setLastUserId(data.data[data.data.length - 1].user_id);
+                setLastUserId(followers[followers.length - 1].user_id);
             } else {
                 setHasMore(false);
             }
@@ -76,7 +78,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
         setIsSearchLoading(true);
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/searchinvitable?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
+                `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/searchinvitable?offset=${isNewSearch ? '' : lastSearchId}&q=${query}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${cookieValue}`
@@ -85,9 +87,10 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
             );
 
             const data = await response.json();
-            if (data.data && data.data.length > 0) {
+            const searchedfollowers = data.data.follow_list;
+            if (searchedfollowers && searchedfollowers.length > 0) {
                 const newSearchResults = await Promise.all(
-                    data.data.map(async (user) => ({
+                    searchedfollowers.map(async (user) => ({
                         ...user,
                         avatar: user.avatar
                             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
@@ -96,8 +99,8 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                     }))
                 );
 
-                if (data.data[data.data.length - 1].user_id) {
-                    setLastSearchId(data.data[data.data.length - 1].user_id);
+                if (searchedfollowers[searchedfollowers.length - 1].user_id) {
+                    setLastSearchId(searchedfollowers[searchedfollowers.length - 1].user_id);
                     setHasMoreSearch(newSearchResults.length === 20);
                 } else {
                     setHasMoreSearch(false);
@@ -176,7 +179,10 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
         const observer = new IntersectionObserver(
             entries => {
                 if (entries[0].isIntersecting && !loading) {
-                    if (searchQuery) {
+                    if (!initialized) {
+                        setInitialized(true);
+                        fetchUsers();
+                    } else if (searchQuery) {
                         if (hasMoreSearch && !isSearchLoading) {
                             performSearch(searchQuery);
                         }
@@ -198,11 +204,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                 observer.disconnect();
             }
         };
-    }, [lastUserId, hasMore, loading, searchQuery, lastSearchId, hasMoreSearch, isSearchLoading]);
-
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+    }, [lastUserId, hasMore, loading, searchQuery, lastSearchId, hasMoreSearch, isSearchLoading, initialized]);
 
     return (
         <div className="invite-dialog-overlay" onClick={onClose}>

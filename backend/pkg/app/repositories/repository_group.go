@@ -225,7 +225,7 @@ func (g *GroupRepository) JoinGroup(group_id, user_id, isInvited string) error {
 	return nil
 }
 
-func (g *GroupRepository) GetFollowers(userId, offset string) ([]models.FollowList, error) {
+func (g *GroupRepository) GetFollowers(groupId, userId, offset string) ([]models.FollowList, error) {
 	query := `
         SELECT 
             u.user_id,
@@ -234,17 +234,63 @@ func (g *GroupRepository) GetFollowers(userId, offset string) ([]models.FollowLi
             u.avatar
         FROM Follow f
         JOIN User u ON f.follower_id = u.user_id
-        WHERE f.following_id = ? AND f.status = "accepted"
+        WHERE f.following_id = ? 
+        AND f.status = "accepted"
+        AND NOT EXISTS (
+            SELECT 1 FROM Group_Membership gm 
+            WHERE gm.group_id = ? 
+            AND gm.user_id = u.user_id
+        )
         AND (? = '' OR u.user_id > ?)
         ORDER BY u.user_id
         LIMIT 21`
 
-	rows, err := g.DB.Query(query, userId, offset, offset)
+	rows, err := g.DB.Query(query, userId, groupId, offset, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	var followers []models.FollowList
+
+	for rows.Next() {
+		var follower models.FollowList
+		err := rows.Scan(&follower.UserId, &follower.FirstName, &follower.LastName, &follower.Avatar)
+		if err != nil {
+			return nil, err
+		}
+		followers = append(followers, follower)
+	}
+
+	return followers, nil
+}
+
+func (g *GroupRepository) SearchFollowers(groupId, userId, offset, searchQuery string) ([]models.FollowList, error) {
+	query := `
+        SELECT 
+            u.user_id,
+            u.first_name,
+            u.last_name,
+            u.avatar
+        FROM Follow f
+        JOIN User u ON f.follower_id = u.user_id
+        WHERE f.following_id = ? 
+        AND f.status = "accepted"
+		AND (u.first_name LIKE ? OR u.last_name LIKE ?)
+        AND NOT EXISTS (
+            SELECT 1 FROM Group_Membership gm 
+            WHERE gm.group_id = ? 
+            AND gm.user_id = u.user_id
+        )
+        AND (? = '' OR u.user_id > ?)
+        ORDER BY u.user_id
+        LIMIT 21`
+
+	rows, err := g.DB.Query(query, userId, "%"+searchQuery+"%", "%"+searchQuery+"%", groupId, offset, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var followers []models.FollowList
 
 	for rows.Next() {
