@@ -28,7 +28,7 @@ func (f *FollowService) AcceptFollow(followingID, followerID uuid.UUID) error {
 		return err
 	}
 	if !pending {
-		fmt.Errorf("the follow request is not pending")
+		return fmt.Errorf("the follow request is not pending")
 	}
 	return f.FollowRepo.AcceptFollow(models.FollowRequest{
 		FollowerId:  followerID.String(),
@@ -42,7 +42,7 @@ func (f *FollowService) RefuseFollow(followingID, followerID uuid.UUID) error {
 		return err
 	}
 	if !pending {
-		fmt.Errorf("the follow request is not pending")
+		return fmt.Errorf("the follow request is not pending")
 	}
 	return f.FollowRepo.RefuseFollow(models.FollowRequest{
 		FollowerId:  followerID.String(),
