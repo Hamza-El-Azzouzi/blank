@@ -14,8 +14,8 @@ const GroupHeader = ({ group }) => {
     const [toasts, setToasts] = useState([]);
     const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
     const [showInviteDialog, setShowInviteDialog] = useState(false);
+    const [isPendingHovered, setIsPendingHovered] = useState(false);
     const handleLeaveGroup = (e) => {
-        e.preventDefault()
         e.preventDefault()
             fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
                 method: "POST",
@@ -37,6 +37,29 @@ const GroupHeader = ({ group }) => {
                 }).catch((error) => {
                     showToast('error', error.message);
                 })
+    };
+    const handleCancelRequest = (e) => {
+        e.preventDefault()
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/cancel`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => { throw error; });
+            }
+            return response.json();
+        })
+        .then(() => {
+            showToast('success', 'Request cancelled successfully.');
+            router.push("/groups")
+        }).catch((error) => {
+            showToast('error', error.message);
+        })
     };
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
@@ -149,11 +172,12 @@ const GroupHeader = ({ group }) => {
                         </button>
                     ) : group.IsPending ? (
                         <button
-                            className="join-group-btn"
-                            disabled
+                            className="join-group-btn pending"
+                            onClick={(e) => handleCancelRequest(e)}
+                            onMouseEnter={() => setIsPendingHovered(true)}
+                            onMouseLeave={() => setIsPendingHovered(false)}
                         >
-                            Pending
-                            
+                            {isPendingHovered ? 'Cancel Request' : 'Pending'}
                         </button>
                     ) : (
                         <button

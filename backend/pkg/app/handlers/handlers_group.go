@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -409,6 +410,34 @@ func (g *GroupHandler) GroupeLeave(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
 	}
 	_, err := g.GroupService.GroupLeave(pathParts[3], user_id)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "Created successfully", nil)
+}
+
+func (g *GroupHandler) CancelGroupRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	fmt.Println(len(pathParts))
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	user_id, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
+	}
+	_, err := g.GroupService.CancelGroupRequest(pathParts[3], user_id)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return

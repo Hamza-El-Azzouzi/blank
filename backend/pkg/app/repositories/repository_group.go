@@ -191,6 +191,19 @@ func (g *GroupRepository) IsGroupMember(group_id, user_id string) (bool, error) 
 	return false, nil
 }
 
+func (g *GroupRepository) IsPendingRequest(group_id, user_id string) (bool, error) {
+	exist := 0
+	query := `SELECT count(*) FROM Group_Membership WHERE group_id = ? AND user_id = ? AND status = 'requested'`
+	err := g.DB.QueryRow(query, group_id, user_id).Scan(&exist)
+	if err != nil {
+		return false, err
+	}
+	if exist == 1 {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (g *GroupRepository) PostGroupExist(post_id string) bool {
 	exist := 0
 	query := `SELECT count(*) FROM Group_Post WHERE group_post_id = ?`

@@ -63,6 +63,16 @@
     background-color: var(--primary-hover);
 }
 
+.join-group-btn.pending {
+    background-color: var(--primary);
+}
+
+.join-group-btn.pending:hover {
+    background-color: var(--primary-hover);
+    color: white;
+    cursor: pointer;
+}
+
 .leave-group-btn {
     background-color: var(--bg-tertiary);
     color: var(--error);

@@ -87,6 +87,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
             );
 
             const data = await response.json();
+            console.log(data);
             const searchedfollowers = data.data.follow_list;
             if (searchedfollowers && searchedfollowers.length > 0) {
                 const newSearchResults = await Promise.all(

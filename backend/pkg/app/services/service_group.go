@@ -170,6 +170,21 @@ func (g *GroupService) GroupLeave(group_id, user_id string) (int, error) {
 	return g.GroupRepo.GroupResponseDeclined(group_id, user_id)
 }
 
+func (g *GroupService) CancelGroupRequest(group_id, user_id string) (int, error) {
+	if !g.IsPendingRequest(group_id, user_id) {
+		return 0, fmt.Errorf("forbidden")
+	}
+	return g.GroupRepo.GroupResponseDeclined(group_id, user_id)
+}
+
+func (g *GroupService) IsPendingRequest(group_id, user_id string) bool {
+	isPending, err := g.GroupRepo.IsPendingRequest(group_id, user_id)
+	if err != nil {
+		return isPending
+	}
+	return isPending
+}
+
 func (g *GroupService) GroupCreatePost(postInfo models.GroupPost, user_id string) (models.GroupPost, error) {
 	isMember := g.IsGroupMember(postInfo.Group_id, user_id)
 	IsOwner := g.IsOwner(postInfo.Group_id, user_id)

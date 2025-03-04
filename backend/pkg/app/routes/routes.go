@@ -68,6 +68,7 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/request/", groupHandler.GroupRequest)
 	mux.HandleFunc("/api/group/{group_id}/response", groupHandler.GroupResponse)
 	mux.HandleFunc("/api/group/{group_id}/leave", groupHandler.GroupeLeave)
+	mux.HandleFunc("/api/group/{group_id}/cancel", groupHandler.CancelGroupRequest)
 	mux.HandleFunc("/api/join/{group_id}/invite", groupHandler.GroupInvite)
 	mux.HandleFunc("/api/join/{group_id}/requested", groupHandler.JoinGroup)
 	mux.HandleFunc("/api/join/{group_id}/invitable", groupHandler.GetFollowers)
