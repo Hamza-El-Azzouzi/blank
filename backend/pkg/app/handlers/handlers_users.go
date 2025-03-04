@@ -223,13 +223,13 @@ func (u *UserHandler) NotificationsGetter(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 
-	notifications, err = u.UserService.Notifications(userID, page)
+	notifications, err = u.UserService.Notifications(authUserID, page)
 	if err != nil {
 		log.Println(err)
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
