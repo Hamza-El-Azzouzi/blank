@@ -1,8 +1,7 @@
 'use client';
 
 import "./globals.css";
-import { AuthProvider } from '../contexts/AuthContext';
-import ProtectedRoute from '../components/ProtectedRoute';
+
 
 // export const metadata = {
 //   title: "Social Network",
@@ -13,13 +12,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <ProtectedRoute>
-            <div className="container">
-              {children}
-            </div>
-          </ProtectedRoute>
-        </AuthProvider>
+        <div className="container">
+          {children}
+        </div>
       </body>
     </html>
   );
