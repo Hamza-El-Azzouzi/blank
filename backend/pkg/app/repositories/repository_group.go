@@ -19,6 +19,7 @@ func (g *GroupRepository) CreateGroup(group models.Group, user_id any, group_id 
 	if err != nil {
 		return models.GroupDetails{}, err
 	}
+	g.JoinGroup(group_id, user_id.(string), "accepted")
 	selectQuery := `SELECT 
 	g.group_id,
 	g.title AS group_name,
