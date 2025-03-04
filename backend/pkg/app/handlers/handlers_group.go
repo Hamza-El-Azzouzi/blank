@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -428,7 +427,6 @@ func (g *GroupHandler) CancelGroupRequest(w http.ResponseWriter, r *http.Request
 	}
 
 	pathParts := strings.Split(r.URL.Path, "/")
-	fmt.Println(len(pathParts))
 	if len(pathParts) != 5 {
 		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
