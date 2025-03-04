@@ -65,7 +65,7 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 
 const usersPerPage = 10
 
-func (u *UserService) SearchUsers(query string, page int) ([]models.UserInfo, bool, error) {
+func (u *UserService) SearchUsers(query string, page int, authUserID uuid.UUID) ([]models.UserInfo, bool, error) {
 	if query == "" {
 		return []models.UserInfo{}, false, nil
 	}
@@ -77,6 +77,24 @@ func (u *UserService) SearchUsers(query string, page int) ([]models.UserInfo, bo
 	}
 
 	hasMore := total > (offset + len(users))
+
+	for _, user := range users {
+		isFollowing, err := u.UserRepo.IsFollowing(authUserID, user.UserID)
+		if err != nil {
+			return nil, false, err
+		}
+
+		isFollower, err := u.UserRepo.IsFollowing(user.UserID, authUserID)
+		if err != nil {
+			return nil, false, err
+		}
+
+		if user.IsPublic || isFollowing || isFollower {
+			user.CanSendMessage = true
+		} else {
+			user.CanSendMessage = false
+		}
+	}
 
 	return users, hasMore, nil
 }

@@ -182,8 +182,9 @@ func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 			pageNum = 1
 		}
 	}
+	authUserID, _ := uuid.FromString(r.Context().Value("user_id").(string))
 
-	users, hasMore, errUsers := u.UserService.SearchUsers(query, pageNum)
+	users, hasMore, errUsers := u.UserService.SearchUsers(query, pageNum, authUserID)
 	if errUsers != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
