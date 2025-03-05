@@ -277,6 +277,101 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
 
+func (g *GroupHandler) GroupAcceptInvitation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(r.PathValue("group_id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid group ID", nil)
+		return
+	}
+
+	// check if the group exist
+	_, err = g.GroupService.GroupDetails(authUserID.String(), groupID.String())
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	// check if the request is pending
+	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
+	if !isPending {
+		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
+		return
+	}
+
+	err = g.GroupService.AcceptInvitation(groupID, authUserID)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
+}
+
+func (g *GroupHandler) GroupRefuseInvitation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(r.PathValue("group_id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid group ID", nil)
+		return
+	}
+
+	// check if the group exist
+	_, err = g.GroupService.GroupDetails(authUserID.String(), groupID.String())
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	// check if the request is pending
+	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
+	if !isPending {
+		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
+		return
+	}
+
+	err = g.GroupService.RefuseInvitation(groupID, authUserID)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
+}
+
 func (g *GroupHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
