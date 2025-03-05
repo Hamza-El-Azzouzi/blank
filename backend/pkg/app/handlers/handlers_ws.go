@@ -34,8 +34,8 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ws.WebSocketService.ConnectUser(conn, userID)
-	if err != nil {
+	
+	if err := ws.WebSocketService.ConnectUser(conn, userID); err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}

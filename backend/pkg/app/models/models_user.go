@@ -39,20 +39,21 @@ type LoginData struct {
 }
 
 type UserInfo struct {
-	UserID       uuid.UUID `json:"user_id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	Nickname     string    `json:"nickname,omitempty"`
-	Email        string    `json:"email,omitempty"`
-	About        string    `json:"about,omitempty"`
-	DateOfBirth  string    `json:"date_of_birth,omitempty"`
-	Avatar       string    `json:"avatar,omitempty"`
-	IsPublic     bool      `json:"is_public"`
-	IsOwner      bool      `json:"is_owner,omitempty"`
-	Following    int       `json:"following"`
-	Followers    int       `json:"followers"`
-	FollowStatus string    `json:"follow_status"`
-	IsFollowing  bool      `json:"is_following"`
+	UserID         uuid.UUID `json:"user_id"`
+	FirstName      string    `json:"first_name"`
+	LastName       string    `json:"last_name"`
+	Nickname       string    `json:"nickname,omitempty"`
+	Email          string    `json:"email,omitempty"`
+	About          string    `json:"about,omitempty"`
+	DateOfBirth    string    `json:"date_of_birth,omitempty"`
+	Avatar         string    `json:"avatar,omitempty"`
+	IsPublic       bool      `json:"is_public,omitempty"`
+	IsOwner        bool      `json:"is_owner,omitempty"`
+	Following      int       `json:"following,omitempty"`
+	Followers      int       `json:"followers,omitempty"`
+	FollowStatus   string    `json:"follow_status,omitempty"`
+	IsFollowing    bool      `json:"is_following,omitempty"`
+	CanSendMessage bool      `json:"can_send_message,omitempty"`
 }
 
 type ConnectedUser struct {

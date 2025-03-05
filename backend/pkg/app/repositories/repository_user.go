@@ -70,7 +70,7 @@ func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]m
 		return nil, 0, err
 	}
 	query := `
-        SELECT user_id, first_name, last_name, avatar 
+        SELECT user_id, first_name, last_name, avatar, is_public
         FROM User 
         WHERE first_name LIKE ? OR last_name LIKE ?
         ORDER BY first_name, last_name
@@ -85,7 +85,7 @@ func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]m
 
 	for rows.Next() {
 		user := models.UserInfo{}
-		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar)
+		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar, &user.IsPublic)
 		if err != nil {
 			return nil, 0, err
 		}

@@ -2,11 +2,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { FiSend } from 'react-icons/fi';
+import { BsEmojiSmile } from 'react-icons/bs';
 import { GetCookie } from '@/lib/cookie';
 import { useParams } from 'next/navigation';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { formatTime } from '@/lib/format_time';
 import { useWebSocket } from '@/lib/useWebSocket';
+import EmojiPicker from '@/components/chat/EmojiPicker';
 import './chat.css';
 
 export default function ChatPage() {
@@ -18,8 +20,10 @@ export default function ChatPage() {
     const [hasMore, setHasMore] = useState(true);
     const [contact, setContact] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const containerRef = useRef(null);
     const messageSeenTimeout = useRef(null);
+    const inputRef = useRef(null);
 
     const cookieValue = GetCookie("sessionId");
     const params = useParams();
@@ -89,16 +93,18 @@ export default function ChatPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, cookieValue]);
 
-    const handleNewMessage = useCallback((message) => {
-        if (message?.sender_id !== userId) return
+    const handleNewMessage = useCallback((data) => {
+        if (data.message.receiver_type !== 'to_user' || data.message.sender_id !== userId) {
+            return
+        }
         
         setMessages(prev => [...prev, {
-            message_id: message.id,
-            sender_id: message.sender_id,
-            receiver_id: message.receiver_id,
-            content: message.content,
+            message_id: data.message.id,
+            sender_id: data.message.sender_id,
+            receiver_id: data.message.receiver_id,
+            content: data.message.content,
             seen: false,
-            created_at: message.created_at || new Date().toISOString()
+            created_at: data.message.created_at || new Date().toISOString()
         }]);
 
         setTimeout(() => {
@@ -114,6 +120,7 @@ export default function ChatPage() {
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
         }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
@@ -197,6 +204,7 @@ export default function ChatPage() {
         if (!messageContent) return;
 
         setMessage('');
+        setShowEmojiPicker(false);
 
         const tempMessage = {
             message_id: `temp-${Date.now()}`,
@@ -216,6 +224,13 @@ export default function ChatPage() {
         setTimeout(() => {
             containerRef.current.scrollTop = containerRef.current.scrollHeight;
         }, 5);
+    };
+
+    const handleEmojiSelect = (emoji) => {
+        setMessage(prev => prev + emoji);
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
     };
 
     return (
@@ -257,7 +272,7 @@ export default function ChatPage() {
                         {messages.length === 0 ? (
                             <div className="no-messages">
                                 <p>No messages yet</p>
-                                <p>Start a conversation with {contact.first_name}!</p>
+                                <p>Start a conversation with {contact?.first_name}!</p>
                             </div>
                         ) : (
                             <>
@@ -278,13 +293,29 @@ export default function ChatPage() {
             </div>
 
             <form className="chat-page-input-form" onSubmit={handleSendMessage}>
-                <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Type a message..."
-                    className="chat-page-input"
-                />
+                <div className="chat-input-container">
+                    <input
+                        type="text"
+                        ref={inputRef}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="chat-page-input"
+                    />
+                    <button
+                        type="button"
+                        className="emoji-toggle-btn"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    >
+                        <BsEmojiSmile />
+                    </button>
+                    {showEmojiPicker && (
+                        <EmojiPicker
+                            onSelectEmoji={handleEmojiSelect}
+                            onClose={() => setShowEmojiPicker(false)}
+                        />
+                    )}
+                </div>
                 <button
                     type="submit"
                     className="send-message-btn"

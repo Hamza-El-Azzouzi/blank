@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { FiHome, FiBell, FiUsers, FiUser, FiLogOut } from 'react-icons/fi';
+import { LuMessageCircleMore } from "react-icons/lu";
 import { BiSearch } from 'react-icons/bi';
 import './sidebar.css';
 import * as cookies from '@/lib/cookie';
@@ -103,6 +104,8 @@ const NavSidebar = () => {
 
       const data = await response.json();
       if (data.data && Array.isArray(data.data.users)) {
+        console.log(data.data.users);
+
         const users = await Promise.all(data.data.users.map(async (user) => {
           user.avatar = user.avatar
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
@@ -116,7 +119,7 @@ const NavSidebar = () => {
           }
           return [...prev, ...users];
         });
-        
+
         setHasMore(data.data.hasMore);
         setPage(pageNum);
       } else {
@@ -167,7 +170,7 @@ const NavSidebar = () => {
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    setPage(1); 
+    setPage(1);
     if (query.length < 1) {
       setSearchResults([]);
       setHasMore(true);
@@ -196,22 +199,24 @@ const NavSidebar = () => {
             ) : searchResults.length > 0 ? (
               <>
                 {searchResults.map((user) => (
-                  <Link
-                    key={user.user_id}
-                    href={`/profile/${user.user_id}`}
-                    className="search-result-item"
-                    onClick={() => setSearchQuery('')}
-                  >
-                    <div className="search-result-avatar">
-                      <Image
-                        src={user.avatar}
-                        alt={`${user.first_name} ${user.last_name}`}
-                        width={32}
-                        height={32}
-                      />
-                    </div>
-                    <span>{user.first_name} {user.last_name}</span>
-                  </Link>
+                  <div className='search-result-item-wrapper' key={user.user_id}>
+                    <Link href={`/profile/${user.user_id}`} className="search-result-item" onClick={() => setSearchQuery('')}>
+                      <div className="search-result-avatar">
+                        <Image
+                          src={user.avatar}
+                          alt={`${user.first_name} ${user.last_name}`}
+                          width={32}
+                          height={32}
+                        />
+                      </div>
+                      <span>{user.first_name} {user.last_name}</span>
+                    </Link>
+                    {user.can_send_message && (
+                      <Link className='send-message-icon-search' href={`/chat/${user.user_id}`} onClick={() => setSearchQuery('')}>
+                        <LuMessageCircleMore />
+                      </Link>
+                    )}
+                  </div>
                 ))}
                 {isLoading && <div className="search-result-item loading">Loading more...</div>}
               </>
