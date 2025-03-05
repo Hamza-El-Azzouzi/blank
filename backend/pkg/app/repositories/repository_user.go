@@ -138,6 +138,7 @@ func (r *UserRepository) GetPublicUserInfo(user_id uuid.UUID) (*models.UserInfo,
 	user := &models.UserInfo{}
 	query := `
 	SELECT 
+		u.user_id,
 		u.first_name,
 		u.last_name,
 		COALESCE(u.avatar, ""),
@@ -151,6 +152,7 @@ func (r *UserRepository) GetPublicUserInfo(user_id uuid.UUID) (*models.UserInfo,
 
 	row := r.DB.QueryRow(query, user_id)
 	err := row.Scan(
+		&user.UserID,
 		&user.FirstName,
 		&user.LastName,
 		&user.Avatar,

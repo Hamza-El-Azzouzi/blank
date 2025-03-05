@@ -206,6 +206,7 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 	g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
 		Type:      "join_request",
 		GroupID:   uuid.NullUUID{UUID: GroupID, Valid: true},
+		UserID:    uuid.NullUUID{UUID: user.UserID, Valid: true},
 		UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
 		Label:     fmt.Sprintf(`%s %s requested to join %s`, user.FirstName, user.LastName, groupTitle),
 		CreatedAt: time.Now(),

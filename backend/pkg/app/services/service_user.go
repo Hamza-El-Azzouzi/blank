@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -164,6 +165,12 @@ func (u *UserService) Notifications(authUserID uuid.UUID, page int) ([]models.No
 					cleanNotif.AllowAction = true
 				}
 			}
+		case "join_request":
+			userInfo, err := u.UserRepo.GetPublicUserInfo(notif.UserID.UUID)
+			if err != nil {
+				return nil, err
+			}
+			notif.UserName = sql.NullString{String: userInfo.FirstName + " " + userInfo.LastName, Valid: true}
 		}
 
 		if notif.UserID.Valid {
