@@ -175,7 +175,7 @@
     background-color: var(--bg-tertiary);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
     .chat-page {
         height: calc(100vh - 70px);
     }

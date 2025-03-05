@@ -239,7 +239,7 @@
     border-color: var(--primary);
 }
 
-.upload-image-label {
+.comments-form .upload-image-label {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -252,7 +252,7 @@
     transition: all 0.2s;
 }
 
-.upload-image-label:hover {
+.comments-form .upload-image-label:hover {
     background-color: var(--primary);
     color: white;
 }
@@ -359,7 +359,8 @@
         gap: 8px;
     }
 
-    .upload-image-label {
+    .comments-form .upload-image-label {
+        height: 40px;
         margin-left: 0;
         margin-top: 8px;
         padding: 8px;
