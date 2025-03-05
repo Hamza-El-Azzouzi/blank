@@ -81,7 +81,7 @@ export default function SignUp() {
         })
             .then(() => {
                 showToast('success', 'Success! Operation completed.');
-                router.push("/");
+                router.push("/signin");
             }).catch((error) => {
                 showToast('error', error.message);
             })
