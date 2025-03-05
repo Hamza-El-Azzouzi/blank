@@ -71,7 +71,6 @@ func (g *GroupService) GroupsSearch(user_id, term string) ([]models.GroupDetails
 
 func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetails, error) {
 	groupDetails, err := g.GroupRepo.GroupDetails(user_id, group_id)
-
 	if err != nil {
 		return models.GroupDetails{}, err
 	}
@@ -288,4 +287,16 @@ func (g *GroupService) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, string, erro
 		return uuid.Nil, "", err
 	}
 	return groupOwnerID, groupTitle, nil
+}
+
+func (g *GroupService) CheckInvitePending(groupID, userID uuid.UUID) (bool, error) {
+	return g.GroupRepo.CheckInvitePending(groupID, userID)
+}
+
+func (g *GroupService) AcceptInvitation(groupID, userID uuid.UUID) error {
+	return g.GroupRepo.AcceptInvitation(groupID, userID)
+}
+
+func (g *GroupService) RefuseInvitation(groupID, userID uuid.UUID) error {
+	return g.GroupRepo.RefuseInvitation(groupID, userID)
 }

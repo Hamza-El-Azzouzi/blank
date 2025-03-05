@@ -15,6 +15,7 @@ type Notification struct {
 	GroupID       uuid.NullUUID  `json:"group_id,omitempty"`
 	GroupTitle    sql.NullString `json:"group_title,omitempty"`
 	Seen          bool           `json:"seen,omitempty"`
+	AllowAction   bool           `json:"allow_action,omitempty"`
 	CreatedAt     time.Time      `json:"created_at,omitempty"`
 	FormattedDate string         `json:"formatted_date,omitempty"`
 	Label         string         `json:"label"`

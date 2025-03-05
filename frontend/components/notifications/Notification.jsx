@@ -7,9 +7,9 @@ import { HiViewGridAdd } from "react-icons/hi";
 import { IoPersonAdd } from "react-icons/io5";
 
 
-export default function Notifications({ notif }) {
+export default function Notification({ notif }) {
     const cookieValue = GetCookie("sessionId");
-    const [allowActions, setAllowActions] = useState(notif?.allow_action);
+    const [allowActions, setAllowActions] = useState(notif.allow_action || false);
 
     useEffect(() => {
         if (notif.seen) return
@@ -33,7 +33,7 @@ export default function Notifications({ notif }) {
         }
     }
 
-    const handleAccept = async (e) => {
+    const handleAcceptFollow = async (e) => {
         e.preventDefault();
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/acceptfollow`, {
@@ -56,7 +56,7 @@ export default function Notifications({ notif }) {
             console.error("Error fetching:", err);
         }
     }
-    const handleRefuse = async (e) => {
+    const handleRefuseFollow = async (e) => {
         e.preventDefault();
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/refusefollow`, {
@@ -80,10 +80,56 @@ export default function Notifications({ notif }) {
         }
     }
 
+    const handleAcceptGroupInvitation = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${notif.group_id}/accept-invite`, {
+                credentials: "include",
+                method: "PUT",
+                headers: { Authorization: `Bearer ${cookieValue}` },
+            });
+            let data = await res.json();
+            if (data.message == "success") {
+                setAllowActions(false)
+                notif.seen = true
+            } else {
+                console.log(data.message)
+            }
+
+        } catch (err) {
+            console.error("Error fetching:", err);
+        }
+    }
+
+    const handleRefuseGroupInvitation = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${notif.group_id}/refuse-invite`, {
+                credentials: "include",
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${cookieValue}` },
+            });
+            let data = await res.json();
+            if (data.message == "success") {
+                setAllowActions(false)
+                notif.seen = true
+            } else {
+                console.log(data.message)
+            }
+
+        } catch (err) {
+            console.error("Error fetching:", err);
+        }
+    }
+
     switch (notif.type) {
         case "follow_request":
             notif.icon = <IoPersonAdd className="notif-icon" />
             notif.label = <span className="notif-label">{notif.icon} New follow request from <strong>{notif.user_name}</strong></span>
+            break;
+        case "follow":
+            notif.icon = <IoPersonAdd className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon} New follow from <strong>{notif.user_name}</strong></span>
             break;
         case "group_invitation":
             notif.icon = <MdGroupAdd className="notif-icon" />
@@ -109,11 +155,20 @@ export default function Notifications({ notif }) {
                 {notif.label}
                 <span className="notification-date">{notif.formatted_date}</span>
             </div>
-            {allowActions &&
-                <div className="notification-action">
-                    <button className="refuse" onClick={handleRefuse}><MdClose className="icon" /> Refuse</button>
-                    <button className="accept" onClick={handleAccept}><MdDone className="icon" /> Accept</button>
-                </div>}
+            {allowActions && (
+                (notif.type === "follow_request" && (
+                    <div className="notification-action">
+                        <button className="refuse" onClick={handleRefuseFollow}><MdClose className="icon" /> Refuse</button>
+                        <button className="accept" onClick={handleAcceptFollow}><MdDone className="icon" /> Accept</button>
+                    </div>
+                )) ||
+                (notif.type === "group_invitation" && (
+                    <div className="notification-action">
+                        <button className="refuse" onClick={handleRefuseGroupInvitation}><MdClose className="icon" /> Refuse</button>
+                        <button className="accept" onClick={handleAcceptGroupInvitation}><MdDone className="icon" /> Accept</button>
+                    </div>
+                ))
+            )}
         </div>
     )
 }

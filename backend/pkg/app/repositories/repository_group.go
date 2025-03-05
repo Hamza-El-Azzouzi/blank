@@ -737,3 +737,45 @@ func (g *GroupRepository) CheckGroupInvitationPending(notifID, userID, groupID u
 
 	return isPending, nil
 }
+
+func (g *GroupRepository) CheckInvitePending(groupID, userID uuid.UUID) (bool, error) {
+	isPending := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+				Group_Membership gm
+				WHERE
+					gm.group_id = ?
+					AND gm.user_id = ?
+					AND gm.status = "invite"
+			) AS is_pending
+	`
+
+	err := g.DB.QueryRow(query, groupID, userID).Scan(&isPending)
+	if err != nil {
+		return false, err
+	}
+
+	return isPending, nil
+}
+
+func (g *GroupRepository) AcceptInvitation(groupID, userID uuid.UUID) error {
+	preparedQuery, err := g.DB.Prepare("UPDATE Group_Membership SET status = ? WHERE group_id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec("accepted", groupID, userID)
+	return err
+}
+
+func (g *GroupRepository) RefuseInvitation(groupID, userID uuid.UUID) error {
+	preparedQuery, err := g.DB.Prepare("DELETE FROM Group_Membership WHERE group_id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec(groupID, userID)
+	return err
+}
