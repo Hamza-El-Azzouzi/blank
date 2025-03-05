@@ -147,7 +147,7 @@ func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification mod
 				if err != nil {
 					return err
 				}
-			} else if notification.Type == "follow_request"{
+			} else if notification.Type == "follow_request" || notification.Type == "follow" {
 				err := ws.NotificationRepo.CreateUserNotification(notification)
 				if err != nil {
 					log.Println(err)

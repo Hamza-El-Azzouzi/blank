@@ -7,7 +7,7 @@ import { HiViewGridAdd } from "react-icons/hi";
 import { IoPersonAdd } from "react-icons/io5";
 
 
-export default function Notifications({ notif }) {
+export default function Notification({ notif }) {
     const cookieValue = GetCookie("sessionId");
     const [allowActions, setAllowActions] = useState(notif.allow_action || false);
 
@@ -126,6 +126,10 @@ export default function Notifications({ notif }) {
         case "follow_request":
             notif.icon = <IoPersonAdd className="notif-icon" />
             notif.label = <span className="notif-label">{notif.icon} New follow request from <strong>{notif.user_name}</strong></span>
+            break;
+        case "follow":
+            notif.icon = <IoPersonAdd className="notif-icon" />
+            notif.label = <span className="notif-label">{notif.icon} New follow from <strong>{notif.user_name}</strong></span>
             break;
         case "group_invitation":
             notif.icon = <MdGroupAdd className="notif-icon" />

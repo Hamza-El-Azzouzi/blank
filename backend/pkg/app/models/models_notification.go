@@ -18,6 +18,7 @@ type Notification struct {
 	Label         string         `json:"label"`
 	Message       Message        `json:"message,omitempty"`
 	Seen          bool           `json:"seen,omitempty"`
+	AllowAction   bool           `json:"allow_action,omitempty"`
 	CreatedAt     time.Time      `json:"created_at,omitempty"`
 	FormattedDate string         `json:"formatted_date,omitempty"`
 }

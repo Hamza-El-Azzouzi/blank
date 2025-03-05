@@ -54,20 +54,29 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, _ := uuid.FromString(follow.FollowerId)
+	FollowedUserID, _ := uuid.FromString(follow.FollowingId)
+	user, err := f.UserService.GetPublicUserInfo(userID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
 	if privacy == "private" {
-		userID, _ := uuid.FromString(follow.FollowerId)
-		FollowedUserID, _ := uuid.FromString(follow.FollowingId)
-		user, err := f.UserService.GetPublicUserInfo(userID)
-		if err != nil {
-			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
-			return
-		}
 		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
-			Type:      "follow_request",
-			UserID:    uuid.NullUUID{UUID: userID, Valid: true},
-			UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
-			Label:     fmt.Sprintf(`New follow request from %s %s`, user.FirstName, user.LastName),
-			CreatedAt: time.Now(),
+			Type:        "follow_request",
+			UserID:      uuid.NullUUID{UUID: userID, Valid: true},
+			UserName:    sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+			Label:       fmt.Sprintf(`New follow request from %s %s`, user.FirstName, user.LastName),
+			AllowAction: true,
+			CreatedAt:   time.Now(),
+		})
+	} else if privacy == "public" {
+		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
+			Type:        "follow",
+			UserID:      uuid.NullUUID{UUID: userID, Valid: true},
+			UserName:    sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+			Label:       fmt.Sprintf(`New follow from %s %s`, user.FirstName, user.LastName),
+			CreatedAt:   time.Now(),
 		})
 	}
 
