@@ -7,6 +7,7 @@ import { TiThMenu } from "react-icons/ti";
 import { MdPeopleAlt } from "react-icons/md";
 import { useWebSocket } from '@/lib/useWebSocket';
 import Toast from '@/components/toast/Toast';
+import { usePathname } from 'next/navigation';
 
 export default function MainLayout({ children }) {
   const [leftOpen, setLeftOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function MainLayout({ children }) {
   const rightSidebarRef = useRef(null);
   const leftToggleRef = useRef(null);
   const rightToggleRef = useRef(null);
+  const pathname = usePathname();
 
   const showToast = useCallback((message, type) => {
     const newToast = {
@@ -33,43 +35,31 @@ export default function MainLayout({ children }) {
   useWebSocket(null, null, showToast);
 
   useEffect(() => {
+    setLeftOpen(false);
+    setRightOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
-      if (leftOpen && !leftSidebarRef.current?.contains(event.target) &&
-        !leftToggleRef.current?.contains(event.target)) {
+      if (leftOpen && leftSidebarRef.current &&
+        !leftSidebarRef.current.contains(event.target) &&
+        leftToggleRef.current &&
+        !leftToggleRef.current.contains(event.target)) {
         setLeftOpen(false);
       }
 
-      if (rightOpen && !rightSidebarRef.current?.contains(event.target) &&
-        !rightToggleRef.current?.contains(event.target)) {
+      if (rightOpen && rightSidebarRef.current &&
+        !rightSidebarRef.current.contains(event.target) &&
+        rightToggleRef.current &&
+        !rightToggleRef.current.contains(event.target)) {
         setRightOpen(false);
       }
     };
 
-    const handleLinkClick = () => {
-      setLeftOpen(false);
-      setRightOpen(false);
-    };
-
     document.addEventListener('mousedown', handleClickOutside);
-
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-      link.addEventListener('click', handleLinkClick);
-    });
-
-    const contactLinks = document.querySelectorAll('.sidebar-contact-item');
-    contactLinks?.forEach(link => {
-      link.addEventListener('click', handleLinkClick);
-    });
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      navLinks.forEach(link => {
-        link.removeEventListener('click', handleLinkClick);
-      });
-      contactLinks?.forEach(link => {
-        link.removeEventListener('click', handleLinkClick);
-      });
     };
   }, [leftOpen, rightOpen]);
 

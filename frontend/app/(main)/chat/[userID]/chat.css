@@ -177,7 +177,7 @@
 
 @media (max-width: 900px) {
     .chat-page {
-        height: calc(100vh - 90px);
+        height: calc(100vh - 70px);
     }
 
     .message {
