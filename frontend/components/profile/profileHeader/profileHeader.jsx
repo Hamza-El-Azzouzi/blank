@@ -84,29 +84,32 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                 <h1>{profile.first_name} {profile.last_name}</h1>
                 <div className="profile-meta">
                     <span className="profile-stat" onClick={() => handleOpenDialog('followers')}>
-                        {profile.followers} Followers
+                        {profile.followers || 0} Followers
                     </span>
                     <span className="profile-stat" onClick={() => handleOpenDialog('following')}>
-                        {profile.following} Following
+                        {profile.following || 0} Following
                     </span>
-
                 </div>
             </div>
-            {profile.is_owner ? (
-                <button
-                    className="update-info-btn"
-                    onClick={() => setUpdateInfo(true)}
-                >
-                    <FaUserEdit />
-                </button>
-            ) : (
-                <button
-                    className={`follow-btn ${followStatus.toLowerCase()}`}
-                    onClick={followStatus === "Follow" ? handleFollow : handleDeleteFollow}
-                >
-                    {followStatus === "Following" ? "Unfollow" : followStatus === "Pending" ? "Cancel Request" : "Follow"}
-                </button>
-            )}
+
+            <div className="actions-container">
+                {profile.is_owner ? (
+                    <button
+                        className="update-info-btn"
+                        onClick={() => setUpdateInfo(true)}
+                        title="Edit profile"
+                    >
+                        <FaUserEdit />
+                    </button>
+                ) : (
+                    <button
+                        className={`follow-btn ${followStatus.toLowerCase()}`}
+                        onClick={followStatus === "Follow" ? handleFollow : handleDeleteFollow}
+                    >
+                        {followStatus === "Following" ? "Unfollow" : followStatus === "Pending" ? "Cancel Request" : "Follow"}
+                    </button>
+                )}
+            </div>
 
             {showFollowDialog && (
                 <FollowDialog
