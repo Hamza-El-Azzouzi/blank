@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "blank",
-  description: "This is a blank Project",
+  description: "This is a blank Project"
 };
 
 export default function RootLayout({ children }) {
