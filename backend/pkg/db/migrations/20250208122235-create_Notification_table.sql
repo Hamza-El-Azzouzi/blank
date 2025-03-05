@@ -11,6 +11,7 @@ CREATE TABLE
     CHECK (`seen` IN (0, 1)),
     CHECK (`type` IN ('follow_request', 'follow', 'group_invitation', 'join_request', 'event')),
     CHECK (((`group_id` IS NULL AND `user_id` IS NOT NULL) OR
+           (`group_id` IS NOT NULL AND `user_id` IS NOT NULL) OR
            (`group_id` IS NOT NULL AND `user_id` IS NULL))),
     FOREIGN KEY (`receiver_id`) REFERENCES `User` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`group_id`) REFERENCES `Group` (`group_id`) ON DELETE CASCADE ON UPDATE CASCADE,
