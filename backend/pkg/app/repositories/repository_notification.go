@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"log"
 
 	"blank/pkg/app/models"
 
@@ -143,7 +142,7 @@ func (n *NotificationRepository) SeeNotification(userID, notifID uuid.UUID) erro
 	return nil
 }
 
-func (n *NotificationRepository) LastNotification(receiverID, userID uuid.UUID, NotifType string) (uuid.UUID, error) {
+func (n *NotificationRepository) LastUserNotification(receiverID, userID uuid.UUID, NotifType string) (uuid.UUID, error) {
 	var lastNotifID uuid.UUID
 	query := `
 		SELECT notification_id
@@ -160,7 +159,31 @@ func (n *NotificationRepository) LastNotification(receiverID, userID uuid.UUID, 
 	err := n.DB.QueryRow(query, receiverID, userID, NotifType).Scan(&lastNotifID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Println("no row")
+			return uuid.Nil, nil
+		}
+		return uuid.Nil, err
+	}
+
+	return lastNotifID, err
+}
+
+func (n *NotificationRepository) LastGroupNotification(receiverID, userID uuid.UUID, NotifType string) (uuid.UUID, error) {
+	var lastNotifID uuid.UUID
+	query := `
+		SELECT notification_id
+		FROM Notification
+		WHERE 
+			receiver_id = ?
+			AND group_id = ?
+			AND type = ?
+		ORDER BY 
+			created_at DESC
+		LIMIT 1;
+	`
+
+	err := n.DB.QueryRow(query, receiverID, userID, NotifType).Scan(&lastNotifID)
+	if err != nil {
+		if err == sql.ErrNoRows {
 			return uuid.Nil, nil
 		}
 		return uuid.Nil, err

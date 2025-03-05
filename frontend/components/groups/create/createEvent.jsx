@@ -1,4 +1,3 @@
-// components/events/createEvent.jsx
 "use client"
 import React, { useState } from 'react';
 import { FiX, FiCalendar, FiClock } from 'react-icons/fi';

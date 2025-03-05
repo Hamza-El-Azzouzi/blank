@@ -63,6 +63,16 @@
     background-color: var(--primary-hover);
 }
 
+.join-group-btn.pending {
+    background-color: var(--primary);
+}
+
+.join-group-btn.pending:hover {
+    background-color: var(--primary-hover);
+    color: white;
+    cursor: pointer;
+}
+
 .leave-group-btn {
     background-color: var(--bg-tertiary);
     color: var(--error);
@@ -72,6 +82,27 @@
 .leave-group-btn:hover {
     background-color: var(--error);
     color: white;
+}
+
+.group-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.invite-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+}
+
+.invite-btn:hover {
+    background-color: var(--primary-hover);
 }
 
 @media (max-width: 640px) {

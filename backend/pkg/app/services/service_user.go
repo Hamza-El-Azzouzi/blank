@@ -116,11 +116,11 @@ func (u *UserService) GetPublicUserInfo(authUserID uuid.UUID) (*models.UserInfo,
 	return u.UserRepo.GetPublicUserInfo(authUserID)
 }
 
-func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.NotificationResponse, error) {
+func (u *UserService) Notifications(authUserID uuid.UUID, page int) ([]models.NotificationResponse, error) {
 	limit := 20
 	offset := page * limit
 
-	notifications, err := u.NotificationRepo.GetNotifications(userID, offset, limit)
+	notifications, err := u.NotificationRepo.GetNotifications(authUserID, offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.Notifi
 	for _, notif := range notifications {
 		cleanNotif := models.NotificationResponse{
 			ID:            notif.ID.String(),
-			ReceiverID:    userID.String(),
+			ReceiverID:    authUserID.String(),
 			Type:          notif.Type,
 			Seen:          notif.Seen,
 			FormattedDate: notif.FormattedDate,
@@ -137,12 +137,12 @@ func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.Notifi
 
 		switch notif.Type {
 		case "follow_request":
-			pending, err := u.UserRepo.CheckFollowRequestPending(userID, notif.UserID.UUID)
+			pending, err := u.UserRepo.CheckFollowRequestPending(authUserID, notif.UserID.UUID)
 			if err != nil {
 				return nil, err
 			}
 			if pending {
-				lastNotifID, err := u.NotificationRepo.LastNotification(userID, notif.UserID.UUID, notif.Type)
+				lastNotifID, err := u.NotificationRepo.LastUserNotification(authUserID, notif.UserID.UUID, notif.Type)
 				if err != nil {
 					return nil, err
 				}
@@ -151,19 +151,19 @@ func (u *UserService) Notifications(userID uuid.UUID, page int) ([]models.Notifi
 				}
 			}
 		case "group_invitation":
-			// pending, err := u.GroupRepo.CheckGroupInvitationPending(notif.ID, userID, notif.UserID.UUID)
-			// if err != nil {
-			// 	return nil, err
-			// }
-			// if pending {
-			// 	lastNotifID, err := u.NotificationRepo.LastNotification(userID, notif.UserID.UUID, notif.Type)
-			// 	if err != nil {
-			// 		return nil, err
-			// 	}
-			// 	if lastNotifID == notif.ID {
-			// 		cleanNotif.AllowAction = true
-			// 	}
-			// }
+			pending, err := u.GroupRepo.CheckGroupInvitationPending(notif.ID, authUserID, notif.GroupID.UUID)
+			if err != nil {
+				return nil, err
+			}
+			if pending {
+				lastNotifID, err := u.NotificationRepo.LastGroupNotification(authUserID, notif.GroupID.UUID, notif.Type)
+				if err != nil {
+					return nil, err
+				}
+				if lastNotifID == notif.ID {
+					cleanNotif.AllowAction = true
+				}
+			}
 		}
 
 		if notif.UserID.Valid {

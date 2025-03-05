@@ -1,4 +1,3 @@
-// components/Toast.jsx
 import { useEffect, useState } from 'react';
 import styles from './Toast.module.css';
 import { RiMessage2Fill } from "react-icons/ri";

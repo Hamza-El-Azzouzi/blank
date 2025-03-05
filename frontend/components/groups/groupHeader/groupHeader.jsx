@@ -1,4 +1,3 @@
-// components/groups/groupHeader.jsx
 "use client"
 import React, { useState } from 'react';
 import { FiUsers } from 'react-icons/fi';
@@ -6,8 +5,7 @@ import './groupHeader.css';
 import { GetCookie } from '@/lib/cookie';
 import Toast from '@/components/toast/Toast';
 import { useParams, useRouter } from 'next/navigation';
-
-
+import InviteDialog from '../inviteDialog/inviteDialog';
 
 const GroupHeader = ({ group }) => {
     const { groupID } = useParams();
@@ -15,8 +13,9 @@ const GroupHeader = ({ group }) => {
     const cookieValue = GetCookie("sessionId")
     const [toasts, setToasts] = useState([]);
     const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
+    const [showInviteDialog, setShowInviteDialog] = useState(false);
+    const [isPendingHovered, setIsPendingHovered] = useState(false);
     const handleLeaveGroup = (e) => {
-        e.preventDefault()
         e.preventDefault()
             fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
                 method: "POST",
@@ -39,16 +38,35 @@ const GroupHeader = ({ group }) => {
                     showToast('error', error.message);
                 })
     };
+    const handleCancelRequest = (e) => {
+        e.preventDefault()
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/cancel`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(error => { throw error; });
+            }
+            return response.json();
+        })
+        .then(() => {
+            showToast('success', 'Request cancelled successfully.');
+            router.push("/groups")
+        }).catch((error) => {
+            showToast('error', error.message);
+        })
+    };
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
         setToasts((prevToasts) => [...prevToasts, newToast]);
     };
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
-    };
-    const handleSearch = (e) => {
-        const term = e.target.value.toLowerCase();
-        setSearchTerm(term);
     };
     const handleJoinGroup = (e) => {
         e.preventDefault()
@@ -66,7 +84,7 @@ const GroupHeader = ({ group }) => {
                     }
                     return response.json();
                 })
-                .then((data) => {
+                .then(() => {
                     showToast('success', 'Success! Operation completed.');
                     setIsDisabled(true);
                     group.IsPending = true
@@ -93,7 +111,7 @@ const GroupHeader = ({ group }) => {
                 }
                 return response.json();
             })
-            .then((data) => {
+            .then(() => {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/groups")
             
@@ -127,40 +145,64 @@ const GroupHeader = ({ group }) => {
                         </span>
                     </div>
                 </div>
-                {group.IsJoined ? (
-                    <button
-                        className="leave-group-btn"
-                        onClick={(e)=>{
-                            handleLeaveGroup(e)
-                        }}
-                    >
-                        Leave Group
-                    </button>
-                ) : group.IsOwner ? (
-                    <button
-                        className="leave-group-btn"
-                        onClick={(e) => { handleDestoryCommunity(e) }}
-                    >
-                        Destroy the Community
-                    </button>
-                ) : group.IsPending ? (
-                    <button
-                        className="join-group-btn"
-                        disabled
-                    >
-                        Pending
-                        
-                    </button>
-                ) : (
-                    <button
-                        className="join-group-btn"
-                        disabled={isDisabled}
-                        onClick={(e)=>{handleJoinGroup(e)}}
-                    >
-                        Join Group
-                    </button>
-                )}
+                <div className="group-actions">
+                    {group.IsJoined ? (
+                        <>
+                            <button
+                                className="leave-group-btn"
+                                onClick={(e)=>{ handleLeaveGroup(e) }}
+                            >
+                                Leave Group
+                            </button>
+                            <button
+                                className="invite-btn"
+                                onClick={() => setShowInviteDialog(true)}
+                            >
+                                Invite Members
+                            </button>
+                        </>
+                    ) : group.IsOwner ? (
+                        <>
+                            <button
+                                className="leave-group-btn"
+                                onClick={(e) => { handleDestoryCommunity(e) }}
+                            >
+                                Destroy the Community
+                            </button>
+                            <button
+                                className="invite-btn"
+                                onClick={() => setShowInviteDialog(true)}
+                            >
+                                Invite Members
+                            </button>
+                        </>
+                    ) : group.IsPending ? (
+                        <button
+                            className="join-group-btn pending"
+                            onClick={(e) => handleCancelRequest(e)}
+                            onMouseEnter={() => setIsPendingHovered(true)}
+                            onMouseLeave={() => setIsPendingHovered(false)}
+                        >
+                            {isPendingHovered ? 'Cancel Request' : 'Pending'}
+                        </button>
+                    ) : (
+                        <button
+                            className="join-group-btn"
+                            disabled={isDisabled}
+                            onClick={(e)=>{handleJoinGroup(e)}}
+                        >
+                            Join Group
+                        </button>
+                    )}
+                </div>
             </div>
+            {showInviteDialog && (
+                <InviteDialog
+                    onClose={() => setShowInviteDialog(false)}
+                    cookieValue={cookieValue}
+                    groupID={groupID}
+                />
+            )}
         </>
 
     );

@@ -1,9 +1,7 @@
-// components/groups/createPost.jsx
 "use client"
 import React, { useState } from 'react';
 import { FiImage, FiX } from 'react-icons/fi';
 import '../../posts/posts.css';
-// import { useParams } from 'next/navigation';
 import { GetCookie } from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 

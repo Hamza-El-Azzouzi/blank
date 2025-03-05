@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,7 +36,6 @@ func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	var group models.Group
 	err := json.NewDecoder(r.Body).Decode(&group)
 	if err != nil {
-
 		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
 		return
 	}
@@ -169,10 +169,6 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
 		return
 	}
-	if pathParts[4] != "invited" && pathParts[4] != "requested" {
-		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
-		return
-	}
 	user_id, ok := r.Context().Value("user_id").(string)
 	if !ok {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
@@ -216,6 +212,144 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 	})
 
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
+}
+
+func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	var groupInvite models.GroupInvite
+	err := json.NewDecoder(r.Body).Decode(&groupInvite)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		return
+	}
+	groupInvite.GroupId = pathParts[3]
+
+	invitedUserID, err := uuid.FromString(groupInvite.UserId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(groupInvite.GroupId)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	_, groupTitle, err := g.GroupService.GetGroupOwner(groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	err = g.GroupService.JoinGroup(groupInvite.GroupId, groupInvite.UserId, pathParts[4])
+	if err != nil {
+		switch err.Error() {
+		case "forbidden":
+			utils.SendResponses(w, http.StatusForbidden, err.Error(), nil)
+		default:
+			utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		}
+		return
+	}
+
+	g.WebSocketService.SendNotification([]uuid.UUID{invitedUserID}, models.Notification{
+		Type:      "group_invitation",
+		GroupID:   uuid.NullUUID{UUID: groupID, Valid: true},
+		Label:     fmt.Sprintf(`you are invited to join %s`, groupTitle),
+		CreatedAt: time.Now(),
+	})
+
+	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
+}
+
+func (g *GroupHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
+	}
+
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+		if !g.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
+
+	followers, err := g.GroupService.GetFollowers(pathParts[3], userId, offset)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	utils.SendResponses(w, http.StatusOK, "success", followers)
+}
+
+func (g *GroupHandler) SearchFollowers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	offset := r.URL.Query().Get("offset")
+	if offset != "" {
+		lastUserID, err := uuid.FromString(offset)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+
+		if !g.UserService.UserExist(lastUserID) {
+			utils.SendResponses(w, http.StatusBadRequest, "The user that you try to get doesn't exist", nil)
+			return
+		}
+	}
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
+	}
+	query := r.URL.Query().Get("q")
+	users, errUsers := g.GroupService.SearchFollowers(pathParts[3], userId, offset, query)
+	if errUsers != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", users)
 }
 
 func (g *GroupHandler) GroupDelete(w http.ResponseWriter, r *http.Request) {
@@ -308,7 +442,6 @@ func (g *GroupHandler) GroupResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	memberCount, err := g.GroupService.GroupResponse(pathParts[3], user_id, groupResponse)
 	if err != nil {
-
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
@@ -336,6 +469,33 @@ func (g *GroupHandler) GroupeLeave(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
 	}
 	_, err := g.GroupService.GroupLeave(pathParts[3], user_id)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "Created successfully", nil)
+}
+
+func (g *GroupHandler) CancelGroupRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+	if r.Header.Get("Content-Type") != "application/json" {
+		utils.SendResponses(w, http.StatusUnsupportedMediaType, "content-Type must be application/json", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+	user_id, ok := r.Context().Value("user_id").(string)
+	if !ok {
+		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
+	}
+	_, err := g.GroupService.CancelGroupRequest(pathParts[3], user_id)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return

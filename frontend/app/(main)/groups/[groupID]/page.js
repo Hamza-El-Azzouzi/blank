@@ -20,7 +20,6 @@ const GroupDetailPage = () => {
     const [isOwner, setIsOwner] = useState(false);
     const [isJoined, setIsJoined] = useState(false);
 
-    // Pagination states
     const [events, setEvents] = useState([]);
     const [eventPage, setEventPage] = useState(0);
     const [loadingEvents, setLoadingEvents] = useState(false);
@@ -84,7 +83,7 @@ const GroupDetailPage = () => {
             fetchPosts(groupID, page);
         }
     }, [endReached, groupID, isJoined, isOwner, page]);
-    // Fetch events with pagination (only when "Events" tab is active)
+
     useEffect(() => {
         if (activeTab !== 'events' || loadingEvents || !hasMoreEvents) return;
 
@@ -117,7 +116,6 @@ const GroupDetailPage = () => {
         fetchEvents();
     }, [eventPage, activeTab]);
 
-    // Fetch requests with pagination (only when "Requests" tab is active)
     useEffect(() => {
         if (activeTab !== 'request' || loadingRequests || !hasMoreRequests) return;
 
@@ -152,7 +150,6 @@ const GroupDetailPage = () => {
         fetchRequests();
     }, [requestPage, activeTab]);
 
-    // Intersection Observer for infinite scrolling (only when the right tab is active)
     useEffect(() => {
         if (!loadMoreRef.current) return;
 
@@ -291,7 +288,6 @@ const GroupDetailPage = () => {
 
     const handleCreateEvent = (eventData) => {
         eventData["group_id"] = groupID
-        // api/group/createEvent
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/createEvent`, {
             method: "POST",
             credentials: "include",

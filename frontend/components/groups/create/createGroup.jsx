@@ -1,4 +1,3 @@
-// components/groups/createGroup.jsx
 "use client"
 import React, { useState } from 'react';
 import { FiX, FiImage, FiGlobe } from 'react-icons/fi';
