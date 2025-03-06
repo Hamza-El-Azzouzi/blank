@@ -51,7 +51,7 @@ func (r *PostRepository) AllPosts(pagination int, currentUserID uuid.UUID) ([]mo
 		ON Post.post_id = comment_counts.post_id
 	WHERE
 		(Post.privacy_level = 'public' AND User.is_public = 1)
-		OR (Post.privacy_level = 'almost private' AND EXISTS(SELECT 1 FROM Follow WHERE Follow.follower_id = ? AND Follow.following_id = Post.user_id AND status = 'accepted'))
+		OR ((Post.privacy_level = 'almost private' OR Post.privacy_level = 'public') AND EXISTS(SELECT 1 FROM Follow WHERE Follow.follower_id = ? AND Follow.following_id = Post.user_id AND status = 'accepted'))
 		OR (Post.privacy_level = 'private' AND EXISTS(SELECT 1 FROM Post_Privacy WHERE Post_Privacy.post_id = Post.post_id AND Post_Privacy.user_id = ?))
 		OR (Post.user_id = ?)
 	GROUP BY 
