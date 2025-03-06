@@ -606,20 +606,37 @@ func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Ev
 }
 
 func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response string) (models.Event, error) {
-	deleteQuery := "DELETE FROM `Event_Response` WHERE event_id = ? AND user_id = ?"
-	_, err := g.DB.Exec(deleteQuery, event_id, user_id)
-	if err != nil {
+	// First check if user already has a response
+	checkQuery := "SELECT response FROM `Event_Response` WHERE event_id = ? AND user_id = ?"
+	var existingResponse string
+	err := g.DB.QueryRow(checkQuery, event_id, user_id).Scan(&existingResponse)
+
+	if err != nil && err != sql.ErrNoRows {
 		return models.Event{}, err
 	}
 
-	if response != "not-going" {
-		query := "INSERT INTO `Event_Response` (response_id,event_id,user_id,response) VALUES (?,?,?,?)"
-		_, err = g.DB.Exec(query, response_id, event_id, user_id, response)
+	// If user has same response, delete it
+	if err == nil && existingResponse == response {
+		deleteQuery := "DELETE FROM `Event_Response` WHERE event_id = ? AND user_id = ?"
+		_, err = g.DB.Exec(deleteQuery, event_id, user_id)
+		if err != nil {
+			return models.Event{}, err
+		}
+	} else if err == nil { // If user has different response, update it
+		updateQuery := "UPDATE `Event_Response` SET response = ?, response_id = ? WHERE event_id = ? AND user_id = ?"
+		_, err = g.DB.Exec(updateQuery, response, response_id, event_id, user_id)
+		if err != nil {
+			return models.Event{}, err
+		}
+	} else { // If no existing response, insert new one
+		insertQuery := "INSERT INTO `Event_Response` (response_id, event_id, user_id, response) VALUES (?, ?, ?, ?)"
+		_, err = g.DB.Exec(insertQuery, response_id, event_id, user_id, response)
 		if err != nil {
 			return models.Event{}, err
 		}
 	}
 
+	// Get updated counts
 	countQuery := `
 	SELECT 
 		e.event_id,
@@ -636,7 +653,6 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 	GROUP BY e.event_id`
 
 	var event models.Event
-
 	err = g.DB.QueryRow(countQuery, event_id, user_id, event_id).Scan(&event.Event_id, &event.Going_count, &event.Is_going)
 	if err != nil {
 		return models.Event{}, err

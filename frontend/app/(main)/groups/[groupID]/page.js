@@ -206,6 +206,7 @@ const GroupDetailPage = () => {
                 );
 
             }).catch((error) => {
+                //TODO: should add toast here
                 console.error(error)
             })
     };

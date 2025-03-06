@@ -26,7 +26,9 @@ func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) erro
 	default:
 		return fmt.Errorf("invalid target type: %s", target)
 	}
-	switch err := row.Scan(&existingreactionID); err {
+	err := row.Scan(&existingreactionID); 
+	switch err {
+		
 	case sql.ErrNoRows:
 		preparedQuery, err := r.DB.Prepare("INSERT INTO Like (like_id, user_id, comment_id, post_id,group_post_id) VALUES (?, ?, ?, ?,?)")
 		if err != nil {
@@ -42,7 +44,7 @@ func (r *ReactReposetorie) CreateReact(react *models.Reacts, target string) erro
 		if err != nil {
 			return err
 		}
-		_, err = preparedQuery.Exec(existingreactionID, react.UserID, target)
+		_, err = preparedQuery.Exec(existingreactionID, react.UserID)
 		if err != nil {
 			return err
 		}

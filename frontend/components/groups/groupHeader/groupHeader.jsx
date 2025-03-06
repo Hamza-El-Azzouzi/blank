@@ -17,26 +17,26 @@ const GroupHeader = ({ group }) => {
     const [isPendingHovered, setIsPendingHovered] = useState(false);
     const handleLeaveGroup = (e) => {
         e.preventDefault()
-            fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    'content-type': 'application/json',
-                    'Authorization': `Bearer ${cookieValue}`
-                },
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
             })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(error => { throw error; });
-                    }
-                    return response.json();
-                })
-                .then(() => {
-                    showToast('success', 'Success! Operation completed.');
-                    router.push("/groups")
-                }).catch((error) => {
-                    showToast('error', error.message);
-                })
+            .then(() => {
+                showToast('success', 'Success! Operation completed.');
+                router.push("/groups")
+            }).catch((error) => {
+                showToast('error', error.message);
+            })
     };
     const handleCancelRequest = (e) => {
         e.preventDefault()
@@ -48,18 +48,18 @@ const GroupHeader = ({ group }) => {
                 'Authorization': `Bearer ${cookieValue}`
             },
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => { throw error; });
-            }
-            return response.json();
-        })
-        .then(() => {
-            showToast('success', 'Request cancelled successfully.');
-            router.push("/groups")
-        }).catch((error) => {
-            showToast('error', error.message);
-        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
+            })
+            .then(() => {
+                showToast('success', 'Request cancelled successfully.');
+                router.push("/groups")
+            }).catch((error) => {
+                showToast('error', error.message);
+            })
     };
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
@@ -70,29 +70,29 @@ const GroupHeader = ({ group }) => {
     };
     const handleJoinGroup = (e) => {
         e.preventDefault()
-            fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/requested`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    'content-type': 'application/json',
-                    'Authorization': `Bearer ${cookieValue}`
-                },
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/requested`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${cookieValue}`
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => { throw error; });
+                }
+                return response.json();
             })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(error => { throw error; });
-                    }
-                    return response.json();
-                })
-                .then(() => {
-                    showToast('success', 'Success! Operation completed.');
-                    setIsDisabled(true);
-                    group.IsPending = true
-                }).catch((error) => {
-                
-                    showToast('error', error.message);
-                })
-        };
+            .then(() => {
+                showToast('success', 'Success! Operation completed.');
+                setIsDisabled(true);
+                group.IsPending = true
+            }).catch((error) => {
+
+                showToast('error', error.message);
+            })
+    };
     const handleDestoryCommunity = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/delete`, {
@@ -104,9 +104,9 @@ const GroupHeader = ({ group }) => {
             },
         })
             .then(response => {
-               
+
                 if (!response.ok) {
-                   
+
                     return response.json().then(error => { throw error; });
                 }
                 return response.json();
@@ -114,7 +114,7 @@ const GroupHeader = ({ group }) => {
             .then(() => {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/groups")
-            
+
             }).catch((error) => {
                 showToast('error', error.message);
             })
@@ -146,22 +146,7 @@ const GroupHeader = ({ group }) => {
                     </div>
                 </div>
                 <div className="group-actions">
-                    {group.IsJoined ? (
-                        <>
-                            <button
-                                className="leave-group-btn"
-                                onClick={(e)=>{ handleLeaveGroup(e) }}
-                            >
-                                Leave Group
-                            </button>
-                            <button
-                                className="invite-btn"
-                                onClick={() => setShowInviteDialog(true)}
-                            >
-                                Invite Members
-                            </button>
-                        </>
-                    ) : group.IsOwner ? (
+                    {group.IsOwner ? (
                         <>
                             <button
                                 className="leave-group-btn"
@@ -176,6 +161,22 @@ const GroupHeader = ({ group }) => {
                                 Invite Members
                             </button>
                         </>
+                    ) : group.IsJoined ? (
+                        <>
+                            <button
+                                className="leave-group-btn"
+                                onClick={(e) => { handleLeaveGroup(e) }}
+                            >
+                                Leave Group
+                            </button>
+                            <button
+                                className="invite-btn"
+                                onClick={() => setShowInviteDialog(true)}
+                            >
+                                Invite Members
+                            </button>
+
+                        </>
                     ) : group.IsPending ? (
                         <button
                             className="join-group-btn pending"
@@ -189,7 +190,7 @@ const GroupHeader = ({ group }) => {
                         <button
                             className="join-group-btn"
                             disabled={isDisabled}
-                            onClick={(e)=>{handleJoinGroup(e)}}
+                            onClick={(e) => { handleJoinGroup(e) }}
                         >
                             Join Group
                         </button>
