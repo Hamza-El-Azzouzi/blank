@@ -76,6 +76,7 @@ LIMIT 20 OFFSET ?;
 			&group.IsPending,
 			&group.TotalCount,
 		)
+		
 		if err != nil {
 			return nil, fmt.Errorf("error scanning post with user info: %v", err)
 		}
@@ -150,8 +151,14 @@ func (g *GroupRepository) GroupDetails(user_id, group_id string) (models.GroupDe
 		SELECT 1 FROM Group_Membership 
 		WHERE group_id = g.group_id 
 		AND user_id = ? 
-		AND status = 'requested'
+		AND status = 'requested' 
 	) as is_pending,
+	EXISTS (
+		SELECT 1 FROM Group_Membership 
+		WHERE group_id = g.group_id 
+		AND user_id = ? 
+		AND status = 'invite' 
+	) as is_invited,
 	g.created_at
 FROM ` + "`Group`" + ` g
 JOIN ` + "`User`" + ` u ON g.creator_id = u.user_id
@@ -159,7 +166,7 @@ LEFT JOIN ` + "`Group_Membership`" + ` gm ON g.group_id = gm.group_id
 WHERE g.group_id = ?
 GROUP BY g.group_id, g.title, g.description, u.user_id, u.first_name, u.last_name, g.created_at;
 `
-	err := g.DB.QueryRow(selectQuery, user_id, group_id).Scan(
+	err := g.DB.QueryRow(selectQuery, user_id,user_id, group_id).Scan(
 		&group.GroupeId,
 		&group.Name,
 		&group.Description,
@@ -168,6 +175,7 @@ GROUP BY g.group_id, g.title, g.description, u.user_id, u.first_name, u.last_nam
 		&group.Last_Name,
 		&group.Member_count,
 		&group.IsPending,
+		&group.IsInvited,
 		&group.Created_at,
 	)
 	if err != nil {

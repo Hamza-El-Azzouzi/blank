@@ -13,6 +13,7 @@ type GroupDetails struct {
 	IsOwner      bool
 	IsJoined     bool
 	IsPending    bool
+	IsInvited    bool
 	Name         string
 	Description  string
 	Last_Name    string

@@ -1,0 +1,28 @@
+FROM golang:1.23.0-alpine as builder
+
+ENV CGO_ENABLED=1
+
+RUN apk add --no-cache gcc musl-dev sqlite-dev
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go build -o main ./main.go
+
+FROM alpine:3.18 
+
+RUN apk add --no-cache sqlite-libs
+
+WORKDIR /app
+
+COPY --from=builder /app/main /app/main
+COPY --from=builder /app/pkg/db/migrations /app/pkg/db/migrations
+COPY --from=builder /app/templates /app/templates
+
+EXPOSE 1414
+
+CMD ["/app/main"]

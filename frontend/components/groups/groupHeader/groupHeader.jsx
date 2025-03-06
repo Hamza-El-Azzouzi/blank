@@ -8,6 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import InviteDialog from '../inviteDialog/inviteDialog';
 
 const GroupHeader = ({ group }) => {
+    console.log(group)
     const { groupID } = useParams();
     const router = useRouter()
     const cookieValue = GetCookie("sessionId")
@@ -119,6 +120,49 @@ const GroupHeader = ({ group }) => {
                 showToast('error', error.message);
             })
     };
+    const handleAcceptGroupInvitation = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${group.GroupeId}/accept-invite`, {
+                credentials: "include",
+                method: "PUT",
+                headers: { Authorization: `Bearer ${cookieValue}` },
+            });
+            let data = await res.json();
+            if (data.message == "success") {
+                setAllowActions(false)
+                notif.seen = true
+            } else {
+                console.log(data.message)
+            }
+
+        } catch (err) {
+            console.error("Error fetching:", err);
+        }
+    }
+    const handleRefuseGroupInvitation = async (e) => {
+        e.preventDefault();
+        try {
+            //TODO: Will work when merge the notification
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${group.GroupeId}/refuse-invite`, {
+                credentials: "include",
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${cookieValue}` },
+            });
+            let data = await res.json();
+            if (data.message == "success") {
+                console.log("gooood")
+                //TODO: ADD Toast
+            } else {
+                console.log(data.message)
+                 //TODO: ADD Toast
+            }
+
+        } catch (err) {
+             //TODO: ADD Toast
+            console.error("Error fetching:", err);
+        }
+    }
     return (
         <>
             {toasts.map((toast) => (
@@ -186,6 +230,12 @@ const GroupHeader = ({ group }) => {
                         >
                             {isPendingHovered ? 'Cancel Request' : 'Pending'}
                         </button>
+                    ) : group.IsInvited ? (
+                        <>
+                            <button className="accept-group-btn" onClick={handleAcceptGroupInvitation}> Accept</button>
+                            <button className="leave-group-btn" onClick={handleRefuseGroupInvitation}> Refuse</button>
+                        </>
+
                     ) : (
                         <button
                             className="join-group-btn"

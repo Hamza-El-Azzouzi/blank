@@ -1,15 +1,18 @@
 import "./globals.css";
 
-export const metadata = {
-  title: "blank",
-  description: "This is a blank Project",
-};
+
+// export const metadata = {
+//   title: "Social Network",
+//   description: "Connect with friends and share your moments",
+// };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {children}
+        <div className="container">
+          {children}
+        </div>
       </body>
     </html>
   );

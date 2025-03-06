@@ -214,3 +214,6 @@
     color: var(--text-tertiary);
     cursor: not-allowed;
 }
+.error-message{
+    color: var(--error);
+}

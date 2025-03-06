@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -20,6 +21,7 @@ func (s *SessionsRepositorie) CheckSession(sessionID string) (string,bool) {
 	user_id := ""
 	query := `SELECT user_id,count(*) FROM Session WHERE session_id = ?`
 	err := s.DB.QueryRow(query, sessionID).Scan(&user_id,&exist)
+	fmt.Println("session Cheker",err)
 	if err != nil {
 		return user_id,false
 	}

@@ -14,6 +14,7 @@ func SetCookies(w http.ResponseWriter, name, value string) {
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 		Domain:   os.Getenv("DOMAIN"),
+		MaxAge:   2147483647,
 	}
 
 	http.SetCookie(w, cookie)

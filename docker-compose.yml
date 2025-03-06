@@ -1,0 +1,24 @@
+version: "3.8"
+
+networks:
+  blank-network: # Define the custom network
+    driver: bridge
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "1414:1414"
+    networks:
+      - blank-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - ENVIREMENT="Production"
+    depends_on:
+      - backend
+    networks:
+      - blank-network

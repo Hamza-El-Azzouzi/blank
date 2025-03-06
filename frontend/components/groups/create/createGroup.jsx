@@ -1,49 +1,46 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { FiX, FiImage, FiGlobe } from 'react-icons/fi';
 import './createGroup.css';
-
 const CreateGroup = ({ onClose, onSubmit }) => {
-    const [error,setError] = useState("")
-    const [groupData, setGroupData] = useState({
-        name: '',
-        description: '',
-    });
+    const [error, setError] = useState("");
+    const nameRef = useRef();
+    const descriptionRef = useRef();
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setGroupData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        setError("")
-        
-        if (!groupData.name.trim() || !groupData.description.trim()) {
+    const validateForm = (name, description) => {
+        if (!name.trim() || !description.trim()) {
             setError('Please fill in all required fields');
-            return;
+            return false;
         }
 
         const nameRegex = /^[a-zA-Z0-9\s]+$/;
-        if (!nameRegex.test(groupData.name)) {
+        if (!nameRegex.test(name)) {
             setError('Group name can only contain letters, numbers and spaces');
-            return;
+            return false;
         }
 
-        if (groupData.name.length > 50) {
+        if (name.length > 50) {
             setError('Group name must be less than 50 characters');
-            return;
+            return false;
         }
 
-        if (groupData.description.length > 250) {
+        if (description.length > 250) {
             setError('Description must be less than 150 characters');
-            return;
+            return false;
         }
+
+        return true;
+    };
+
+    const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(groupData);
-        onClose();
+        const name = nameRef.current.value;
+        const description = descriptionRef.current.value;
+
+        if (validateForm(name, description)) {
+            onSubmit({ name, description });
+            onClose();
+        }
     };
 
     return (
@@ -58,20 +55,34 @@ const CreateGroup = ({ onClose, onSubmit }) => {
 
                 <form onSubmit={handleSubmit} className="create-group-form">
                     <div className="form-group">
-                        <input type="text" name="name" placeholder="Group Name" value={groupData.name}
-                            onChange={handleChange} className="group-input" required />
+                        <input 
+                            ref={nameRef}
+                            type="text" 
+                            name="name" 
+                            placeholder="Group Name"
+                            className="group-input" 
+                            onChange={() => setError("")}
+                            required 
+                        />
                     </div>
 
                     <div className="form-group">
-                        <textarea name="description" placeholder="Group Description"
-                            value={groupData.description} onChange={handleChange} maxLength={150} className="group-textarea" required />
+                        <textarea 
+                            ref={descriptionRef}
+                            name="description" 
+                            placeholder="Group Description"
+                            maxLength={150} 
+                            className="group-textarea"
+                            onChange={() => setError("")}
+                            required 
+                        />
                     </div>
                     {error && <div className="error-message">*{error}</div>}
                     <div className="form-footer">
                         <button type="button" onClick={onClose} className="cancel-button">
                             Cancel
                         </button>
-                        <button type="submit" className="submit-button" disabled={!groupData.name || !groupData.description}>
+                        <button type="submit" className="submit-button">
                             Create Group
                         </button>
                     </div>

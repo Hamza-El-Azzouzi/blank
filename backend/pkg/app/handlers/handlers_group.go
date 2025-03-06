@@ -38,6 +38,7 @@ func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		utils.SendResponses(w, http.StatusBadRequest, "user id Most be String", nil)
 	}
+
 	groupCreation, err := g.GroupService.CreateGroup(group, user_id)
 	if err != nil {
 		switch err.Error() {
