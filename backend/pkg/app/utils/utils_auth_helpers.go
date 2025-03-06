@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"html"
 	"regexp"
 	"strconv"
 	"strings"
@@ -54,7 +53,7 @@ func ValidateNickname(nickname string) (bool, string) {
 }
 
 func ValidateAboutMe(aboutMe string) (bool, string) {
-	aboutMe = html.EscapeString(strings.TrimSpace(aboutMe))
+	aboutMe = strings.TrimSpace(aboutMe)
 	if aboutMe == "" {
 		return true, ""
 	}
@@ -67,7 +66,7 @@ func ValidateAboutMe(aboutMe string) (bool, string) {
 }
 
 func ValidateEmail(email string) (bool, string) {
-	email = html.EscapeString(strings.TrimSpace(email))
+	email = strings.TrimSpace(email)
 
 	if len(email) < 5 && len(email) > 50 {
 		return false, "Email must be between 5 and 50 characters long"

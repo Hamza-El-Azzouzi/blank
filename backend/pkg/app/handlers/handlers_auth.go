@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"html"
 	"net/http"
 	"strconv"
 	"strings"
@@ -38,13 +37,6 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
 		return
 	}
-
-	user.FirstName = html.EscapeString(strings.TrimSpace(user.FirstName))
-	user.LastName = html.EscapeString(strings.TrimSpace(user.LastName))
-	user.Email = html.EscapeString(strings.TrimSpace(user.Email))
-	user.Nickname = html.EscapeString(strings.TrimSpace(user.Nickname))
-	user.DateOfBirth = html.EscapeString(strings.TrimSpace(user.DateOfBirth))
-	user.AboutMe = html.EscapeString(strings.TrimSpace(user.AboutMe))
 
 	if isValid, message := utils.ValidateFullName(user.FirstName); !isValid {
 		utils.SendResponses(w, http.StatusBadRequest, message, nil)
@@ -203,5 +195,3 @@ func (h *AuthHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
-
-

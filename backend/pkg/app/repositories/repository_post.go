@@ -3,7 +3,6 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
-	"html"
 
 	"blank/pkg/app/models"
 
@@ -15,7 +14,6 @@ type PostRepository struct {
 }
 
 func (r *PostRepository) Create(post *models.Post) error {
-	post.Content = html.EscapeString(post.Content)
 	preparedQuery, err := r.DB.Prepare("INSERT INTO Post (post_id, user_id, content, image, privacy_level) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return err

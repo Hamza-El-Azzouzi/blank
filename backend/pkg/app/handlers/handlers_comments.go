@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"html"
 	"net/http"
 	"strconv"
 	"strings"
@@ -97,8 +96,8 @@ func (c *CommentHandler) CommentSaver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	commentData.Content = html.EscapeString(strings.TrimSpace(commentData.Content))
-	if (commentData.Content == "" && commentData.Image == "") || len(commentData.Content) > 200{
+	commentData.Content = strings.TrimSpace(commentData.Content)
+	if (commentData.Content == "" && commentData.Image == "") || len(commentData.Content) > 200 {
 		utils.SendResponses(w, http.StatusBadRequest, "Comment can't be empty or longer than  200 characters", nil)
 		return
 	}
