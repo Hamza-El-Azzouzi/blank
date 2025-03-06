@@ -9,11 +9,13 @@ import { fetchBlob } from '@/lib/fetch_blob';
 import { formatTime } from '@/lib/format_time';
 import { useWebSocket } from '@/lib/useWebSocket';
 import EmojiPicker from '@/components/chat/EmojiPicker';
+import Error from '@/components/profile/error/Error';
 import './chat.css';
 
 export default function ChatPage() {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [error, setError] = useState(null);
     const [messageIds, setMessageIds] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -67,9 +69,12 @@ export default function ChatPage() {
                     }
                 );
 
-                if (!response.ok) throw new Error('Failed to fetch user');
-
                 const data = await response.json();
+                console.log(data);
+                if (data.status != 200) {
+                    setError(data)
+                    return;
+                }
                 if (data) {
                     const userData = data.data;
                     userData.avatar = userData.avatar
@@ -234,7 +239,7 @@ export default function ChatPage() {
         }
 
         sendWebSocketMessage(userId, messageContent, 'to_user');
-        
+
         if (messageSeenTimeout.current) {
             clearTimeout(messageSeenTimeout.current);
         }
@@ -254,6 +259,7 @@ export default function ChatPage() {
             inputRef.current.focus();
         }
     };
+    if (error) return <Error error={error} />
 
     return (
         <div className="chat-page">

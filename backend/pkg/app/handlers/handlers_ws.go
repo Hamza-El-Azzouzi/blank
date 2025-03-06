@@ -58,10 +58,13 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 
 		message.SenderID = userID
 		if message.SenderID == message.ReceiverID {
-			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+			err := ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
 				Type:  "error",
 				Label: "You can't send a message to yourself !",
 			})
+			if err != nil {
+				break
+			}
 			continue
 		}
 		
@@ -86,7 +89,10 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		dists, notification := ws.WebSocketService.ReadMessage(message)
 		if notification.Type == "error" {
 			log.Printf("Error sending notification: %v", err)
-			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, notification)
+			err = ws.WebSocketService.SendNotification([]uuid.UUID{userID}, notification)
+			if err != nil {
+				break
+			}
 			continue
 		}
 

@@ -135,22 +135,6 @@
     }
 }
 
-.user-not-found {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 5rem;
-    min-height: 40vh;
-}
-
-.user-not-found div {
-    text-align: center;
-    background: var(--bg-tertiary);
-    padding: 30px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    max-width: 70%;
-}
 
 .user-private {
     display: flex;

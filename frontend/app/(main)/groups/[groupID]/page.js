@@ -11,6 +11,7 @@ import './group.css';
 import RequestCard from '@/components/groups/cards/requestCard';
 import { fetchBlob } from '@/lib/fetch_blob';
 import Posts from '@/components/posts/posts';
+import Error from '@/components/profile/error/Error';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -26,6 +27,7 @@ const GroupDetailPage = () => {
     const [hasMoreEvents, setHasMoreEvents] = useState(true);
 
     const [requests, setRequests] = useState([]);
+    const [error, setError] = useState(null);
 
     const [requestPage, setRequestPage] = useState(0);
     const [loadingRequests, setLoadingRequests] = useState(false);
@@ -62,9 +64,13 @@ const GroupDetailPage = () => {
                         'Authorization': `Bearer ${cookieValue}`
                     },
                 });
-                if (!response.ok) throw new Error("Failed to fetch group data");
 
                 const data = await response.json();
+
+                if (data.status != 200) {
+                    setError(data)
+                    return;
+                }
 
                 setGroupData(data.data)
                 setIsJoined(data.data.IsJoined);
@@ -137,7 +143,7 @@ const GroupDetailPage = () => {
                 if (data.data && data.data[0].TotalCount < ITEMS_PER_PAGE) {
                     setHasMoreRequests(false);
                 }
-               
+
                 if (data.data) setRequests(prevRequests => [...prevRequests, ...data.data]);
 
             } catch (error) {
@@ -314,9 +320,10 @@ const GroupDetailPage = () => {
             }).catch((error) => {
                 console.error(error)
             })
-
-
     };
+
+    if (error) return <Error error={error} />
+
     return (
         <div className="group-detail-page">
             <GroupHeader group={groupData} />

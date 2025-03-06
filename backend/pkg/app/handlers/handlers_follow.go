@@ -27,9 +27,11 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var follow models.FollowRequest
-
-	err := json.NewDecoder(r.Body).Decode(&follow)
+	var (
+		follow models.FollowRequest
+		err    error
+	)
+	err = json.NewDecoder(r.Body).Decode(&follow)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
@@ -62,7 +64,7 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if privacy == "private" {
-		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
+		err = f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
 			Type:        "follow_request",
 			UserID:      uuid.NullUUID{UUID: userID, Valid: true},
 			UserName:    sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
@@ -71,13 +73,17 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 			CreatedAt:   time.Now(),
 		})
 	} else if privacy == "public" {
-		f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
-			Type:        "follow",
-			UserID:      uuid.NullUUID{UUID: userID, Valid: true},
-			UserName:    sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
-			Label:       fmt.Sprintf(`New follow from %s %s`, user.FirstName, user.LastName),
-			CreatedAt:   time.Now(),
+		err = f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
+			Type:      "follow",
+			UserID:    uuid.NullUUID{UUID: userID, Valid: true},
+			UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+			Label:     fmt.Sprintf(`New follow from %s %s`, user.FirstName, user.LastName),
+			CreatedAt: time.Now(),
 		})
+	}
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
 	}
 
 	followStatus := make(map[string]string)

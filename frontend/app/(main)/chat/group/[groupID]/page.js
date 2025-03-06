@@ -11,6 +11,7 @@ import { useWebSocket } from '@/lib/useWebSocket';
 import EmojiPicker from '@/components/chat/EmojiPicker';
 import '../../[userID]/chat.css';
 import './group-chat.css';
+import Error from '@/components/profile/error/Error';
 
 export default function GroupChatPage() {
     const [message, setMessage] = useState('');
@@ -23,6 +24,7 @@ export default function GroupChatPage() {
     const [group, setGroup] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [error, setError] = useState(null);
     const containerRef = useRef(null);
     const messageSeenTimeout = useRef(null);
     const inputRef = useRef(null);
@@ -71,9 +73,13 @@ export default function GroupChatPage() {
                     }
                 );
 
-                if (!response.ok) throw new Error('Failed to fetch group');
-
                 const data = await response.json();
+
+
+                if (data.status != 200) {
+                    setError(data)
+                    return;
+                }
                 if (data && data.data) {
                     setGroup(data.data);
                 }
@@ -143,9 +149,12 @@ export default function GroupChatPage() {
                 }
             );
 
-            if (!response.ok) throw new Error('Failed to fetch messages');
-
             const data = await response.json();
+
+            if (data.status != 200) {
+                setError(data)
+                return;
+            }
 
             if (data.data && data.data.length > 0) {
                 const processedMessages = await Promise.all(data.data.map(async (msg) => {
@@ -261,6 +270,8 @@ export default function GroupChatPage() {
             inputRef.current.focus();
         }
     };
+
+    if (error) return <Error error={error} />
 
     return (
         <div className="chat-page">

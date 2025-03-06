@@ -7,8 +7,8 @@ import ProfileAbout from '@/components/profile/profileAbout/profileAbout';
 import Posts from '@/components/posts/posts';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
-import UserNotFound from '@/components/profile/NotFound';
 import PrivateAccount from '@/components/profile/PrivateAccount';
+import Error from '@/components/profile/error/Error';
 
 export default function ProfilePage({ params }) {
   const [cookieValue, setCookieValue] = useState(null);
@@ -34,7 +34,7 @@ export default function ProfilePage({ params }) {
   const [hasMore, setHasMore] = useState(true);
   const [endReached, setEndReached] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
-  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setCookieValue(cookies.GetCookie("sessionId"));
@@ -57,11 +57,11 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async (data) => {
-        data = data.data
-        if (data.status == 400 || data.status == 404) {
-          setNotFound(true);
+        if (data.status != 200) {
+          setError(data)
           return;
         }
+        data = data.data
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
@@ -87,6 +87,10 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async data => {
+        if (data.status != 200) {
+          setError(data)
+          return;
+        }
         const posts = data.data
         const user = {
           name: profile.first_name + " " + profile.last_name,
@@ -133,45 +137,41 @@ export default function ProfilePage({ params }) {
     }
   };
 
+  if (error) return <Error error={error} />
+
   return (
     <div className="profile-container">
-      {!notFound ?
-        <>
-          <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />
+      <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />
 
-          {!profile.is_owner && !profile.is_public && !profile.is_following
-            ? <PrivateAccount />
-            :
+      {!profile.is_owner && !profile.is_public && !profile.is_following
+        ? <PrivateAccount />
+        : <>
+          <div className="profile-tabs">
+            <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+              Posts
+            </button>
+            <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+              About
+            </button>
+          </div>
+          {activeTab === 'about' &&
+            <ProfileAbout profile={profile} />
+          }
+
+          {activeTab === 'posts' && profile.first_name &&
             <>
-              <div className="profile-tabs">
-                <button className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
-                  Posts
-                </button>
-                <button className={`tab-btn ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
-                  About
-                </button>
-              </div>
-              {activeTab === 'about' &&
-                <ProfileAbout profile={profile} />
-              }
-
-              {activeTab === 'posts' && profile.first_name &&
-                <>
-                  <Posts
-                    posts={posts}
-                    loading={loading}
-                    endReached={endReached}
-                    onLoadMore={handleLoadMore}
-                    target="Post"
-                  />
-                </>
-              }
+              <Posts
+                posts={posts}
+                loading={loading}
+                endReached={endReached}
+                onLoadMore={handleLoadMore}
+                target="Post"
+              />
             </>
           }
         </>
-
-        : <UserNotFound />
       }
+
     </div>
   );
 }
