@@ -15,6 +15,7 @@ type MessageHandler struct {
 	MessageService *services.MessageService
 	AuthService    *services.AuthService
 	SessionService *services.SessionService
+	GroupService   *services.GroupService
 }
 
 func (m *MessageHandler) GetContactUsers(w http.ResponseWriter, r *http.Request) {
@@ -150,6 +151,13 @@ func (m *MessageHandler) GetGroupMessages(w http.ResponseWriter, r *http.Request
 			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
 			return
 		}
+	}
+
+	userID := r.Context().Value("user_id").(string)
+
+	if isMember := m.GroupService.IsGroupMember(groupID, userID); !isMember {
+		utils.SendResponses(w, http.StatusUnauthorized, "you dont have the permession to join group chat", nil)
+		return
 	}
 
 	messages, err := m.MessageService.GetGroupMessages(groupID, offset)

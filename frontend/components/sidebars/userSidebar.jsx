@@ -182,7 +182,7 @@ const UserSidebar = () => {
       if (!response.ok) throw new Error('Failed to fetch group chats');
 
       const data = await response.json();
-      data.data.map((group) => {
+      data?.data?.map((group) => {
         if (group.group_id === currentChatGroupId) {
           group.is_seen = true
         }

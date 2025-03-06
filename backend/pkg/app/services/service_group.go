@@ -86,7 +86,7 @@ func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetai
 func (g *GroupService) IsGroupMember(group_id, user_id string) bool {
 	groupDetails, err := g.GroupRepo.IsGroupMember(group_id, user_id)
 	if err != nil {
-		return groupDetails
+		return false
 	}
 	return groupDetails
 }

@@ -94,7 +94,7 @@ func (u *UserService) SearchUsers(query string, page int, authUserID uuid.UUID) 
 			return nil, false, err
 		}
 
-		if users[i].IsPublic || isFollowing || isFollower {
+		if isFollowing || isFollower {
 			users[i].CanSendMessage = true
 		} else {
 			users[i].CanSendMessage = false
@@ -188,4 +188,22 @@ func (u *UserService) Notifications(authUserID uuid.UUID, page int) ([]models.No
 
 func (u *UserService) SeeNotification(userID, notifID uuid.UUID) error {
 	return u.NotificationRepo.SeeNotification(userID, notifID)
+}
+
+func (u *UserService) CanSendMessage(authUserID, userID uuid.UUID) (bool, error) {
+	isFollowing, err := u.UserRepo.IsFollowing(authUserID, userID)
+	if err != nil {
+		return false, err
+	}
+
+	isFollower, err := u.UserRepo.IsFollowing(userID, authUserID)
+	if err != nil {
+		return false, err
+	}
+
+	if isFollowing || isFollower {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
