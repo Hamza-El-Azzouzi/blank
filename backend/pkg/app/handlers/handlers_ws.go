@@ -13,11 +13,11 @@ import (
 )
 
 type WebSocketHandler struct {
-	WebSocketService    *services.WebSocketService
-	UserService         *services.UserService
-	GroupService        *services.GroupService
-	SessionService      *services.SessionService
-	Upgrader            websocket.Upgrader
+	WebSocketService *services.WebSocketService
+	UserService      *services.UserService
+	GroupService     *services.GroupService
+	SessionService   *services.SessionService
+	Upgrader         websocket.Upgrader
 }
 
 func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,6 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	if err := ws.WebSocketService.ConnectUser(conn, userID); err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
@@ -62,6 +61,22 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
 				Type:  "error",
 				Label: "You can't send a message to yourself !",
+			})
+			continue
+		}
+
+		if ok, err := ws.UserService.CanSendMessage(message.SenderID, message.ReceiverID); !ok || err != nil {
+			if err != nil {
+				ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+					Type:  "error",
+					Label: "something wrong happend",
+				})
+				continue
+			}
+			
+			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+				Type:  "error",
+				Label: "You can't send a message, at least one of the users must be following the other!",
 			})
 			continue
 		}
