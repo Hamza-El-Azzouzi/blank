@@ -57,11 +57,11 @@ export default function ProfilePage({ params }) {
     })
       .then(res => res.json())
       .then(async (data) => {
-        data = data.data
         if (data.status == 400 || data.status == 404) {
           setNotFound(true);
           return;
         }
+        data = data.data
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';

@@ -38,7 +38,7 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
 		return
 	}
 
