@@ -125,6 +125,7 @@ export default function ChatPage() {
 
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
+            window.dispatchEvent(new CustomEvent('refrech_contacts'));
         }, 500);
     }, [messageIds, userId]);
 
@@ -172,6 +173,7 @@ export default function ChatPage() {
                         }
                     }, 4);
                 }
+                window.dispatchEvent(new CustomEvent('refrech_contacts'));
 
                 setHasMore(data.data.length === 20)
             } else {
@@ -232,8 +234,14 @@ export default function ChatPage() {
         }
 
         sendWebSocketMessage(userId, messageContent, 'to_user');
+        
+        if (messageSeenTimeout.current) {
+            clearTimeout(messageSeenTimeout.current);
+        }
 
-        window.dispatchEvent(new CustomEvent('refrech_contacts'));
+        messageSeenTimeout.current = setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('refrech_contacts'));
+        }, 500);
 
         setTimeout(() => {
             containerRef.current.scrollTop = containerRef.current.scrollHeight;

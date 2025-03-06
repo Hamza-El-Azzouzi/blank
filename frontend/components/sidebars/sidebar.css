@@ -195,6 +195,26 @@
     color: var(--text-secondary);
 }
 
+.contacts-list-wrapper {
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+}
+
+.contacts-list-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+
+.contacts-list-wrapper::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 3px;
+}
+
+.contacts-list-wrapper::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
 .contacts-list {
     list-style: none;
     margin: 0;
