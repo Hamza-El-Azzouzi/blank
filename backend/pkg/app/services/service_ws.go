@@ -160,13 +160,10 @@ func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification mod
 		notification.ID = uuid.Must(uuid.NewV4())
 		for _, receiver := range dists {
 			notification.ReceiverID = receiver
-			if notification.Type == "event" || notification.Type == "group_invitation" {
+			if notification.Type == "event" ||
+				notification.Type == "group_invitation" ||
+				notification.Type == "join_request" {
 				err := ws.NotificationRepo.CreateGroupNotification(notification)
-				if err != nil {
-					return err
-				}
-			} else if notification.Type == "join_request" {
-				err := ws.NotificationRepo.CreateGroupJoinRequestNotif(notification)
 				if err != nil {
 					return err
 				}
