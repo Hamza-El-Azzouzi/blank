@@ -203,7 +203,7 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
+	err = g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
 		Type:      "join_request",
 		GroupID:   uuid.NullUUID{UUID: GroupID, Valid: true},
 		UserID:    uuid.NullUUID{UUID: user.UserID, Valid: true},
@@ -211,6 +211,10 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		Label:     fmt.Sprintf(`%s %s requested to join %s`, user.FirstName, user.LastName, groupTitle),
 		CreatedAt: time.Now(),
 	})
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
 
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
@@ -268,7 +272,7 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	g.WebSocketService.SendNotification([]uuid.UUID{invitedUserID}, models.Notification{
+	err = g.WebSocketService.SendNotification([]uuid.UUID{invitedUserID}, models.Notification{
 		Type:       "group_invitation",
 		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
 		UserID:     uuid.NullUUID{UUID: groupOwnerID, Valid: true},
@@ -276,6 +280,10 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		Label:      fmt.Sprintf(`you are invited to join %s`, groupTitle),
 		CreatedAt:  time.Now(),
 	})
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
 
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
@@ -725,7 +733,7 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	g.WebSocketService.SendNotification(groupMembers, models.Notification{
+	err = g.WebSocketService.SendNotification(groupMembers, models.Notification{
 		Type:       "event",
 		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
 		GroupTitle: sql.NullString{String: eventCreation.Group_title, Valid: true},
@@ -733,6 +741,10 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		Label:      fmt.Sprintf(`New event created "%s" in "%s"`, eventCreation.Title, eventCreation.Group_title),
 		CreatedAt:  time.Now(),
 	})
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
 
 	utils.SendResponses(w, http.StatusCreated, "Event created successfully", eventCreation)
 }
