@@ -157,7 +157,6 @@ export default function ProfilePage({ params }) {
 
               {activeTab === 'posts' && profile.first_name &&
                 <>
-                  <h3>{profile.first_name}&lsquo;s posts</h3>
                   <Posts
                     posts={posts}
                     loading={loading}

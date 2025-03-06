@@ -14,6 +14,7 @@ import './chat.css';
 export default function ChatPage() {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [messageIds, setMessageIds] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(0);
@@ -97,21 +98,26 @@ export default function ChatPage() {
         if (data.message.receiver_type !== 'to_user' || data.message.sender_id !== userId) {
             return
         }
-        
-        setMessages(prev => [...prev, {
+
+        const newMessage = {
             message_id: data.message.id,
             sender_id: data.message.sender_id,
             receiver_id: data.message.receiver_id,
             content: data.message.content,
             seen: false,
             created_at: data.message.created_at || new Date().toISOString()
-        }]);
+        };
 
-        setTimeout(() => {
-            if (containerRef.current) {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
-            }
-        }, 5);
+        if (!messageIds.has(newMessage.message_id)) {
+            setMessageIds(prev => new Set([...prev, newMessage.message_id]));
+            setMessages(prev => [...prev, newMessage]);
+
+            setTimeout(() => {
+                if (containerRef.current) {
+                    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                }
+            }, 5);
+        }
 
         if (messageSeenTimeout.current) {
             clearTimeout(messageSeenTimeout.current);
@@ -120,8 +126,7 @@ export default function ChatPage() {
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
         }, 500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [messageIds, userId]);
 
     const sendWebSocketMessage = useWebSocket(userId, handleNewMessage, null);
 
@@ -143,18 +148,23 @@ export default function ChatPage() {
 
             if (data.data && data.data.length > 0) {
                 const reversedMessages = [...data.data].reverse();
+                const newMessages = reversedMessages.filter(msg => !messageIds.has(msg.message_id));
+
+                const newMessageIds = new Set(messageIds);
+                newMessages.forEach(msg => newMessageIds.add(msg.message_id));
+                setMessageIds(newMessageIds);
+
                 if (pageNum === 0) {
-                    setMessages(reversedMessages);
+                    setMessages(newMessages);
                     setTimeout(() => {
                         containerRef.current.scrollTop = containerRef.current.scrollHeight;
                     }, 4);
-
                 } else {
                     const container = containerRef.current;
                     const scrollHeight = container?.scrollHeight || 0;
                     const scrollTop = container?.scrollTop || 0;
 
-                    setMessages(prevMessages => [...reversedMessages, ...prevMessages]);
+                    setMessages(prevMessages => [...newMessages, ...prevMessages]);
                     setTimeout(() => {
                         if (container) {
                             const newScrollHeight = container.scrollHeight;
@@ -206,8 +216,9 @@ export default function ChatPage() {
         setMessage('');
         setShowEmojiPicker(false);
 
+        const tempId = `temp-${Date.now()}`;
         const tempMessage = {
-            message_id: `temp-${Date.now()}`,
+            message_id: tempId,
             sender_id: myUserId,
             receiver_id: userId,
             content: messageContent,
@@ -215,7 +226,10 @@ export default function ChatPage() {
             created_at: new Date().toISOString()
         };
 
-        setMessages(prev => [...prev, tempMessage]);
+        if (!messageIds.has(tempId)) {
+            setMessageIds(prev => new Set([...prev, tempId]));
+            setMessages(prev => [...prev, tempMessage]);
+        }
 
         sendWebSocketMessage(userId, messageContent, 'to_user');
 

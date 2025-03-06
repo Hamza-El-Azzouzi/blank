@@ -63,14 +63,12 @@ export default function Comment({ comment, cookieValue, target }) {
                 <p className="comment-text">{comment.content}</p>
                 <span className="comment-time">{comment.formatted_date}</span>
                 {comment.image && (
-                    <div className="post-image-container">
-                        {comment.image !== "" && (
-                            <img
-                                src={comment.image}
-                                alt="Post content"
-                                className="post-image"
-                            />
-                        )}
+                    <div className="comment-image-container">
+                        <img
+                            src={comment.image}
+                            alt="Comment attachment"
+                            className="comment-image"
+                        />
                     </div>
                 )}
             </div>

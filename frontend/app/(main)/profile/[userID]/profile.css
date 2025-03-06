@@ -45,62 +45,94 @@
 .profile-about-container {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.25rem;
-    border-radius: 0.5rem;
+    gap: 24px;
+    padding: 24px;
+    border-radius: 15px;
     color: var(--text-primary);
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    margin-bottom: 24px;
 }
 
 .profile-personal-info {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 16px;
+}
+
+.profile-personal-info span {
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 15px;
 }
 
 .profile-data {
-    display: inline-block;
-    margin-left: 10px;
-    font-weight: 400;
-    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-left: 12px;
+    font-weight: 500;
 }
 
-.email {
+.email.profile-data {
     text-decoration: none;
     color: var(--primary);
     transition: color 0.2s ease;
 }
 
-.email:hover {
+.email.profile-data:hover {
     color: var(--primary-hover);
     text-decoration: underline;
 }
 
-.email-icon {
-    font-size: 1.125rem;
-}
-
-.profile-birthdate {
-    font-size: 0.95rem;
-    margin: 0;
-}
-
 .profile-about-section {
-    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
 }
 
 .about-heading {
-    font-size: 1.125rem;
+    font-size: 18px;
     font-weight: 600;
-    margin-bottom: 0.75rem;
+    margin-bottom: 16px;
+    color: var(--text-primary);
 }
 
 .about-text {
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.6;
     white-space: pre-wrap;
+    color: var(--text-secondary);
+}
+
+.no-about-info {
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .profile-about-container {
+        padding: 20px;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-about-container {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .profile-personal-info span {
+        font-size: 14px;
+    }
+
+    .about-heading {
+        font-size: 16px;
+    }
+
+    .about-text {
+        font-size: 14px;
+    }
 }
 
 .user-not-found {
@@ -276,6 +308,7 @@
     width: 45%;
     transition: all 0.2s;
 }
+
 .profile-dialog-content div {
     display: flex;
     gap: 1.5rem;

@@ -15,6 +15,7 @@ import './group-chat.css';
 export default function GroupChatPage() {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [messageIds, setMessageIds] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(0);
@@ -96,7 +97,7 @@ export default function GroupChatPage() {
     const handleNewMessage = useCallback((data) => {
         if (data.message && (data.message.receiver_type !== 'to_group' || data.message.receiver_id !== groupID)) return;
 
-        setMessages(prev => [...prev, {
+        const newMessage = {
             message_id: data.message.id,
             sender_id: data.message.sender_id,
             group_id: data.message.receiver_id,
@@ -106,13 +107,18 @@ export default function GroupChatPage() {
             sender_first_name: data.first_name || "User",
             sender_last_name: data.last_name || "",
             sender_avatar: data.avatar || "/default-avatar.jpg"
-        }]);
+        };
 
-        setTimeout(() => {
-            if (containerRef.current) {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
-            }
-        }, 5);
+        if (!messageIds.has(newMessage.message_id)) {
+            setMessageIds(prev => new Set([...prev, newMessage.message_id]));
+            setMessages(prev => [...prev, newMessage]);
+
+            setTimeout(() => {
+                if (containerRef.current) {
+                    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                }
+            }, 5);
+        }
 
         if (messageSeenTimeout.current) {
             clearTimeout(messageSeenTimeout.current);
@@ -121,8 +127,7 @@ export default function GroupChatPage() {
         messageSeenTimeout.current = setTimeout(() => {
             markMessagesAsSeen();
         }, 500);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [groupID, messageIds]);
 
     const sendWebSocketMessage = useWebSocket(groupID, handleNewMessage, null);
 
@@ -154,8 +159,14 @@ export default function GroupChatPage() {
 
                 const reversedMessages = [...processedMessages].reverse();
 
+                const newMessages = reversedMessages.filter(msg => !messageIds.has(msg.message_id));
+
+                const newMessageIds = new Set(messageIds);
+                newMessages.forEach(msg => newMessageIds.add(msg.message_id));
+                setMessageIds(newMessageIds);
+
                 if (pageNum === 0) {
-                    setMessages(reversedMessages);
+                    setMessages(newMessages);
                     setTimeout(() => {
                         if (containerRef.current) {
                             containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -166,7 +177,7 @@ export default function GroupChatPage() {
                     const scrollHeight = container?.scrollHeight || 0;
                     const scrollTop = container?.scrollTop || 0;
 
-                    setMessages(prevMessages => [...reversedMessages, ...prevMessages]);
+                    setMessages(prevMessages => [...newMessages, ...prevMessages]);
                     setTimeout(() => {
                         if (container) {
                             const newScrollHeight = container.scrollHeight;
@@ -218,8 +229,9 @@ export default function GroupChatPage() {
         setMessage('');
         setShowEmojiPicker(false);
 
+        const tempId = `temp-${Date.now()}`;
         const tempMessage = {
-            message_id: `temp-${Date.now()}`,
+            message_id: tempId,
             sender_id: myUserId,
             group_id: groupID,
             content: messageContent,
@@ -227,7 +239,10 @@ export default function GroupChatPage() {
             created_at: new Date().toISOString(),
         };
 
-        setMessages(prev => [...prev, tempMessage]);
+        if (!messageIds.has(tempId)) {
+            setMessageIds(prev => new Set([...prev, tempId]));
+            setMessages(prev => [...prev, tempMessage]);
+        }
 
         sendWebSocketMessage(groupID, messageContent, 'to_group');
 
