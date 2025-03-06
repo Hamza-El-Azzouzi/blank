@@ -26,9 +26,9 @@ type MessageHistory struct {
 type GroupChatInfo struct {
 	GroupID         string    `json:"group_id"`
 	GroupName       string    `json:"group_name"`
-	LastMessage     string    `json:"last_message"`
-	LastMessageTime time.Time `json:"last_message_time"`
-	SenderLastName  string    `json:"sender_last_name"`
+	LastMessage     string    `json:"last_message,omitempty"`
+	LastMessageTime time.Time `json:"last_message_time,omitempty"`
+	SenderLastName  string    `json:"sender_last_name,omitempty"`
 	IsSeen          bool      `json:"is_seen"`
 }
 

@@ -26,25 +26,15 @@ const UserSidebar = () => {
   const groupObserverRef = useRef(null);
   const pathname = usePathname();
 
-  const currentChatUserId = pathname.startsWith('/chat/') && !pathname.startsWith('/chat/group/')
-    ? pathname.split('/').pop()
-    : null;
-
-  const currentChatGroupId = pathname.startsWith('/chat/group/')
-    ? pathname.split('/').pop()
-    : null;
-
-  // when someone send me a message, i update the contact list
   const handleNewMessage = useCallback((data) => {
     if (data.message.receiver_type === 'to_user') {
       fetchContacts(0);
     } else {
       fetchGroupChats(0);
     }
-  }, []);
+  }, [pathname]);
   useWebSocket(null, handleNewMessage, null);
 
-  // when active tab changes, i fetch data
   useEffect(() => {
     if (activeChatType === 'direct') {
       fetchContacts(0)
@@ -53,7 +43,6 @@ const UserSidebar = () => {
     }
   }, [activeChatType])
 
-  // when i send a message, i update the contact list 
   useEffect(() => {
     const handleMessageSent = () => {
       if (activeChatType === 'direct') {
@@ -70,7 +59,6 @@ const UserSidebar = () => {
     };
   }, [activeChatType]);
 
-  // when page updates i get more contacts
   useEffect(() => {
     if (activeChatType === 'direct') {
       fetchContacts(page);
@@ -79,32 +67,6 @@ const UserSidebar = () => {
     }
   }, [page, groupPage]);
 
-  // update seen indicator when i open a chat
-  useEffect(() => {
-    if (currentChatUserId) {
-      setContacts(prevContacts => {
-        return prevContacts.map(contact => {
-          if (contact.user_id === currentChatUserId) {
-            return { ...contact, is_seen: true };
-          }
-          return contact;
-        });
-      });
-    }
-
-    if (currentChatGroupId) {
-      setGroupChats(prevGroups => {
-        return prevGroups.map(group => {
-          if (group.group_id === currentChatGroupId) {
-            return { ...group, is_seen: true };
-          }
-          return group;
-        });
-      });
-    }
-  }, [currentChatUserId, currentChatGroupId]);
-
-  // add observer for pagination
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore || activeChatType !== 'direct') return;
 
@@ -126,7 +88,6 @@ const UserSidebar = () => {
     };
   }, [hasMore, loading, activeChatType]);
 
-  // add observer for pagination
   useEffect(() => {
     if (!loadMoreGroupsRef.current || !hasMoreGroups || activeChatType !== 'group') return;
 
@@ -149,6 +110,10 @@ const UserSidebar = () => {
   }, [hasMoreGroups, loadingGroups, activeChatType]);
 
   const fetchContacts = async (pageNum) => {
+    const currentChatUserId = pathname.startsWith('/chat/') && !pathname.startsWith('/chat/group/')
+      ? pathname.split('/').pop()
+      : null;
+
     try {
       setLoading(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/contacts?offset=${pageNum}`, {
@@ -201,6 +166,10 @@ const UserSidebar = () => {
   };
 
   const fetchGroupChats = async (pageNum) => {
+    const currentChatGroupId = pathname.startsWith('/chat/group/')
+      ? pathname.split('/').pop()
+      : null;
+
     try {
       setLoadingGroups(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/chat/groups?offset=${pageNum}`, {
@@ -213,6 +182,13 @@ const UserSidebar = () => {
       if (!response.ok) throw new Error('Failed to fetch group chats');
 
       const data = await response.json();
+      data.data.map((group) => {
+        console.log(group);
+        
+        if (group.group_id === currentChatGroupId) {
+          group.is_seen = true
+        }
+      })
 
       if (data.data && data.data.length > 0) {
         if (pageNum === 0) {
@@ -268,7 +244,7 @@ const UserSidebar = () => {
             <ul className="contacts-list">
               {contacts.map(contact => (
                 <li key={contact.user_id}>
-                  <Link href={`/chat/${contact.user_id}`} className={`sidebar-contact-item ${!contact.is_seen ? 'unseen' : ''}`}>
+                  <Link href={`/chat/${contact.user_id}`} className={`sidebar-contact-item ${contact.is_seen ? '' : 'unseen'}`}>
                     <div className="contact-avatar-wrapper">
                       <Image src={contact.avatar} alt={`${contact.first_name} ${contact.last_name}`} width={36} height={36} className="contact-avatar" />
                     </div>
@@ -311,7 +287,7 @@ const UserSidebar = () => {
                     <div className="contact-details">
                       <div className="contact-header">
                         <span className="contact-name">{group.group_name}</span>
-                        {group.last_message_time && (
+                        {group.last_message_time && group.last_message_time != "0001-01-01T00:00:00Z" && (
                           <span className="message-time">{formatTime(group.last_message_time)}</span>
                         )}
                       </div>
