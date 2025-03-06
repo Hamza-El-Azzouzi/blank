@@ -142,6 +142,10 @@ func (g *GroupHandler) GroupDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	GroupDerails, err := g.GroupService.GroupDetails(user_id, pathParts[3])
 	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.SendResponses(w, http.StatusNotFound, "Group Not Found", nil)
+			return
+		}
 		switch err.Error() {
 		case "forbidden":
 			utils.SendResponses(w, http.StatusForbidden, err.Error(), nil)
