@@ -251,7 +251,7 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, groupTitle, err := g.GroupService.GetGroupOwner(groupID)
+	groupOwnerID, groupTitle, err := g.GroupService.GetGroupOwner(groupID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
@@ -269,10 +269,12 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	g.WebSocketService.SendNotification([]uuid.UUID{invitedUserID}, models.Notification{
-		Type:      "group_invitation",
-		GroupID:   uuid.NullUUID{UUID: groupID, Valid: true},
-		Label:     fmt.Sprintf(`you are invited to join %s`, groupTitle),
-		CreatedAt: time.Now(),
+		Type:       "group_invitation",
+		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
+		UserID:     uuid.NullUUID{UUID: groupOwnerID, Valid: true},
+		GroupTitle: sql.NullString{String: groupTitle, Valid: true},
+		Label:      fmt.Sprintf(`you are invited to join %s`, groupTitle),
+		CreatedAt:  time.Now(),
 	})
 
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
@@ -727,6 +729,7 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		Type:       "event",
 		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
 		GroupTitle: sql.NullString{String: eventCreation.Group_title, Valid: true},
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
 		Label:      fmt.Sprintf(`New event created "%s" in "%s"`, eventCreation.Title, eventCreation.Group_title),
 		CreatedAt:  time.Now(),
 	})
