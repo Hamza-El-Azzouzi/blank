@@ -96,6 +96,7 @@ func InitHandlers(authService *services.AuthService,
 		MessageService: messageService,
 		AuthService:    authService,
 		SessionService: sessionService,
+		GroupService:   groupService,
 	}
 	authHandler := &handlers.AuthHandler{
 		MessageHandler: MessageHandler,

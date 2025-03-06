@@ -314,7 +314,7 @@ func (g *GroupHandler) GroupAcceptInvitation(w http.ResponseWriter, r *http.Requ
 
 	// check if the request is pending
 	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
-	if !isPending {
+	if !isPending || err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
 		return
 	}
@@ -361,7 +361,7 @@ func (g *GroupHandler) GroupRefuseInvitation(w http.ResponseWriter, r *http.Requ
 
 	// check if the request is pending
 	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
-	if !isPending {
+	if !isPending || err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
 		return
 	}

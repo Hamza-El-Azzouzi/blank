@@ -64,21 +64,23 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 			})
 			continue
 		}
+		
+		if message.ReceiverType == "to_user" {
+			if ok, err := ws.UserService.CanSendMessage(message.SenderID, message.ReceiverID); !ok || err != nil {
+				if err != nil {
+					ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+						Type:  "error",
+						Label: "something wrong happend",
+					})
+					continue
+				}
 
-		if ok, err := ws.UserService.CanSendMessage(message.SenderID, message.ReceiverID); !ok || err != nil {
-			if err != nil {
 				ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
 					Type:  "error",
-					Label: "something wrong happend",
+					Label: "You can't send a message, follow the user first!",
 				})
 				continue
 			}
-			
-			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
-				Type:  "error",
-				Label: "You can't send a message, at least one of the users must be following the other!",
-			})
-			continue
 		}
 
 		dists, notification := ws.WebSocketService.ReadMessage(message)
