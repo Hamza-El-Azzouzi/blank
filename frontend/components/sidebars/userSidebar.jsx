@@ -73,7 +73,7 @@ const UserSidebar = () => {
     observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !loading && hasMore) {
-          setPage(prevPage => prevPage + 1);
+          setPage(prevPage => prevPage + 20);
         }
       },
       { threshold: 0.1 }
@@ -183,8 +183,6 @@ const UserSidebar = () => {
 
       const data = await response.json();
       data.data.map((group) => {
-        console.log(group);
-        
         if (group.group_id === currentChatGroupId) {
           group.is_seen = true
         }
@@ -241,33 +239,35 @@ const UserSidebar = () => {
               <p>No conversations yet</p>
             </div>
           ) : (
-            <ul className="contacts-list">
-              {contacts.map(contact => (
-                <li key={contact.user_id}>
-                  <Link href={`/chat/${contact.user_id}`} className={`sidebar-contact-item ${contact.is_seen ? '' : 'unseen'}`}>
-                    <div className="contact-avatar-wrapper">
-                      <Image src={contact.avatar} alt={`${contact.first_name} ${contact.last_name}`} width={36} height={36} className="contact-avatar" />
-                    </div>
-                    <div className="contact-details">
-                      <div className="contact-header">
-                        <span className="contact-name">{contact.first_name} {contact.last_name}</span>
-                        <span className="message-time">{formatTime(contact.last_message_time)}</span>
+            <div className='contacts-list-wrapper'>
+              <ul className="contacts-list">
+                {contacts.map(contact => (
+                  <li key={contact.user_id}>
+                    <Link href={`/chat/${contact.user_id}`} className={`sidebar-contact-item ${contact.is_seen ? '' : 'unseen'}`}>
+                      <div className="contact-avatar-wrapper">
+                        <Image src={contact.avatar} alt={`${contact.first_name} ${contact.last_name}`} width={36} height={36} className="contact-avatar" />
                       </div>
-                      <p className={`last-message`}>
-                        {contact.last_message.length > 30
-                          ? `${contact.last_message.substring(0, 30)}...`
-                          : contact.last_message
-                        }
-                      </p>
-                    </div>
-                  </Link>
-                </li>
-              ))}
+                      <div className="contact-details">
+                        <div className="contact-header">
+                          <span className="contact-name">{contact.first_name} {contact.last_name}</span>
+                          <span className="message-time">{formatTime(contact.last_message_time)}</span>
+                        </div>
+                        <p className={`last-message`}>
+                          {contact.last_message.length > 30
+                            ? `${contact.last_message.substring(0, 30)}...`
+                            : contact.last_message
+                          }
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
 
-              <li ref={loadMoreRef} className="load-more-item">
-                {loading && <div className="sidebar-loading-spinner"></div>}
-              </li>
-            </ul>
+                <li ref={loadMoreRef} className="load-more-item">
+                  {loading && <div className="sidebar-loading-spinner"></div>}
+                </li>
+              </ul>
+            </div>
           )}
         </>
       ) : (

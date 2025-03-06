@@ -91,20 +91,6 @@
     flex-shrink: 0;
 }
 
-.contacts-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.contacts-list::-webkit-scrollbar-track {
-    background: var(--bg-primary);
-    border-radius: 3px;
-}
-
-.contacts-list::-webkit-scrollbar-thumb {
-    background: var(--bg-tertiary);
-    border-radius: 3px;
-}
-
 .search-result-avatar img {
     width: 100%;
     height: 100%;
@@ -207,6 +193,26 @@
 
 .contacts-tab:hover:not(.active) {
     color: var(--text-secondary);
+}
+
+.contacts-list-wrapper {
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+}
+
+.contacts-list-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+
+.contacts-list-wrapper::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 3px;
+}
+
+.contacts-list-wrapper::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
 }
 
 .contacts-list {

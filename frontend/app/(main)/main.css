@@ -39,7 +39,7 @@
   width: 100%;
   padding: 20px 10px;
   background-color: var(--bg-primary);
-  overflow-y: auto;
+  overflow-y: hidden;
   height: 100vh;
   transition: transform 0.5s ease, right 0.5s ease;
 }
