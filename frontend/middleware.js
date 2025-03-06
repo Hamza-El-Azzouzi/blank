@@ -28,7 +28,7 @@ export default async function Middleware(request) {
     try {
         const link = process.env.ENVIREMENT === "Developpement"
             ? `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`
-            : "http://blank-server-container:1414/api/integrity";
+            : "http://blank_backend_1:1414/api/integrity";
 
         const response = await fetch(link, {
             method: "POST",
