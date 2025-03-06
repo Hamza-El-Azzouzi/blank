@@ -1,0 +1,45 @@
+.not-found-component {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5rem;
+    min-height: 40vh;
+}
+
+.error-box {
+    text-align: center;
+    background: var(--bg-tertiary);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    max-width: 70%;
+}
+
+.error-box h1 {
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.error-box p {
+    margin: 10px 0;
+    font-size: 1rem;
+}
+
+.back-button {
+    padding: 0.5rem 1.3rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 45%;
+    transition: all 0.2s;
+    background-color: var(--primary);
+    color: var(--text-primary);
+    border: none;
+}
+
+.back-button:hover {
+    background-color: var(--primary-hover);
+}
