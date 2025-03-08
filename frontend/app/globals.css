@@ -2,30 +2,30 @@
 
 :root {
   /* Background */
-  --bg-primary: #141324;
-  --bg-secondary: #1c1a30;
-  --bg-tertiary: #33304d;
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #161627;
+  --bg-tertiary: #23233a;
 
   /* Text colors */
-  --text-primary: #ffffff;
-  --text-secondary: #b5b5d4;
-  --text-tertiary: #8585a5;
+  --text-primary: #f0f0ff;
+  --text-secondary: #c2c2e6;
+  --text-tertiary: #9494b8;
 
   /* Main colors */
-  --primary: #0f57ca;
-  --primary-hover: #0f469e;
-  --primary-light: #3b7adf;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-light: #60a5fa;
 
   /* Border colors */
-  --border: #4b4b64;
-  --border-light: #5f5f92;
-  --border-color: #1953af;
+  --border: #373752;
+  --border-light: #4b4b6d;
+  --border-color: #2c5edb;
 
   /* Status colors */
-  --success: #25B74D;
-  --error: #f43f5e;
+  --success: #10b981;
+  --error: #ef4444;
   --warning: #f59e0b;
-  --info: #0981b9;
+  --info: #0ea5e9;
 
   --sidebar-width: 300px;
 }
@@ -55,4 +55,9 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.link {
+  text-decoration: none;
+  color: var(--text-primary);
 }

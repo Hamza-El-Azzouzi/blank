@@ -12,7 +12,7 @@
 .main-content {
   width: 100%;
   margin: 15px;
-  min-width: 350px;
+  min-width: 550px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--bg-tertiary) var(--bg-primary);
@@ -37,9 +37,9 @@
   top: 0;
   max-width: var(--sidebar-width);
   width: 100%;
-  padding: 20px;
+  padding: 20px 10px;
   background-color: var(--bg-primary);
-  overflow-y: auto;
+  overflow-y: hidden;
   height: 100vh;
   transition: transform 0.5s ease, right 0.5s ease;
 }
@@ -105,12 +105,12 @@
   font-size: 24px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .nav-sidebar {
     position: fixed;
     left: -100%;
-    bottom: 60px;
-    height: calc(100vh - 60px);
+    bottom: 50px;
+    height: calc(100vh - 50px);
     z-index: 100;
     transition: left 0.3s ease;
   }
@@ -119,12 +119,14 @@
     left: 0;
     box-shadow: 5px 0 25px #000000c4;
   }
+}
 
+@media (max-width: 900px) {
   .contact-sidebar {
     position: fixed;
     right: -100%;
-    bottom: 60px;
-    height: calc(100vh - 60px);
+    bottom: 50px;
+    height: calc(100vh - 50px);
     z-index: 100;
     transition: right 0.3s ease;
   }
@@ -133,9 +135,14 @@
     right: 0;
     box-shadow: -5px 0 25px #000000c4;
   }
+}
 
+@media (max-width: 1000px) {
   .main-content {
-    margin-bottom: 60px;
+    margin: 0;
+    margin-bottom: 50px;
+    min-width: 300px;
+    padding: 8px;
   }
 
   .mobile-nav {
@@ -144,7 +151,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 50px;
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border);
     z-index: 1000;
@@ -187,6 +194,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

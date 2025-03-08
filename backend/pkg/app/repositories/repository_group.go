@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"blank/pkg/app/models"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type GroupRepository struct {
@@ -643,4 +645,137 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 	}
 
 	return event, nil
+}
+
+func (g *GroupRepository) GetGroupMembers(senderID, groupID uuid.UUID) ([]uuid.UUID, error) {
+	selectQuery := `
+		SELECT 
+			user_id
+		FROM Group_Membership
+		WHERE group_id = ? AND user_id != ?
+	`
+	rows, err := g.DB.Query(selectQuery, groupID, senderID)
+	if err != nil {
+		return nil, err
+	}
+
+	var members []uuid.UUID
+
+	for rows.Next() {
+		var userID uuid.UUID
+		err = rows.Scan(&userID)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user ID: %v", err)
+		}
+		members = append(members, userID)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("error iterating users : %v", err)
+	}
+
+	return members, nil
+}
+
+func (g *GroupRepository) GroupExist(groupID uuid.UUID) (bool, error) {
+	var num int
+	query := `SELECT COUNT(*) FROM 'Group' WHERE group_id = ?`
+	row := g.DB.QueryRow(query, groupID)
+	err := row.Scan(&num)
+	if err != nil {
+		return false, err
+	}
+	if num == 1 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *GroupRepository) GetGroupTitle(groupID uuid.UUID) (string, error) {
+	var title string
+	query := `SELECT title FROM 'Group' WHERE group_id = ?`
+	row := g.DB.QueryRow(query, groupID)
+	err := row.Scan(&title)
+	if err != nil {
+		return "", err
+	}
+
+	return title, nil
+}
+
+func (g *GroupRepository) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, error) {
+	var ownerID uuid.UUID
+	query := "SELECT creator_id FROM `Group` WHERE group_id = ?"
+	err := g.DB.QueryRow(query, groupID).Scan(&ownerID)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return ownerID, nil
+}
+
+func (g *GroupRepository) CheckGroupInvitationPending(notifID, userID, groupID uuid.UUID) (bool, error) {
+	isPending := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+					Group_Membership gm
+				WHERE
+					gm.group_id = ?
+					AND gm.user_id = ?
+					AND gm.status = "invite"
+			) AS is_pending
+	`
+
+	err := g.DB.QueryRow(query, groupID, userID).Scan(&isPending)
+	if err != nil {
+		return false, err
+	}
+
+	return isPending, nil
+}
+
+func (g *GroupRepository) CheckInvitePending(groupID, userID uuid.UUID) (bool, error) {
+	isPending := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+				Group_Membership gm
+				WHERE
+					gm.group_id = ?
+					AND gm.user_id = ?
+					AND gm.status = "invite"
+			) AS is_pending
+	`
+
+	err := g.DB.QueryRow(query, groupID, userID).Scan(&isPending)
+	if err != nil {
+		return false, err
+	}
+
+	return isPending, nil
+}
+
+func (g *GroupRepository) AcceptInvitation(groupID, userID uuid.UUID) error {
+	preparedQuery, err := g.DB.Prepare("UPDATE Group_Membership SET status = ? WHERE group_id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec("accepted", groupID, userID)
+	return err
+}
+
+func (g *GroupRepository) RefuseInvitation(groupID, userID uuid.UUID) error {
+	preparedQuery, err := g.DB.Prepare("DELETE FROM Group_Membership WHERE group_id = ? AND user_id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = preparedQuery.Exec(groupID, userID)
+	return err
 }

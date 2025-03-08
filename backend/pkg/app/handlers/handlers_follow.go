@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -13,8 +16,9 @@ import (
 )
 
 type FollowHandler struct {
-	FollowService *services.FollowService
-	UserService   *services.UserService
+	FollowService    *services.FollowService
+	UserService      *services.UserService
+	WebSocketService *services.WebSocketService
 }
 
 func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
@@ -23,9 +27,11 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var follow models.FollowRequest
-
-	err := json.NewDecoder(r.Body).Decode(&follow)
+	var (
+		follow models.FollowRequest
+		err    error
+	)
+	err = json.NewDecoder(r.Body).Decode(&follow)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
@@ -44,11 +50,42 @@ func (f *FollowHandler) RequestFollow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	follow.FollowerId = r.Context().Value("user_id").(string)
-	err = f.FollowService.RequestFollow(follow)
+	privacy, err := f.FollowService.RequestFollow(follow)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
+
+	userID, _ := uuid.FromString(follow.FollowerId)
+	FollowedUserID, _ := uuid.FromString(follow.FollowingId)
+	user, err := f.UserService.GetPublicUserInfo(userID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	if privacy == "private" {
+		err = f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
+			Type:        "follow_request",
+			UserID:      uuid.NullUUID{UUID: userID, Valid: true},
+			UserName:    sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+			Label:       fmt.Sprintf(`New follow request from %s %s`, user.FirstName, user.LastName),
+			AllowAction: true,
+			CreatedAt:   time.Now(),
+		})
+	} else if privacy == "public" {
+		err = f.WebSocketService.SendNotification([]uuid.UUID{FollowedUserID}, models.Notification{
+			Type:      "follow",
+			UserID:    uuid.NullUUID{UUID: userID, Valid: true},
+			UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+			Label:     fmt.Sprintf(`New follow from %s %s`, user.FirstName, user.LastName),
+			CreatedAt: time.Now(),
+		})
+	}
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
 	followStatus := make(map[string]string)
 	followStatus["follow_status"], err = f.FollowService.GetFollowStatus(follow)
 	if err != nil {
@@ -68,25 +105,26 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&follow)
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "failed to decode body", nil)
 		return
 	}
 	defer r.Body.Close()
 
-	followingID, err := uuid.FromString(follow.FollowingId)
+	followingID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 
-	if !f.UserService.UserExist(followingID) {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+	followerID, err := uuid.FromString(follow.FollowerId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid follower ID", nil)
 		return
 	}
 
-	follow.FollowerId = r.Context().Value("user_id").(string)
-	err = f.FollowService.AcceptFollow(follow)
+	err = f.FollowService.AcceptFollow(followingID, followerID)
 	if err != nil {
+		fmt.Println(err)
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
@@ -108,23 +146,24 @@ func (f *FollowHandler) RefuseFollow(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	followingID, err := uuid.FromString(follow.FollowingId)
+	followingID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
 		return
 	}
 
-	if !f.UserService.UserExist(followingID) {
-		utils.SendResponses(w, http.StatusBadRequest, "The user that you try to follow doesn't exist", nil)
+	followerID, err := uuid.FromString(follow.FollowerId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid follower ID", nil)
 		return
 	}
 
-	follow.FollowerId = r.Context().Value("user_id").(string)
-	err = f.FollowService.RefuseFollow(follow)
+	err = f.FollowService.RefuseFollow(followingID, followerID)
 	if err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}
+
 	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 

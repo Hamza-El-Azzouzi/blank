@@ -1,0 +1,107 @@
+.emoji-picker {
+    position: absolute;
+    bottom: 70px;
+    right: 20px;
+    width: 300px;
+    max-height: 350px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.emoji-categories {
+    display: flex;
+    overflow-x: auto;
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-tertiary) var(--bg-tertiary);
+}
+
+.emoji-categories::-webkit-scrollbar {
+    height: 3px;
+}
+
+.emoji-categories::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+.emoji-categories::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+}
+
+.emoji-category-btn {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.emoji-category-btn.active {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.emoji-container {
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    overflow-y: auto;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-tertiary) var(--bg-primary);
+}
+
+.emoji-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.emoji-container::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+.emoji-container::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+.emoji-btn {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.emoji-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+@media (max-width: 600px) {
+    .emoji-picker {
+        width: calc(100% - 40px);
+        left: 20px;
+        right: 20px;
+    }
+
+    .emoji-container {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
