@@ -65,6 +65,7 @@ func (m *MessageRepository) GetContactUsers(userID string, offset int) ([]models
 		u.avatar,
 		m.content AS LastMessage,
 		m.created_at AS LastMessageTime,
+		m.sender_id,
 		CASE
         	WHEN m.sender_id = ? THEN 1
         	ELSE m.seen
@@ -103,7 +104,7 @@ func (m *MessageRepository) GetContactUsers(userID string, offset int) ([]models
 		var contact models.ContactUser
 
 		if err := rows.Scan(&contact.UserID, &contact.FirstName, &contact.LastName, &contact.Avatar,
-			&contact.LastMessage, &contact.LastMessageTime, &contact.IsSeen); err != nil {
+			&contact.LastMessage, &contact.LastMessageTime, &contact.SenderID, &contact.IsSeen); err != nil {
 			return nil, err
 
 		}

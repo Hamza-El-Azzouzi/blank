@@ -253,6 +253,7 @@ const UserSidebar = () => {
                           <span className="message-time">{formatTime(contact.last_message_time)}</span>
                         </div>
                         <p className={`last-message`}>
+                          {contact.sender_id !== contact.user_id ? 'you: ' : ''}
                           {contact.last_message.length > 30
                             ? `${contact.last_message.substring(0, 30)}...`
                             : contact.last_message

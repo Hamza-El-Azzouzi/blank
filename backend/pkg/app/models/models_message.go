@@ -12,6 +12,7 @@ type ContactUser struct {
 	LastMessage     string    `json:"last_message"`
 	LastMessageTime time.Time `json:"last_message_time"`
 	IsSeen          bool      `json:"is_seen"`
+	SenderID        string    `json:"sender_id,omitempty"`
 }
 
 type MessageHistory struct {
