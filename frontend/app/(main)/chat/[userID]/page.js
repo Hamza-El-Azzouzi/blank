@@ -9,7 +9,7 @@ import { fetchBlob } from '@/lib/fetch_blob';
 import { formatTime } from '@/lib/format_time';
 import { useWebSocket } from '@/lib/useWebSocket';
 import EmojiPicker from '@/components/chat/EmojiPicker';
-import Error from '@/components/profile/error/Error';
+import Error from '@/components/error/Error';
 import './chat.css';
 
 export default function ChatPage() {
@@ -70,7 +70,6 @@ export default function ChatPage() {
                 );
 
                 const data = await response.json();
-                console.log(data);
                 if (data.status != 200) {
                     setError(data)
                     return;
@@ -148,9 +147,11 @@ export default function ChatPage() {
                 }
             );
 
-            if (!response.ok) throw new Error('Failed to fetch messages');
-
             const data = await response.json();
+            if (data.status != 200) {
+                setError(data)
+                return;
+            }
 
             if (data.data && data.data.length > 0) {
                 const reversedMessages = [...data.data].reverse();

@@ -70,9 +70,13 @@ func (m *MessageHandler) GetUserMessages(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	messages, err := m.MessageService.GetUserMessages(authUserID, userID, offset)
+	messages, isAuthorized, err := m.MessageService.GetUserMessages(authUserID, userID, offset)
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get messages", nil)
+		return
+	}
+	if !isAuthorized {
+		utils.SendResponses(w, http.StatusUnauthorized, "You can't send a message to this user", nil)
 		return
 	}
 

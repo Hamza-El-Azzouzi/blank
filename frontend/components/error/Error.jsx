@@ -1,13 +1,14 @@
 'use client';
 import "./error.css";
 import { TbError404 } from "react-icons/tb";
-import { MdError, MdOutlineReportProblem } from "react-icons/md";
+import { MdError, MdOutlineReportProblem, MdOutlineDoNotDisturbAlt } from "react-icons/md";
 import { IoMdRefresh } from "react-icons/io";
 
 export default function Error({ error }) {
     const errorDetails = {
         404: { icon: <MdOutlineReportProblem />, header: "404 | Not Found", message: "The page you are looking for does not exist." },
         400: { icon: <MdOutlineReportProblem />, header: "400 | Bad Request", message: "Your request was not valid." },
+        401: { icon: <MdOutlineDoNotDisturbAlt />, header: "401 | Unauthorized", message: "Ma3ndkch l7a9" },
         500: { icon: <MdError />, header: "500 | Server Error", message: "Something went wrong on our end." },
         default: { icon: <IoMdRefresh />, header: "Unknown Error", message: "An unexpected error occurred." },
     };

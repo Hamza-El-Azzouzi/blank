@@ -11,7 +11,7 @@ import { useWebSocket } from '@/lib/useWebSocket';
 import EmojiPicker from '@/components/chat/EmojiPicker';
 import '../../[userID]/chat.css';
 import './group-chat.css';
-import Error from '@/components/profile/error/Error';
+import Error from '@/components/error/Error';
 
 export default function GroupChatPage() {
     const [message, setMessage] = useState('');

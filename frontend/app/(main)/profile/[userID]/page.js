@@ -8,7 +8,7 @@ import Posts from '@/components/posts/posts';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 import PrivateAccount from '@/components/profile/PrivateAccount';
-import Error from '@/components/profile/error/Error';
+import Error from '@/components/error/Error';
 
 export default function ProfilePage({ params }) {
   const [cookieValue, setCookieValue] = useState(null);

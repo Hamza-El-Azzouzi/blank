@@ -11,7 +11,7 @@ import './group.css';
 import RequestCard from '@/components/groups/cards/requestCard';
 import { fetchBlob } from '@/lib/fetch_blob';
 import Posts from '@/components/posts/posts';
-import Error from '@/components/profile/error/Error';
+import Error from '@/components/error/Error';
 
 const ITEMS_PER_PAGE = 20;
 

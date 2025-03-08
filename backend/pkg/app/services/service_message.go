@@ -3,6 +3,8 @@ package services
 import (
 	"blank/pkg/app/models"
 	"blank/pkg/app/repositories"
+
+	"github.com/gofrs/uuid/v5"
 )
 
 type MessageService struct {
@@ -14,8 +16,26 @@ func (m *MessageService) GetContactUsers(userID string, offset int) ([]models.Co
 	return m.MessageRepo.GetContactUsers(userID, offset)
 }
 
-func (m *MessageService) GetUserMessages(authUserID, userID string, offset int) ([]models.MessageHistory, error) {
-	return m.MessageRepo.GetUserMessages(authUserID, userID, offset)
+func (m *MessageService) GetUserMessages(authUserID, userID string, offset int) ([]models.MessageHistory, bool, error) {
+	authUserIdUUD, _ := uuid.FromString(authUserID)
+	userIdUUD, _ := uuid.FromString(userID)
+
+	isFollowing, err := m.UserRepo.IsFollowing(authUserIdUUD, userIdUUD)
+	if err != nil {
+		return nil, false, err
+	}
+
+	isFollower, err := m.UserRepo.IsFollowing(userIdUUD, authUserIdUUD)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if isFollowing || isFollower {
+		messages, err := m.MessageRepo.GetUserMessages(authUserID, userID, offset)
+		return messages, true, err
+	} else {
+		return nil, false, nil
+	}
 }
 
 func (m *MessageService) MarkMessagesAsSeen(receiverID, senderID string) error {
