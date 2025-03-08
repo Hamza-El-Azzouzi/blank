@@ -54,6 +54,7 @@ type UserInfo struct {
 	FollowStatus   string    `json:"follow_status,omitempty"`
 	IsFollowing    bool      `json:"is_following,omitempty"`
 	CanSendMessage bool      `json:"can_send_message,omitempty"`
+	Has_requested  bool      `json:"has_requested"`
 }
 
 type ConnectedUser struct {
