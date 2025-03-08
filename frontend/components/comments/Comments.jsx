@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import "./comments.css"
 import { RiCloseLargeLine } from "react-icons/ri"
 import * as cookies from '@/lib/cookie'
 import Toast from '../toast/Toast'
-import { FiImage } from 'react-icons/fi';
+import { FiImage, FiSend } from 'react-icons/fi';
 import Loading from '../loading/Loading'
 import { fetchBlob } from '@/lib/fetch_blob'
 import { BiLoaderCircle } from 'react-icons/bi'
@@ -16,33 +16,49 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
     const [toasts, setToasts] = useState([]);
     const [isChanged, setIsChanged] = useState(false)
     const [commentContent, setCommentContent] = useState("")
-    const [page, setpage] = useState(0)
+    const [page, setPage] = useState(0)
     const [noMore, setNoMore] = useState(false)
     const [cookieValue, setCookieValue] = useState(null)
     const [loading, setLoading] = useState(true)
     const [loadingMore, setLoadingMore] = useState(false)
     const [image, setImage] = useState(null);
     
+    const commentsRef = useRef(null);
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        // Check if file is an image
+        if (!file.type.startsWith('image/')) {
+            showToast('error', 'Please upload an image file');
+            return;
         }
+
+        // Check file size (3MB max)
+        if (file.size > 3 * 1024 * 1024) {
+            showToast('error', 'Image size should be less than 3MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImage(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
+
     const removeImage = () => {
         setImage(null);
     };
+
     useEffect(function getSessionID() {
         setCookieValue(cookies.GetCookie("sessionId"))
     }, [cookieValue])
 
     useEffect(function checkInputChanging() {
         setIsChanged(commentContent !== "" || image !== null)
-    }, [commentContent,image])
+    }, [commentContent, image])
 
     useEffect(function fetchAuthenticatedUserInfo() {
         if (!cookieValue) return
@@ -74,9 +90,12 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
     }, [postID, page, cookieValue])
 
     useEffect(function listenOnScroll() {
-        document.getElementById('comments')?.addEventListener("scroll", handleScroll)
-        return () => document.getElementById('comments')?.removeEventListener("scroll", handleScroll)
-    }, [])
+        const commentsContainer = document.getElementById('comments');
+        if (commentsContainer) {
+            commentsContainer.addEventListener("scroll", handleScroll);
+            return () => commentsContainer.removeEventListener("scroll", handleScroll);
+        }
+    }, []);
 
     const handleChange = async (e) => {
         if (commentContent.length >= 200 && e.nativeEvent.inputType !== "deleteContentBackward") return
@@ -91,10 +110,11 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
             showToast('warning', 'Comment size should be less than 200 characters');
             return
         }
+
         const newComment = {
             user: user,
             content: commentContent,
-            image:image,
+            image: image,
             formatted_date: new Date().toLocaleString()
         }
 
@@ -119,7 +139,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                         newComment.comment_id = data.data;
                         setComments(data => [newComment, ...data])
                         setCommentContent("")
-                        setCommentsCount(comments.length + 1)
+                        setCommentsCount(prev => parseInt(prev) + 1)
                         setImage(null);
                     } else {
                         throw new Error(data.message)
@@ -145,7 +165,6 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                     setNoMore(true)
                 }
                 data = await Promise.all(data.map(async (comment) => {
-
                     return {
                         ...comment,
                         user: {
@@ -187,7 +206,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
         const commentsContainer = document.getElementById('comments')
         if (!commentsContainer) return
         if (Math.ceil(commentsContainer.scrollTop + commentsContainer.clientHeight) + 1 >= commentsContainer.scrollHeight) {
-            setpage(prevPage => prevPage + 1)
+            setPage(prevPage => prevPage + 1)
         }
     }
 
@@ -195,8 +214,8 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
         <div className="comments-dialog-overlay">
             <div className="comments-dialog-content">
                 <button onClick={onClose} className='comments-close'><RiCloseLargeLine /></button>
-                <h2>Comments</h2>
-                <div className="comments" id='comments'>
+                <h2 className="comments-dialog-title">Comments</h2>
+                <div className="comments" id='comments' ref={commentsRef}>
                     {!loading ? (
                         comments.length > 0 ?
                             comments.map((comment) => (
@@ -207,15 +226,16 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                                     target={target}
                                 />
                             ))
-                            : <span className='no-comments'>No comments to display!</span>
+                            : <div className='no-comments'>No comments to display</div>
                     )
                         : <Loading />
                     }
                     {!noMore && !loading && loadingMore ?
-                        <span className='comments-loading-more'><BiLoaderCircle className='loader' /></span>
-                        : ""
+                        <div className='comments-loading-more'><BiLoaderCircle className='loader' /></div>
+                        : null
                     }
                 </div>
+
                 {image && (
                     <div className="image-preview-wrapper">
                         <img src={image} alt="Preview" className="preview-image" />
@@ -224,15 +244,31 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                         </button>
                     </div>
                 )}
-                <form onSubmit={handleSubmit} className="comments-form" method='POST'>
 
-                    <input max={200} value={commentContent} onChange={handleChange} type="text" placeholder="Write a comment..." />
+                <form onSubmit={handleSubmit} className="comments-form" method='POST'>
+                    <div className="comments-form-inputs">
+                        <div className="comments-input-row">
+                            <input
+                                maxLength={200}
+                                value={commentContent}
+                                onChange={handleChange}
+                                type="text"
+                                placeholder="Write a comment..."
+                            />
+                        </div>
+                    </div>
                     <label className="upload-image-label">
-                        <FiImage className="action-icon" />
-                        <input type="file" accept="image/*"
-                            onChange={handleImageChange} className="hidden-input" />
+                        <FiImage />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden-input"
+                        />
                     </label>
-                    <button type="submit">Comment</button>
+                    <button type="submit" disabled={!isChanged}>
+                        <FiSend />
+                    </button>
                 </form>
             </div>
 

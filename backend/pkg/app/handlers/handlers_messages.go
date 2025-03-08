@@ -1,252 +1,197 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
-	"sync"
-	"time"
+	"strconv"
 
-	"blank/pkg/app/models"
 	"blank/pkg/app/services"
+	"blank/pkg/app/utils"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/gorilla/websocket"
 )
 
 type MessageHandler struct {
 	MessageService *services.MessageService
 	AuthService    *services.AuthService
 	SessionService *services.SessionService
-	Upgrader       websocket.Upgrader
-	Clients        map[string]*models.Client
-	ClientsMu      sync.Mutex
+	GroupService   *services.GroupService
 }
 
-func (m *MessageHandler) MessageReceiver(w http.ResponseWriter, r *http.Request) {
-	existSessions := false
-	connection, err := m.Upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("Upgrading error: %#v\n", err)
+func (m *MessageHandler) GetContactUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
 
-	sessionId, err := r.Cookie("sessionId")
+	userID := r.Context().Value("user_id").(string)
 
-	if err == nil && sessionId.Value != "" {
-		_,existSessions = m.SessionService.CheckSession(sessionId.Value)
-	}
-	if !existSessions {
-		log.Printf("session doesn't exist: %#v\n", err)
-	}
-	var user *models.User
-	var errUser error
-	if existSessions {
-		user, errUser = m.AuthService.GetUserBySessionID(sessionId.Value)
-		if errUser != nil || user.ID == uuid.Nil {
-			log.Printf("user error: %#v\n", err)
-		}
-	}
-
-	var userID string
-	if existSessions {
-		userID = user.ID.String()
-		m.ClientsMu.Lock()
-		m.Clients[userID] = &models.Client{
-			Conn:     connection,
-			LastPing: time.Now(),
-		}
-
-		m.ClientsMu.Unlock()
-		log.Printf("Client connected: %s\n", userID)
-
-		m.broadcastUserStatus(userID, true)
-	}
-
-	defer connection.Close()
-
-	for {
-
-		_, message, err := connection.ReadMessage()
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
-			log.Printf("Reading error: %#v\n", err)
-			break
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
 		}
+	}
 
-		var data map[string]string
-		err = json.Unmarshal(message, &data)
+	contacts, err := m.MessageService.GetContactUsers(userID, offset)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get contacts", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "Success", contacts)
+}
+
+func (m *MessageHandler) GetUserMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	authUserID := r.Context().Value("user_id").(string)
+
+	userID := r.PathValue("user_id")
+	_, err := uuid.FromString(r.PathValue("user_id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid userid", nil)
+	}
+
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
-			log.Printf("Unmarshal error: %#v\n", err)
-			continue
-		}
-		if data["Ask"] == "Who Are You" && existSessions {
-			m.ClientsMu.Lock()
-			m.Clients[userID].Conn.WriteJSON(map[string]string{
-				"username": user.Nickname,
-			})
-			m.ClientsMu.Unlock()
-		}
-		if _, ok := data["pimp"]; ok && existSessions {
-			user, errUser = m.AuthService.GetUserBySessionID(sessionId.Value)
-			if errUser != nil || user.ID == uuid.Nil {
-				log.Printf("user error: %#v\n", err)
-				break
-			}
-			m.Clients[data["id"]].Conn.WriteJSON(map[string]string{
-				"pimp" : data["pimp"],
-				"usernametyper" : user.Nickname,
-			})
-		}
-		if data["type"] == "ping" && existSessions {
-			m.ClientsMu.Lock()
-			m.Clients[userID].LastPing = time.Now()
-			m.ClientsMu.Unlock()
-
-			err = connection.WriteJSON(map[string]string{
-				"type": "pong",
-			})
-			if err != nil {
-				log.Printf("Failed to send pong: %#v\n", err)
-			}
-			continue
-		}
-
-		if _, ok := data["msg"]; ok && existSessions {
-
-			if len(strings.TrimSpace(data["msg"])) == 0 {
-				log.Println("Empty message received")
-				break
-			}
-			if len(data["msg"]) > 5000 {
-				log.Println("message too long")
-				break
-			}
-			userSender, err := m.MessageService.Create(data["msg"], data["session"], data["id"], data["date"])
-			if err != nil || userSender == uuid.Nil {
-				log.Printf("Failed to create message: %#v\n", err)
-				break
-			}
-			m.ClientsMu.Lock()
-			receiverClient, exists := m.Clients[data["id"]]
-			m.ClientsMu.Unlock()
-			data["session"] = userSender.String()
-			data["senderUserName"] = user.Nickname
-			if exists {
-				err = receiverClient.Conn.WriteJSON(data)
-				if err != nil {
-					log.Printf("Failed to send message to receiver: %#v\n", err)
-				}
-			} else {
-				log.Printf("Receiver %s not found\n", data["id"])
-			}
-		}
-		if _, ok := data["user"]; ok {
-			for _, client := range m.Clients {
-				err := client.Conn.WriteJSON(data)
-				if err != nil {
-					log.Printf("Failed to broadcast user status: %#v\n", err)
-				}
-			}
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
 		}
 	}
 
-	m.DisconnectClient(userID)
+	messages, isAuthorized, err := m.MessageService.GetUserMessages(authUserID, userID, offset)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get messages", nil)
+		return
+	}
+	if !isAuthorized {
+		utils.SendResponses(w, http.StatusUnauthorized, "You can't send a message to this user", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "success", messages)
 }
 
-func (m *MessageHandler) DisconnectClient(userID string) {
-	m.ClientsMu.Lock()
-	delete(m.Clients, userID)
-	m.ClientsMu.Unlock()
-	m.broadcastUserStatus(userID, false)
-	log.Printf("User %s disconnected\n", userID)
+func (m *MessageHandler) MarkMessagesAsSeen(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	receiverID := r.Context().Value("user_id").(string)
+
+	senderID := r.PathValue("user_id")
+	_, err := uuid.FromString(r.PathValue("user_id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "invalid userid", nil)
+	}
+
+	err = m.MessageService.MarkMessagesAsSeen(receiverID, senderID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to mark messages as seen", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "Messages marked as seen", nil)
 }
 
-func (m *MessageHandler) broadcastUserStatus(userID string, isOnline bool) {
-	m.ClientsMu.Lock()
-	defer m.ClientsMu.Unlock()
+func (m *MessageHandler) GetGroupChats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
 
-	for _, client := range m.Clients {
-		err := client.Conn.WriteJSON(map[string]any{
-			"type":   "userStatus",
-			"userID": userID,
-			"online": isOnline,
-		})
+	userID := r.Context().Value("user_id").(string)
+
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
 		if err != nil {
-			log.Printf("Failed to broadcast user status: %#v\n", err)
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
 		}
 	}
-}
 
-func (m *MessageHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
-	m.ClientsMu.Lock()
-	defer m.ClientsMu.Unlock()
-
-	onlineUsers := []string{}
-	for userID := range m.Clients {
-		onlineUsers = append(onlineUsers, userID)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(onlineUsers)
+	groupChats, err := m.MessageService.GetGroupChats(userID, offset)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}
-
-func (m *MessageHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
-	chat := models.HistoryChat{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&chat)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-	defer r.Body.Close()
-	messages, err := m.MessageService.GetMessages(chat.SnederID, chat.ReceiverID, chat.Offset)
-	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get group chats", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(messages)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+
+	utils.SendResponses(w, http.StatusOK, "Success", groupChats)
 }
 
-func (m *MessageHandler) UnReadMessages(w http.ResponseWriter, r *http.Request) {
-	var session models.Session
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&session)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+func (m *MessageHandler) GetGroupMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
-	defer r.Body.Close()
 
-	usersID, err := m.MessageService.CheckUnReadMsg(session.SessionID)
+	groupID := r.PathValue("group_id")
+	_, err := uuid.FromString(groupID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusBadRequest, "invalid group id", nil)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(usersID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+
+	offset := 0
+	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
+		var err error
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			utils.SendResponses(w, http.StatusBadRequest, "invalid offset", nil)
+			return
+		}
 	}
+
+	userID := r.Context().Value("user_id").(string)
+
+	if isMember := m.GroupService.IsGroupMember(groupID, userID); !isMember {
+		utils.SendResponses(w, http.StatusUnauthorized, "you dont have the permession to join group chat", nil)
+		return
+	}
+
+	messages, err := m.MessageService.GetGroupMessages(groupID, offset)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to get messages", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "success", messages)
 }
 
-func (m *MessageHandler) MarkReadMessages(w http.ResponseWriter, r *http.Request) {
-	var data models.MarkAsRead
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&data)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+func (m *MessageHandler) MarkGroupMessagesAsSeen(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
-	defer r.Body.Close()
 
-	err = m.MessageService.MarkReadMsg(data)
+	userID := r.Context().Value("user_id").(string)
+	groupID := r.PathValue("group_id")
+	_, err := uuid.FromString(groupID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		utils.SendResponses(w, http.StatusBadRequest, "invalid group id", nil)
+		return
 	}
+
+	err = m.MessageService.MarkGroupMessagesAsSeen(userID, groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Failed to mark messages as seen", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "Messages marked as seen", nil)
 }

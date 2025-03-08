@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,7 +38,7 @@ func (u *UserHandler) InfoGetter(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := uuid.FromString(r.PathValue("id"))
 	if err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "Invalid user ID", nil)
+		utils.SendResponses(w, http.StatusNotFound, "User not found", nil)
 		return
 	}
 
@@ -149,11 +150,6 @@ func (u *UserHandler) AuthenticatedUser(w http.ResponseWriter, r *http.Request) 
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
 		return
 	}
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) != 3 {
-		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
-		return
-	}
 
 	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
 	if err != nil {
@@ -186,8 +182,9 @@ func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 			pageNum = 1
 		}
 	}
+	authUserID, _ := uuid.FromString(r.Context().Value("user_id").(string))
 
-	users, hasMore, errUsers := u.UserService.SearchUsers(query, pageNum)
+	users, hasMore, errUsers := u.UserService.SearchUsers(query, pageNum, authUserID)
 	if errUsers != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
@@ -199,4 +196,79 @@ func (u *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendResponses(w, http.StatusOK, "success", response)
+}
+
+func (u *UserHandler) NotificationsGetter(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 4 {
+		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
+		return
+	}
+	var (
+		notifications []models.NotificationResponse
+		page          int
+		err           error
+	)
+	strPage := pathParts[3]
+	if strPage == "" {
+		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
+		return
+	}
+	page, err = strconv.Atoi(strPage)
+	if err != nil {
+		utils.SendResponses(w, http.StatusNotFound, "Page Not Found", nil)
+		return
+	}
+
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	notifications, err = u.UserService.Notifications(authUserID, page)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "", notifications)
+}
+
+func (u *UserHandler) SeeNotification(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	userID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	notifID, err := uuid.FromString(r.PathValue("id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid notification ID", nil)
+		return
+	}
+
+	err = u.UserService.SeeNotification(userID, notifID)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	utils.SendResponses(w, http.StatusOK, "", nil)
 }

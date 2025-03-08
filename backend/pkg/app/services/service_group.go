@@ -86,7 +86,7 @@ func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetai
 func (g *GroupService) IsGroupMember(group_id, user_id string) bool {
 	groupDetails, err := g.GroupRepo.IsGroupMember(group_id, user_id)
 	if err != nil {
-		return groupDetails
+		return false
 	}
 	return groupDetails
 }
@@ -232,7 +232,22 @@ func (g *GroupService) CreateEvent(event models.Event, user_id string) (models.E
 		return models.Event{}, fmt.Errorf("event date must be in the future")
 	}
 	event_id := uuid.Must(uuid.NewV4()).String()
-	return g.GroupRepo.CreateEvent(event, event_id, event.Group_id, user_id)
+
+	event, err = g.GroupRepo.CreateEvent(event, event_id, event.Group_id, user_id)
+	if err != nil {
+		return models.Event{}, err
+	}
+
+	GroupID, err := uuid.FromString(event.Group_id)
+	if err != nil {
+		return models.Event{}, err
+	}
+
+	event.Group_title, err = g.GroupRepo.GetGroupTitle(GroupID)
+	if err != nil {
+		return models.Event{}, err
+	}
+	return event, nil
 }
 
 func (g *GroupService) Event(group_id, user_id string, page int) ([]models.Event, error) {
@@ -256,4 +271,32 @@ func (g *GroupService) EventResponse(group_id, event_id, user_id, response strin
 	}
 	response_id := uuid.Must(uuid.NewV4()).String()
 	return g.GroupRepo.EventResponse(response_id, event_id, user_id, response)
+}
+
+func (g *GroupService) GetGroupMembers(userID, groupID uuid.UUID) ([]uuid.UUID, error) {
+	return g.GroupRepo.GetGroupMembers(userID, groupID)
+}
+
+func (g *GroupService) GetGroupOwner(groupID uuid.UUID) (uuid.UUID, string, error) {
+	groupOwnerID, err := g.GroupRepo.GetGroupOwner(groupID)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	groupTitle, err := g.GroupRepo.GetGroupTitle(groupID)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	return groupOwnerID, groupTitle, nil
+}
+
+func (g *GroupService) CheckInvitePending(groupID, userID uuid.UUID) (bool, error) {
+	return g.GroupRepo.CheckInvitePending(groupID, userID)
+}
+
+func (g *GroupService) AcceptInvitation(groupID, userID uuid.UUID) error {
+	return g.GroupRepo.AcceptInvitation(groupID, userID)
+}
+
+func (g *GroupService) RefuseInvitation(groupID, userID uuid.UUID) error {
+	return g.GroupRepo.RefuseInvitation(groupID, userID)
 }

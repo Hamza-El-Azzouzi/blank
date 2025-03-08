@@ -1,4 +1,3 @@
-
 .toast {
   position: fixed;
   top: 20px;
@@ -32,6 +31,10 @@
 
 .toast.info {
   background-color: var(--info);
+}
+
+.toast.message {
+  background-color: rgba(9, 129, 185, 0.9);
 }
 
 .icon {
@@ -69,6 +72,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

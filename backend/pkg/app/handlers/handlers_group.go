@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"blank/pkg/app/models"
 	"blank/pkg/app/services"
@@ -14,8 +18,9 @@ import (
 )
 
 type GroupHandler struct {
-	GroupService *services.GroupService
-	UserService  *services.UserService
+	GroupService     *services.GroupService
+	UserService      *services.UserService
+	WebSocketService *services.WebSocketService
 }
 
 func (g *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
@@ -138,6 +143,10 @@ func (g *GroupHandler) GroupDetails(w http.ResponseWriter, r *http.Request) {
 	}
 	GroupDerails, err := g.GroupService.GroupDetails(user_id, pathParts[3])
 	if err != nil {
+		if err == sql.ErrNoRows {
+			utils.SendResponses(w, http.StatusNotFound, "Group Not Found", nil)
+			return
+		}
 		switch err.Error() {
 		case "forbidden":
 			utils.SendResponses(w, http.StatusForbidden, err.Error(), nil)
@@ -179,6 +188,39 @@ func (g *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	userID, _ := uuid.FromString(user_id)
+	GroupID, err := uuid.FromString(pathParts[3])
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	OwnerID, groupTitle, err := g.GroupService.GetGroupOwner(GroupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	user, err := g.UserService.GetPublicUserInfo(userID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	err = g.WebSocketService.SendNotification([]uuid.UUID{OwnerID}, models.Notification{
+		Type:      "join_request",
+		GroupID:   uuid.NullUUID{UUID: GroupID, Valid: true},
+		UserID:    uuid.NullUUID{UUID: user.UserID, Valid: true},
+		UserName:  sql.NullString{String: user.FirstName + " " + user.LastName, Valid: true},
+		Label:     fmt.Sprintf(`%s %s requested to join %s`, user.FirstName, user.LastName, groupTitle),
+		CreatedAt: time.Now(),
+	})
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
 }
 
@@ -204,6 +246,26 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	groupInvite.GroupId = pathParts[3]
+
+	invitedUserID, err := uuid.FromString(groupInvite.UserId)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(groupInvite.GroupId)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
+	groupOwnerID, groupTitle, err := g.GroupService.GetGroupOwner(groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
+		return
+	}
+
 	err = g.GroupService.JoinGroup(groupInvite.GroupId, groupInvite.UserId, pathParts[4])
 	if err != nil {
 		switch err.Error() {
@@ -214,7 +276,116 @@ func (g *GroupHandler) GroupInvite(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	err = g.WebSocketService.SendNotification([]uuid.UUID{invitedUserID}, models.Notification{
+		Type:       "group_invitation",
+		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
+		UserID:     uuid.NullUUID{UUID: groupOwnerID, Valid: true},
+		GroupTitle: sql.NullString{String: groupTitle, Valid: true},
+		Label:      fmt.Sprintf(`you are invited to join %s`, groupTitle),
+		CreatedAt:  time.Now(),
+	})
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
 	utils.SendResponses(w, http.StatusOK, "Request sent successfully", nil)
+}
+
+func (g *GroupHandler) GroupAcceptInvitation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+
+	pathParts := strings.Split(r.URL.Path, "/")
+
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(r.PathValue("group_id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid group ID", nil)
+		return
+	}
+
+	// check if the group exist
+	_, err = g.GroupService.GroupDetails(authUserID.String(), groupID.String())
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	// check if the request is pending
+	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
+	if !isPending || err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
+		return
+	}
+
+	err = g.GroupService.AcceptInvitation(groupID, authUserID)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
+}
+
+func (g *GroupHandler) GroupRefuseInvitation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		utils.SendResponses(w, http.StatusMethodNotAllowed, "Method Not Allowed", nil)
+		return
+	}
+	pathParts := strings.Split(r.URL.Path, "/")
+
+	if len(pathParts) != 5 {
+		utils.SendResponses(w, http.StatusNotFound, "Not Found", nil)
+		return
+	}
+
+	authUserID, err := uuid.FromString(r.Context().Value("user_id").(string))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid authenticated user ID", nil)
+		return
+	}
+
+	groupID, err := uuid.FromString(r.PathValue("group_id"))
+	if err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "Invalid group ID", nil)
+		return
+	}
+
+	// check if the group exist
+	_, err = g.GroupService.GroupDetails(authUserID.String(), groupID.String())
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	// check if the request is pending
+	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
+	if !isPending || err != nil {
+		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
+		return
+	}
+
+	err = g.GroupService.RefuseInvitation(groupID, authUserID)
+	if err != nil {
+		log.Println(err)
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+	utils.SendResponses(w, http.StatusOK, "success", nil)
 }
 
 func (g *GroupHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
@@ -382,7 +553,6 @@ func (g *GroupHandler) GroupResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	memberCount, err := g.GroupService.GroupResponse(pathParts[3], user_id, groupResponse)
 	if err != nil {
-
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
@@ -558,6 +728,29 @@ func (g *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	groupID, _ := uuid.FromString(event.Group_id)
+	userID, _ := uuid.FromString(user_id)
+
+	groupMembers, err := g.GroupService.GetGroupMembers(userID, groupID)
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
+	err = g.WebSocketService.SendNotification(groupMembers, models.Notification{
+		Type:       "event",
+		GroupID:    uuid.NullUUID{UUID: groupID, Valid: true},
+		GroupTitle: sql.NullString{String: eventCreation.Group_title, Valid: true},
+		UserID:     uuid.NullUUID{UUID: userID, Valid: true},
+		Label:      fmt.Sprintf(`New event created "%s" in "%s"`, eventCreation.Title, eventCreation.Group_title),
+		CreatedAt:  time.Now(),
+	})
+	if err != nil {
+		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
+		return
+	}
+
 	utils.SendResponses(w, http.StatusCreated, "Event created successfully", eventCreation)
 }
 

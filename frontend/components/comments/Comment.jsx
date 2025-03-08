@@ -42,7 +42,7 @@ export default function Comment({ comment, cookieValue, target }) {
 
     return (
         <>
-            {
+        {
                 toasts.map((toast) => (
                     <Toast
                         key={toast.id}
@@ -53,47 +53,45 @@ export default function Comment({ comment, cookieValue, target }) {
                 ))
             }
             <div className="comment">
-                <div className='comment-side'>
-                    <Link
-                        key={comment.user.user_id}
-                        href={`/profile/${comment.user.user_id}`}
-                    >
-                        <img
-                            src={comment.user.avatar}
-                            alt={`${comment.user.first_name}'s avatar`}
-                            className="comment-avatar"
-                        />
-                    </Link>
-                    <div className="comment-reaction">
-                        <button className={`comment-reaction-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
-                            <FiHeart className={`comment-reaction-icon ${isLiked ? 'liked' : ''}`} />
-                        </button>
-                        <span className='comments-like-count'>{formatNumber(likes)}</span>
-                    </div>
-                </div>
-                <div className="comment-content">
-                    <Link
-                        key={comment.user.user_id}
-                        href={`/profile/${comment.user.user_id}`}
-                    >
-                        <div className="comment-author">{comment.user.first_name} {comment.user.last_name}</div>
-                    </Link>
-                    <p className="comment-text">{comment.content}</p>
-                    <span className="comment-time">{comment.formatted_date}</span>
-                    {comment.image && (
-                        <div className="post-image-container">
-                            {comment.image !== "" && (
-                                <img
-                                    src={comment.image}
-                                    alt="Post content"
-                                    className="post-image"
-                                />
-                            )}
-                        </div>
-                    )}
+            <div className='comment-side'>
+                <Link
+                    key={comment.user.user_id}
+                    href={`/profile/${comment.user.user_id}`}
+                >
+                    <img
+                        src={comment.user.avatar}
+                        alt={`${comment.user.first_name}'s avatar`}
+                        className="comment-avatar"
+                    />
+                </Link>
+                <div className="comment-reaction">
+                    <button className={`comment-reaction-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
+                        <FiHeart className={`comment-reaction-icon ${isLiked ? 'liked' : ''}`} />
+                    </button>
+                    <span className='comments-like-count'>{formatNumber(likes)}</span>
                 </div>
             </div>
-        </>
-
+            <div className="comment-content">
+                <Link
+                    key={comment.user.user_id}
+                    href={`/profile/${comment.user.user_id}`}
+                >
+                    <div className="comment-author">{comment.user.first_name} {comment.user.last_name}</div>
+                </Link>
+                <p className="comment-text">{comment.content}</p>
+                <span className="comment-time">{comment.formatted_date}</span>
+                {comment.image && (
+                    <div className="comment-image-container">
+                        <img
+                            src={comment.image}
+                            alt="Comment attachment"
+                            className="comment-image"
+                        />
+                    </div>
+                )}
+            </div>
+        </div>
+            </>
+        
     )
 }

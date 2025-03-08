@@ -12,7 +12,9 @@ import (
 )
 
 type UserService struct {
-	UserRepo *repositories.UserRepository
+	UserRepo         *repositories.UserRepository
+	GroupRepo        *repositories.GroupRepository
+	NotificationRepo *repositories.NotificationRepository
 }
 
 func (u *UserService) GetUserInfo(userID, authUserID uuid.UUID) (*models.UserInfo, error) {
@@ -59,7 +61,6 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 			return fmt.Errorf("invalid image")
 		}
 		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
-		err = u.UserRepo.SaveAvatar(userID, avatarFilename)
 		if err != nil {
 			return err
 		}
@@ -69,7 +70,7 @@ func (u *UserService) UpdateUserInfo(userID uuid.UUID, userInfo models.UserInfo)
 
 const usersPerPage = 10
 
-func (u *UserService) SearchUsers(query string, page int) ([]models.UserInfo, bool, error) {
+func (u *UserService) SearchUsers(query string, page int, authUserID uuid.UUID) ([]models.UserInfo, bool, error) {
 	if query == "" {
 		return []models.UserInfo{}, false, nil
 	}
@@ -82,6 +83,29 @@ func (u *UserService) SearchUsers(query string, page int) ([]models.UserInfo, bo
 
 	hasMore := total > (offset + len(users))
 
+	for i := range users {
+		if users[i].UserID == authUserID {
+			users[i].CanSendMessage = false
+			continue
+		}
+
+		isFollowing, err := u.UserRepo.IsFollowing(authUserID, users[i].UserID)
+		if err != nil {
+			return nil, false, err
+		}
+
+		isFollower, err := u.UserRepo.IsFollowing(users[i].UserID, authUserID)
+		if err != nil {
+			return nil, false, err
+		}
+
+		if isFollowing || isFollower {
+			users[i].CanSendMessage = true
+		} else {
+			users[i].CanSendMessage = false
+		}
+	}
+
 	return users, hasMore, nil
 }
 
@@ -91,4 +115,100 @@ func (u *UserService) UserExist(userID uuid.UUID) bool {
 
 func (u *UserService) GetAuthenticatedUser(authUserID uuid.UUID) (*models.UserInfo, error) {
 	return u.UserRepo.GetAllUserInfo(authUserID)
+}
+
+func (u *UserService) GetPublicUserInfo(authUserID uuid.UUID) (*models.UserInfo, error) {
+	return u.UserRepo.GetPublicUserInfo(authUserID)
+}
+
+func (u *UserService) Notifications(authUserID uuid.UUID, page int) ([]models.NotificationResponse, error) {
+	limit := 20
+	offset := page * limit
+
+	notifications, err := u.NotificationRepo.GetNotifications(authUserID, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+	var cleanNotifications []models.NotificationResponse
+
+	for _, notif := range notifications {
+		cleanNotif := models.NotificationResponse{
+			ID:            notif.ID.String(),
+			ReceiverID:    authUserID.String(),
+			Type:          notif.Type,
+			Seen:          notif.Seen,
+			FormattedDate: notif.FormattedDate,
+		}
+
+		switch notif.Type {
+		case "follow_request":
+			pending, err := u.UserRepo.CheckFollowRequestPending(authUserID, notif.UserID.UUID)
+			if err != nil {
+				return nil, err
+			}
+			if pending {
+				lastNotifID, err := u.NotificationRepo.LastUserNotification(authUserID, notif.UserID.UUID, notif.Type)
+				if err != nil {
+					return nil, err
+				}
+				if lastNotifID == notif.ID {
+					cleanNotif.AllowAction = true
+				}
+			}
+		case "group_invitation":
+			pending, err := u.GroupRepo.CheckGroupInvitationPending(notif.ID, authUserID, notif.GroupID.UUID)
+			if err != nil {
+				return nil, err
+			}
+			if pending {
+				lastNotifID, err := u.NotificationRepo.LastGroupNotification(authUserID, notif.GroupID.UUID, notif.Type)
+				if err != nil {
+					return nil, err
+				}
+				if lastNotifID == notif.ID {
+					cleanNotif.AllowAction = true
+				}
+			}
+		}
+
+		if notif.UserID.Valid {
+			userInfo, err := u.UserRepo.GetPublicUserInfo(notif.UserID.UUID)
+			if err != nil {
+				return nil, err
+			}
+			cleanNotif.UserID = notif.UserID.UUID.String()
+			cleanNotif.UserName = userInfo.FirstName + " " + userInfo.LastName
+		}
+
+		if notif.GroupID.Valid {
+			cleanNotif.GroupID = notif.GroupID.UUID.String()
+		}
+		if notif.GroupTitle.Valid {
+			cleanNotif.GroupTitle = notif.GroupTitle.String
+		}
+		cleanNotifications = append(cleanNotifications, cleanNotif)
+	}
+	return cleanNotifications, nil
+}
+
+func (u *UserService) SeeNotification(userID, notifID uuid.UUID) error {
+	return u.NotificationRepo.SeeNotification(userID, notifID)
+}
+
+func (u *UserService) CanSendMessage(authUserID, userID uuid.UUID) (bool, error) {
+	isFollowing, err := u.UserRepo.IsFollowing(authUserID, userID)
+	if err != nil {
+		return false, err
+	}
+
+	isFollower, err := u.UserRepo.IsFollowing(userID, authUserID)
+	if err != nil {
+		return false, err
+	}
+
+	if isFollowing || isFollower {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }

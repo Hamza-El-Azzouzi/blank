@@ -12,6 +12,7 @@ import RequestCard from '@/components/groups/cards/requestCard';
 import { fetchBlob } from '@/lib/fetch_blob';
 import Posts from '@/components/posts/posts';
 import Toast from '@/components/toast/Toast';
+import Error from '@/components/error/Error';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -29,6 +30,7 @@ const GroupDetailPage = () => {
     const [hasMoreEvents, setHasMoreEvents] = useState(true);
 
     const [requests, setRequests] = useState([]);
+    const [error, setError] = useState(null);
 
     const [requestPage, setRequestPage] = useState(0);
     const [loadingRequests, setLoadingRequests] = useState(false);
@@ -72,9 +74,13 @@ const GroupDetailPage = () => {
                         'Authorization': `Bearer ${cookieValue}`
                     },
                 });
-                if (!response.ok) throw new Error("Failed to fetch group data");
 
                 const data = await response.json();
+
+                if (data.status != 200) {
+                    setError(data)
+                    return;
+                }
 
                 setGroupData(data.data)
                 setIsJoined(data.data.IsJoined);
@@ -326,9 +332,10 @@ const GroupDetailPage = () => {
             }).catch((error) => {
                 showToast('error', "An Error Occure, Try Later!!");
             })
-
-
     };
+
+    if (error) return <Error error={error} />
+
     return (
         <div className="group-detail-page">
             {toasts.map((toast) => (

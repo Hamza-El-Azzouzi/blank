@@ -61,71 +61,6 @@ func (r *UserRepository) GetUserBySessionID(sessionID string) (*models.User, err
 	return user, nil
 }
 
-func (r *UserRepository) GetUsers(userId uuid.UUID, isNew bool, nPagination int) ([]models.User, error) {
-	allUser := []models.User{}
-	if isNew {
-		query := `SELECT id, username , first_name, last_name FROM users WHERE id != ? ORDER BY LOWER(username) ASC LIMIT 20 OFFSET ?`
-		rows, err := r.DB.Query(query, userId, nPagination)
-		if err != nil {
-
-			if err == sql.ErrNoRows {
-				return nil, nil
-			}
-			return nil, err
-		}
-		for rows.Next() {
-			user := models.User{}
-
-			err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
-			if err != nil {
-				return nil, err
-			}
-			allUser = append(allUser, user)
-		}
-	} else if !isNew {
-		query := `
-		SELECT 
-			u.id AS user_id,
-			u.username,
-			u.first_name,
-			u.last_name
-		FROM 
-			users u
-		LEFT JOIN 
-			messages m ON (m.user_id_sender = u.id OR m.user_id_receiver = u.id)
-			AND (m.user_id_sender = ? OR m.user_id_receiver = ?)
-		WHERE 
-			u.id != ?
-		GROUP BY 
-			u.id
-		ORDER BY  
-    		MAX(m.created_at) DESC NULLS LAST, 
-    		MAX(CASE WHEN m.un_readed = 1 THEN 1 ELSE 0 END) DESC,
-			u.username ASC
-		LIMIT 20 OFFSET ?;
-		`
-		rows, err := r.DB.Query(query, userId, userId, userId, nPagination)
-		if err != nil {
-
-			if err == sql.ErrNoRows {
-				return nil, nil
-			}
-			return nil, err
-		}
-		for rows.Next() {
-			user := models.User{}
-
-			err := rows.Scan(&user.ID, &user.Nickname, &user.FirstName, &user.LastName)
-			if err != nil {
-				return nil, err
-			}
-			allUser = append(allUser, user)
-		}
-
-	}
-	return allUser, nil
-}
-
 func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]models.UserInfo, int, error) {
 	users := []models.UserInfo{}
 	var total int
@@ -135,7 +70,7 @@ func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]m
 		return nil, 0, err
 	}
 	query := `
-        SELECT user_id, first_name, last_name, avatar 
+        SELECT user_id, first_name, last_name, avatar, is_public
         FROM User 
         WHERE first_name LIKE ? OR last_name LIKE ?
         ORDER BY first_name, last_name
@@ -150,7 +85,7 @@ func (r *UserRepository) SearchUsers(searchQuery string, limit, offset int) ([]m
 
 	for rows.Next() {
 		user := models.UserInfo{}
-		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar)
+		err := rows.Scan(&user.UserID, &user.FirstName, &user.LastName, &user.Avatar, &user.IsPublic)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -203,6 +138,7 @@ func (r *UserRepository) GetPublicUserInfo(user_id uuid.UUID) (*models.UserInfo,
 	user := &models.UserInfo{}
 	query := `
 	SELECT 
+		u.user_id,
 		u.first_name,
 		u.last_name,
 		COALESCE(u.avatar, ""),
@@ -216,6 +152,7 @@ func (r *UserRepository) GetPublicUserInfo(user_id uuid.UUID) (*models.UserInfo,
 
 	row := r.DB.QueryRow(query, user_id)
 	err := row.Scan(
+		&user.UserID,
 		&user.FirstName,
 		&user.LastName,
 		&user.Avatar,
@@ -353,6 +290,30 @@ func (u *UserRepository) IsFollowing(authUserID, userID uuid.UUID) (bool, error)
 	}
 
 	return isFollowing, nil
+}
+
+func (u *UserRepository) CheckFollowRequestPending(followingID, followerID uuid.UUID) (bool, error) {
+	isPending := false
+	query := `
+		SELECT
+			EXISTS (
+				SELECT
+					1
+				FROM
+					Follow f
+				WHERE
+					f.follower_id = ?
+					AND f.following_id = ?
+					AND f.status = "pending"
+			) AS is_pending
+	`
+
+	err := u.DB.QueryRow(query, followerID, followingID).Scan(&isPending)
+	if err != nil {
+		return false, err
+	}
+
+	return isPending, nil
 }
 
 func (u *UserRepository) HasRequested(authUserID, userID uuid.UUID) (bool, error) {
