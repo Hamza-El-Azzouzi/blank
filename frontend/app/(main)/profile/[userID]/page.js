@@ -15,6 +15,7 @@ export default function ProfilePage({ params }) {
   const [cookieValue, setCookieValue] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [userID, setUserID] = useState();
+  const [error, setError] = useState();
   const [profile, setProfile] = useState({
     first_name: "",
     last_name: "",
