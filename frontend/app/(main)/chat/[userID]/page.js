@@ -11,6 +11,7 @@ import { useWebSocket } from '@/lib/useWebSocket';
 import EmojiPicker from '@/components/chat/EmojiPicker';
 import Error from '@/components/error/Error';
 import './chat.css';
+import Link from 'next/link';
 
 export default function ChatPage() {
     const [message, setMessage] = useState('');
@@ -267,7 +268,7 @@ export default function ChatPage() {
             <div className="chat-page-header">
                 <div className="chat-page-contact-info">
                     {contact && (
-                        <>
+                        <Link href={`/profile/${userId}`} className="chat-header-link">
                             <Image
                                 src={contact.avatar}
                                 alt={`${contact.first_name} ${contact.last_name}`}
@@ -276,7 +277,7 @@ export default function ChatPage() {
                                 className="chat-page-avatar"
                             />
                             <h2>{contact.first_name} {contact.last_name}</h2>
-                        </>
+                        </Link>
                     )}
                 </div>
             </div>

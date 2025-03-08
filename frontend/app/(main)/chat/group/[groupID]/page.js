@@ -12,6 +12,7 @@ import EmojiPicker from '@/components/chat/EmojiPicker';
 import '../../[userID]/chat.css';
 import './group-chat.css';
 import Error from '@/components/error/Error';
+import Link from 'next/link';
 
 export default function GroupChatPage() {
     const [message, setMessage] = useState('');
@@ -277,10 +278,12 @@ export default function GroupChatPage() {
         <div className="chat-page">
             <div className="chat-page-header group-chat-header">
                 <div className="chat-page-contact-info">
-                    <div className="group-avatar-icon header-group-icon">
-                        G
-                    </div>
-                    <h2>{group?.Name}</h2>
+                    <Link href={`/groups/${groupID}`} className="chat-header-link">
+                        <div className="group-avatar-icon header-group-icon">
+                            G
+                        </div>
+                        <h2>{group?.Name}</h2>
+                    </Link>
                 </div>
                 {group && <div className="group-members-count">{group?.Member_count} members</div>}
             </div>
