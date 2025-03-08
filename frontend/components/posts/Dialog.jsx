@@ -50,12 +50,16 @@ export function Button({ variant = 'primary', children, ...props }) {
     </button>
   );
 }
-
 export function Checkbox({ checked, onChange }) {
+  const handleClick = (e) => {
+    e.stopPropagation();
+    onChange(!checked);
+  };
+
   return (
     <div 
       className={`custom-checkbox ${checked ? 'checked' : ''}`}
-      onClick={() => onChange(!checked)}
+      onClick={handleClick}
     >
       {checked && (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
