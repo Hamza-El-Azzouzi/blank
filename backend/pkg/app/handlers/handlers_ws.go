@@ -38,67 +38,70 @@ func (ws *WebSocketHandler) Connect(w http.ResponseWriter, r *http.Request) {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
-	defer ws.WebSocketService.DisconnectUser(conn, userID)
 
-	for {
-		var message models.Message
-		err := conn.ReadJSON(&message)
-		if err != nil {
-			break
-		}
+	go func() {
+		defer ws.WebSocketService.DisconnectUser(conn, userID)
 
-		_, ok := ws.SessionService.CheckSession(message.SessionID)
-		if !ok {
-			ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
-				Type:  "error",
-				Label: "Your session has expired",
-			})
-			break
-		}
-
-		message.SenderID = userID
-		if message.SenderID == message.ReceiverID {
-			err := ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
-				Type:  "error",
-				Label: "You can't send a message to yourself !",
-			})
+		for {
+			var message models.Message
+			err := conn.ReadJSON(&message)
 			if err != nil {
 				break
 			}
-			continue
-		}
-		
-		if message.ReceiverType == "to_user" {
-			if ok, err := ws.UserService.CanSendMessage(message.SenderID, message.ReceiverID); !ok || err != nil {
+
+			_, ok := ws.SessionService.CheckSession(message.SessionID)
+			if !ok {
+				ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+					Type:  "error",
+					Label: "Your session has expired",
+				})
+				break
+			}
+
+			message.SenderID = userID
+			if message.SenderID == message.ReceiverID {
+				err := ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+					Type:  "error",
+					Label: "You can't send a message to yourself!",
+				})
 				if err != nil {
+					break
+				}
+				continue
+			}
+
+			if message.ReceiverType == "to_user" {
+				if ok, err := ws.UserService.CanSendMessage(message.SenderID, message.ReceiverID); !ok || err != nil {
+					if err != nil {
+						ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
+							Type:  "error",
+							Label: "Something went wrong",
+						})
+						continue
+					}
+
 					ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
 						Type:  "error",
-						Label: "something wrong happend",
+						Label: "You can't send a message, follow the user first!",
 					})
 					continue
 				}
+			}
 
-				ws.WebSocketService.SendNotification([]uuid.UUID{userID}, models.Notification{
-					Type:  "error",
-					Label: "You can't send a message, follow the user first!",
-				})
+			dists, notification := ws.WebSocketService.ReadMessage(message)
+			if notification.Type == "error" {
+				log.Printf("Error sending notification: %v", err)
+				err = ws.WebSocketService.SendNotification([]uuid.UUID{userID}, notification)
+				if err != nil {
+					break
+				}
 				continue
 			}
-		}
 
-		dists, notification := ws.WebSocketService.ReadMessage(message)
-		if notification.Type == "error" {
-			log.Printf("Error sending notification: %v", err)
-			err = ws.WebSocketService.SendNotification([]uuid.UUID{userID}, notification)
+			err = ws.WebSocketService.SendNotification(dists, notification)
 			if err != nil {
 				break
 			}
-			continue
 		}
-
-		err = ws.WebSocketService.SendNotification(dists, notification)
-		if err != nil {
-			break
-		}
-	}
+	}()
 }
