@@ -38,8 +38,6 @@ export function useWebSocket(currentChatId = null, onNewMessage = null, showToas
         initWorker();
 
         const handleMessage = (data) => {
-            console.log(data);
-
             if (data.type === 'message') {
                 if (currentChatId && onNewMessage) {
                     onNewMessage(data);

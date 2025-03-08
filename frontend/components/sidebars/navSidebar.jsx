@@ -104,8 +104,6 @@ const NavSidebar = () => {
 
       const data = await response.json();
       if (data.data && Array.isArray(data.data.users)) {
-        console.log(data.data.users);
-
         const users = await Promise.all(data.data.users.map(async (user) => {
           user.avatar = user.avatar
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + user.avatar)
