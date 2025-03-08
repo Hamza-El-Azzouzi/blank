@@ -9,9 +9,10 @@ import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
 import UserNotFound from '@/components/profile/NotFound';
 import PrivateAccount from '@/components/profile/PrivateAccount';
-
+import Toast from '@/components/toast/Toast';
 export default function ProfilePage({ params }) {
   const [cookieValue, setCookieValue] = useState(null);
+  const [toasts, setToasts] = useState([]);
   const [userID, setUserID] = useState();
   const [profile, setProfile] = useState({
     first_name: "",
@@ -36,6 +37,13 @@ export default function ProfilePage({ params }) {
   const [activeTab, setActiveTab] = useState('posts');
   const [notFound, setNotFound] = useState(false);
 
+  const showToast = (type, message) => {
+    const newToast = { id: Date.now(), type, message };
+    setToasts((prevToasts) => [...prevToasts, newToast]);
+  };
+  const removeToast = (id) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+  };
   useEffect(() => {
     setCookieValue(cookies.GetCookie("sessionId"));
   }, [cookieValue]);
@@ -50,7 +58,7 @@ export default function ProfilePage({ params }) {
 
   useEffect(() => {
     if (!userID) return;
-    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-info/${userID}`, {
+    fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/user-info/${userID}`, {
       method: "GET",
       credentials: "include",
       headers: { 'Authorization': `Bearer ${cookieValue}` }
@@ -120,7 +128,7 @@ export default function ProfilePage({ params }) {
         }
       })
       .catch(err => {
-        console.error('Error fetching posts of the user:', err);
+        showToast('error', "An Error Occure, Try Later!!");
       })
       .finally(() => {
         setLoading(false);
@@ -135,6 +143,17 @@ export default function ProfilePage({ params }) {
 
   return (
     <div className="profile-container">
+      {
+        toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))
+      }
+
       {!notFound ?
         <>
           <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />

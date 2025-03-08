@@ -5,6 +5,7 @@ import { Dialog, DialogTitle, Button, Checkbox } from './Dialog';
 import './posts.css';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
+import Toast from '../toast/Toast';
 
 const CreatePost = ({ onPostCreated }) => {
     const cookieValue = cookies.GetCookie("sessionId");
@@ -24,6 +25,15 @@ const CreatePost = ({ onPostCreated }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [lastSearchId, setLastSearchId] = useState('');
     const [hasMoreSearch, setHasMoreSearch] = useState(true);
+    const [toasts, setToasts] = useState([]);
+
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
 
     const getUserID = async () => {
         try {
@@ -47,7 +57,7 @@ const CreatePost = ({ onPostCreated }) => {
 
             return data.data
         } catch (error) {
-            console.error('Error fetching profile path:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     };
 
@@ -84,7 +94,7 @@ const CreatePost = ({ onPostCreated }) => {
                 setFollowers(prev => page === 1 ? followersData : [...prev, ...followersData]);
                 setDisplayedFollowers(prev => page === 1 ? followersData : [...prev, ...followersData]);
             } catch (error) {
-                console.error('Error fetching followers:', error);
+                showToast('error', "An Error Occure, Try Later!!");
             }
         };
 
@@ -192,7 +202,7 @@ const CreatePost = ({ onPostCreated }) => {
             setSearchResults(prev => isNewSearch ? followersData : [...prev, ...followersData]);
             setDisplayedFollowers(prev => isNewSearch ? followersData : [...prev, ...followersData]);
         } catch (error) {
-            console.error('Search error:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setIsSearchLoading(false);
         }
@@ -274,7 +284,7 @@ const CreatePost = ({ onPostCreated }) => {
             setPrivacy('public');
             setSelectedFollowers([]);
         } catch (error) {
-            console.error('Error creating post:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     };
 
@@ -358,10 +368,10 @@ const CreatePost = ({ onPostCreated }) => {
                                     />
                                 </div>
                             ))}
-                            {((!searchQuery && hasMore) || (searchQuery && hasMoreSearch)) && 
+                            {((!searchQuery && hasMore) || (searchQuery && hasMoreSearch)) &&
                                 (isSearchLoading || page > 1) && (
-                                <div className="follower-item loading">Loading more...</div>
-                            )}
+                                    <div className="follower-item loading">Loading more...</div>
+                                )}
                         </>
                     )}
                 </div>
@@ -374,6 +384,16 @@ const CreatePost = ({ onPostCreated }) => {
                     </Button>
                 </div>
             </Dialog>
+            {
+                toasts.map((toast) => (
+                    <Toast
+                        key={toast.id}
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => removeToast(toast.id)}
+                    />
+                ))
+            }
         </div>
     );
 };

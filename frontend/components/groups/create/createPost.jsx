@@ -4,12 +4,12 @@ import { FiImage, FiX } from 'react-icons/fi';
 import '../../posts/posts.css';
 import { GetCookie } from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
-
-const CreatePost = ({groupID, onPostCreated }) => {
-    const [error,setError] = useState("")
+import Toast from '@/components/toast/Toast';
+const CreatePost = ({ groupID, onPostCreated }) => {
+    const [error, setError] = useState("")
     const [content, setContent] = useState('');
     const [imagePreview, setImagePreview] = useState('');
-
+    const [toasts, setToasts] = useState([]);
     const cookieValue = GetCookie("sessionId")
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -21,10 +21,17 @@ const CreatePost = ({groupID, onPostCreated }) => {
             reader.readAsDataURL(file);
         }
     };
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
     const handlePost = async () => {
         setError("")
         const postData = {
-            "groupId" : groupID ,
+            "groupId": groupID,
             content,
             "image": imagePreview,
         };
@@ -38,11 +45,11 @@ const CreatePost = ({groupID, onPostCreated }) => {
             return;
         }
 
-        if (imagePreview && imagePreview.length > 3*1024*1024) {
+        if (imagePreview && imagePreview.length > 3 * 1024 * 1024) {
             setError('Image size is too large');
             return;
         }
-      
+
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/create/post`, {
                 method: 'POST',
@@ -69,13 +76,13 @@ const CreatePost = ({groupID, onPostCreated }) => {
                 comment_count: post.data.comment_count,
                 isLiked: post.data.HasLiked,
             };
-            
+
             if (onPostCreated) onPostCreated(newPost);
 
             setContent('');
             setImagePreview(null);
         } catch (error) {
-            console.error('Error creating post:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     };
 
@@ -116,6 +123,16 @@ const CreatePost = ({groupID, onPostCreated }) => {
                 </div>
                 {error && <div className="error-message">*{error}</div>}
             </form>
+            {
+                toasts.map((toast) => (
+                    <Toast
+                        key={toast.id}
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => removeToast(toast.id)}
+                    />
+                ))
+            }
         </div>
     );
 };

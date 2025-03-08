@@ -19,19 +19,19 @@
 }
 
 .toast.success {
-  background-color: rgba(37, 183, 77, 0.9);
+  background-color: var(--success);
 }
 
 .toast.error {
-  background-color: rgba(244, 63, 94, 0.9);
+  background-color: var(--error);
 }
 
 .toast.warning {
-  background-color: rgba(245, 158, 11, 0.9);
+  background-color: var(--warning);
 }
 
 .toast.info {
-  background-color: rgba(9, 129, 185, 0.9);
+  background-color: var(--info);
 }
 
 .icon {

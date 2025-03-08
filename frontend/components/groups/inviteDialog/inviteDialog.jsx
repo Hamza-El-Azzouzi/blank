@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { FiSearch } from 'react-icons/fi';
 import './inviteDialog.css';
-
+import Toast from '@/components/toast/Toast';
 const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const [users, setUsers] = useState([]);
     const [lastUserId, setLastUserId] = useState('');
@@ -18,7 +18,13 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const [lastSearchId, setLastSearchId] = useState('');
     const [hasMoreSearch, setHasMoreSearch] = useState(true);
     const [initialized, setInitialized] = useState(false);
-
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
     const fetchUsers = async () => {
         if (loading || !hasMore) return;
         setLoading(true);
@@ -52,7 +58,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                 setHasMore(false);
             }
         } catch (error) {
-            console.error('Error fetching users:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setLoading(false);
         }
@@ -87,7 +93,6 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
             );
 
             const data = await response.json();
-            console.log(data);
             const searchedfollowers = data.data.follow_list;
             if (searchedfollowers && searchedfollowers.length > 0) {
                 const newSearchResults = await Promise.all(
@@ -117,7 +122,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                 }
             }
         } catch (error) {
-            console.error('Error searching users:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setIsSearchLoading(false);
         }
@@ -138,14 +143,14 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
         const query = e.target.value;
         setSearchQuery(query);
         setLastSearchId('');
-        
+
         if (query.length < 1) {
             setDisplayedUsers(users);
             setSearchResults([]);
             setIsSearchLoading(false);
             return;
         }
-        
+
         setIsSearchLoading(true);
         debouncedSearch(query);
     };
@@ -172,7 +177,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                 );
             }
         } catch (error) {
-            console.error('Error inviting user:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     };
 
@@ -263,7 +268,18 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
 
                 <button className="invite-close-btn" onClick={onClose}>Close</button>
             </div>
+            {
+                toasts.map((toast) => (
+                    <Toast
+                        key={toast.id}
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => removeToast(toast.id)}
+                    />
+                ))
+            }
         </div>
+
     );
 };
 

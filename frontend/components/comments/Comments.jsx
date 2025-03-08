@@ -10,7 +10,6 @@ import Loading from '../loading/Loading'
 import { fetchBlob } from '@/lib/fetch_blob'
 import { BiLoaderCircle } from 'react-icons/bi'
 import Comment from './Comment'
-
 export default function Comments({ postID, setCommentsCount, onClose, target }) {
     const [comments, setComments] = useState([])
     const [user, setUser] = useState({})
@@ -23,6 +22,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
     const [loading, setLoading] = useState(true)
     const [loadingMore, setLoadingMore] = useState(false)
     const [image, setImage] = useState(null);
+    
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type.startsWith('image/')) {
@@ -127,7 +127,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                 }
             })
             .catch(err => {
-                showToast('error', 'Error saving the comment: ' + err);
+                showToast('error', "An Error Occure, Try Later!!");
             })
     }
 
@@ -167,7 +167,7 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
                 });
             }
         } catch (err) {
-            showToast('error', err);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setLoading(false)
             setLoadingMore(false)

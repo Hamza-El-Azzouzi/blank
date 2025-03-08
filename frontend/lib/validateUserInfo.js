@@ -1,5 +1,5 @@
 export const validateForm = (formData) => {
-  const ExpFullName = /^[a-zA-Z]{1,20}$/;
+  const ExpFullName = /^[a-zA-Z ]{1,20}$/;
   if (!ExpFullName.test(formData.firstName || formData.first_name)) {
     return {
       isValid: false,

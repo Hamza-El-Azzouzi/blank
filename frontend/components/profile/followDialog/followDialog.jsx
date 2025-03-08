@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { fetchBlob } from '@/lib/fetch_blob';
 import { FiSearch } from 'react-icons/fi';
 import './followDialog.css';
+import Toast from '@/components/toast/Toast';
+
 
 const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner }) => {
     const [users, setUsers] = useState([]);
@@ -17,7 +19,14 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [lastSearchId, setLastSearchId] = useState('');
     const [hasMoreSearch, setHasMoreSearch] = useState(true);
-
+    const [toasts, setToasts] = useState([]);
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
     const fetchUsers = async () => {
         if (loading || !hasMore) return;
 
@@ -73,7 +82,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                 setHasMore(false);
             }
         } catch (error) {
-            console.error('Error fetching users:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setLoading(false);
         }
@@ -91,7 +100,7 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
             setLastSearchId('');
             setSearchResults([]);
             setHasMoreSearch(true);
-            setDisplayedUsers([]); 
+            setDisplayedUsers([]);
         }
 
         if (!hasMoreSearch && !isNewSearch) return;
@@ -135,8 +144,9 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                     setDisplayedUsers([]);
                 }
             }
+            showToast('success', 'Success! Operation completed.');
         } catch (error) {
-            console.error('Error searching users:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setIsSearchLoading(false);
         }
@@ -191,9 +201,10 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                     ...prev,
                     [type]: Math.max(0, prev[type] - 1)
                 }));
+                showToast('success', 'Success! Operation completed.');
             }
         } catch (error) {
-            console.error('Error removing user:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     };
 
@@ -296,6 +307,16 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
 
                 <button className="follow-close-btn" onClick={onClose}>Close</button>
             </div>
+            {
+                toasts.map((toast) => (
+                    <Toast
+                        key={toast.id}
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={() => removeToast(toast.id)}
+                    />
+                ))
+            }
         </div>
     );
 }

@@ -11,10 +11,13 @@ import './group.css';
 import RequestCard from '@/components/groups/cards/requestCard';
 import { fetchBlob } from '@/lib/fetch_blob';
 import Posts from '@/components/posts/posts';
+import Toast from '@/components/toast/Toast';
 
 const ITEMS_PER_PAGE = 20;
 
 const GroupDetailPage = () => {
+    const [toasts, setToasts] = useState([]);
+
     const [activeTab, setActiveTab] = useState('posts');
     const [showCreateEvent, setShowCreateEvent] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
@@ -51,6 +54,13 @@ const GroupDetailPage = () => {
             setPage(prevPage => prevPage + 20);
         }
     };
+    const showToast = (type, message) => {
+        const newToast = { id: Date.now(), type, message };
+        setToasts((prevToasts) => [...prevToasts, newToast]);
+    };
+    const removeToast = (id) => {
+        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    };
     useEffect(() => {
         const fetchGroupData = async () => {
             try {
@@ -69,8 +79,9 @@ const GroupDetailPage = () => {
                 setGroupData(data.data)
                 setIsJoined(data.data.IsJoined);
                 setIsOwner(data.data.IsOwner);
+
             } catch (error) {
-                console.error(error);
+                showToast('error', "An Error Occure, Try Later!!");
 
             }
         };
@@ -107,7 +118,7 @@ const GroupDetailPage = () => {
                 }
                 if (data.data) setEvents(prevEvents => [...prevEvents, ...data.data]);
             } catch (error) {
-                console.error(error);
+                showToast('error', "An Error Occure, Try Later!!");
             } finally {
                 setLoadingEvents(false);
             }
@@ -137,11 +148,11 @@ const GroupDetailPage = () => {
                 if (data.data && data.data[0].TotalCount < ITEMS_PER_PAGE) {
                     setHasMoreRequests(false);
                 }
-               
+
                 if (data.data) setRequests(prevRequests => [...prevRequests, ...data.data]);
 
             } catch (error) {
-                console.error(error);
+                showToast('error', "An Error Occure, Try Later!!");
             } finally {
                 setLoadingRequests(false);
             }
@@ -204,10 +215,9 @@ const GroupDetailPage = () => {
                         return prevEvent;
                     })
                 );
-
+                showToast('success', 'Success! Operation completed.');
             }).catch((error) => {
-                //TODO: should add toast here
-                console.error(error)
+                showToast('error', "An Error Occure, Try Later!!");
             })
     };
     const handleRequesttResponse = (requestId, response, userId) => {
@@ -236,8 +246,9 @@ const GroupDetailPage = () => {
                 setRequests(prevRequests =>
                     prevRequests.filter(req => req.UserId !== userId)
                 );
+                showToast('success', 'Success! Operation completed.');
             }).catch((error) => {
-                console.error(error)
+                showToast('error', "An Error Occure, Try Later!!");
             })
     };
     const fetchPosts = async (group_id, pageNumber) => {
@@ -280,7 +291,7 @@ const GroupDetailPage = () => {
                 setEndReached(true);
             }
         } catch (error) {
-            console.error('Error fetching posts:', error);
+            showToast('error', "An Error Occure, Try Later!!");
         } finally {
             setLoading(false);
         }
@@ -313,13 +324,21 @@ const GroupDetailPage = () => {
                 };
                 setEvents(prevEvents => [newEvent, ...(prevEvents || [])]);
             }).catch((error) => {
-                console.error(error)
+                showToast('error', "An Error Occure, Try Later!!");
             })
 
 
     };
     return (
         <div className="group-detail-page">
+            {toasts.map((toast) => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => removeToast(toast.id)}
+                />
+            ))}
             <GroupHeader group={groupData} />
 
             {(groupData.IsJoined || groupData.IsOwner) && (

@@ -181,6 +181,25 @@
 .follow-btn:hover:not(:disabled) {
     background-color: #0074cc;
 } */
+.leave-group-btn,
+.accept-group-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.accept-group-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.leave-group-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
 
 @media (max-width: 640px) {
     .profile-header {

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiSearch, FiPlus } from 'react-icons/fi';
 import CreateGroup from '@/components/groups/create/createGroup';
 import GroupCard from '@/components/groups/cards/groupCard';
@@ -52,8 +52,7 @@ const GroupsPage = () => {
                     setHasMore(false);
                 }
             } catch (err) {
-                console.error(err);
-                showToast('error', 'Failed to fetch groups');
+                showToast('error', 'Failed to fetch Groups');
             } finally {
                 setLoading(false);
             }
@@ -89,11 +88,11 @@ const GroupsPage = () => {
         setGroups(new Set()); 
 
         if (term.length > 50) {
-            showToast('error', 'Search term cannot exceed 50 characters');
+            showToast('error', 'Search Term Cannot Exceed 50 Characters');
             return;
         }
         if (!/^[a-zA-Z0-9\s]*$/.test(term)) {
-            showToast('error', 'Search can only contain letters, numbers, and spaces');
+            showToast('error', 'Search Can Only Contain Letters, Numbers, and Spaces');
             return;
         }
 
@@ -114,7 +113,7 @@ const GroupsPage = () => {
             const data = await response.json();
             setGroups(new Set(data.data.map(group => JSON.stringify(group)))); 
         } catch (error) {
-            showToast('error', 'Failed to search groups');
+            showToast('error', 'Group Not Found');
         }
     };
     const handleJoinGroup = (groupID) => {
@@ -133,10 +132,10 @@ const GroupsPage = () => {
                     return response.json();
                 })
                 .then(() => {
-                    showToast('success', 'Success! Operation completed.');
-                }).catch((error) => {
+                    showToast('success', 'Success! Your request was sent successfully');
+                }).catch(() => {
                     
-                    showToast('error', error.message);
+                    showToast('error', "An Error Occure, Try Later!!");
                 })
         };
     const handleCreateGroup = (groupData) => {
@@ -157,7 +156,7 @@ const GroupsPage = () => {
                 return response.json();
             })
             .then((data) => {
-                showToast('success', 'Success! Group created.');
+                showToast('success', 'Success! Group Created Successfully.');
                 setShowCreateGroup(false);
 
                 setGroups(prevGroups => {
@@ -167,7 +166,7 @@ const GroupsPage = () => {
                 });
             })
             .catch((error) => {
-                showToast('error', error.message);
+                showToast('error', "An Error Occure, Try Later!!");
             });
     };
 

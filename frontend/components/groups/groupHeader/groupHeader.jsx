@@ -16,6 +16,7 @@ const GroupHeader = ({ group }) => {
     const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [isPendingHovered, setIsPendingHovered] = useState(false);
+    
     const handleLeaveGroup = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
@@ -36,7 +37,7 @@ const GroupHeader = ({ group }) => {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/groups")
             }).catch((error) => {
-                showToast('error', error.message);
+                showToast('error', "An Error Occure, Try Later!!");
             })
     };
     const handleCancelRequest = (e) => {
@@ -59,7 +60,7 @@ const GroupHeader = ({ group }) => {
                 showToast('success', 'Request cancelled successfully.');
                 router.push("/groups")
             }).catch((error) => {
-                showToast('error', error.message);
+                showToast('error', "An Error Occure, Try Later!!");
             })
     };
     const showToast = (type, message) => {
@@ -91,7 +92,7 @@ const GroupHeader = ({ group }) => {
                 group.IsPending = true
             }).catch((error) => {
 
-                showToast('error', error.message);
+                showToast('error', "An Error Occure, Try Later!!");
             })
     };
     const handleDestoryCommunity = (e) => {
@@ -117,7 +118,7 @@ const GroupHeader = ({ group }) => {
                 router.push("/groups")
 
             }).catch((error) => {
-                showToast('error', error.message);
+                showToast('error', "An Error Occure, Try Later!!");
             })
     };
     const handleAcceptGroupInvitation = async (e) => {
@@ -129,15 +130,13 @@ const GroupHeader = ({ group }) => {
                 headers: { Authorization: `Bearer ${cookieValue}` },
             });
             let data = await res.json();
-            if (data.message == "success") {
-                setAllowActions(false)
-                notif.seen = true
-            } else {
-                console.log(data.message)
+            if (data.status !== 200) {
+                throw new Error("An Error Occure, Try Later!!")
             }
+            showToast('success', 'Success! Operation completed.')
 
         } catch (err) {
-            console.error("Error fetching:", err);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     }
     const handleRefuseGroupInvitation = async (e) => {
@@ -150,17 +149,13 @@ const GroupHeader = ({ group }) => {
                 headers: { Authorization: `Bearer ${cookieValue}` },
             });
             let data = await res.json();
-            if (data.message == "success") {
-                console.log("gooood")
-                //TODO: ADD Toast
-            } else {
-                console.log(data.message)
-                 //TODO: ADD Toast
+            if (data.status !== 200) {
+                throw new Error("An Error Occure, Try Later!!")
             }
+            showToast('success', 'Success! Operation completed.')
 
         } catch (err) {
-             //TODO: ADD Toast
-            console.error("Error fetching:", err);
+            showToast('error', "An Error Occure, Try Later!!");
         }
     }
     return (

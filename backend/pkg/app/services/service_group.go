@@ -71,7 +71,6 @@ func (g *GroupService) GroupsSearch(user_id, term string) ([]models.GroupDetails
 
 func (g *GroupService) GroupDetails(user_id, group_id string) (models.GroupDetails, error) {
 	groupDetails, err := g.GroupRepo.GroupDetails(user_id, group_id)
-	fmt.Println(err)
 	if err != nil {
 		return models.GroupDetails{}, err
 	}

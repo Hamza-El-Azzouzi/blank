@@ -7,7 +7,7 @@ import * as cookies from '@/lib/cookie';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { fetchBlob } from '@/lib/fetch_blob';
-
+import Toast from '../toast/Toast';
 const NavSidebar = () => {
   const cookieValue = cookies.GetCookie("sessionId");
   const router = useRouter()
@@ -19,7 +19,15 @@ const NavSidebar = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const searchResultsRef = useRef(null);
+  const [toasts, setToasts] = useState([]);
 
+  const showToast = (type, message) => {
+    const newToast = { id: Date.now(), type, message };
+    setToasts((prevToasts) => [...prevToasts, newToast]);
+};
+const removeToast = (id) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+};
   useEffect(() => {
     if (cookieValue) {
       getProfilePath();
@@ -126,7 +134,7 @@ const NavSidebar = () => {
         setHasMore(false);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      showToast('error', "An Error Occure, Try Later!!");
       if (pageNum === 1) {
         setSearchResults([]);
       }
@@ -257,6 +265,16 @@ const NavSidebar = () => {
           <span>Log out</span>
         </Link>
       </div>
+      {
+    toasts.map((toast) => (
+        <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+        />
+    ))
+}
     </>
   );
 };

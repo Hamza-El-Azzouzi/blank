@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { validateForm } from '@/lib/validateUserInfo';
-
+import Toast from '../toast/Toast';
 export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValue }) {
   const [isChanged, setIsChanged] = useState(false);
+  const [error, setError] = useState("")
+  const [toasts, setToasts] = useState([]);
   const [formData, setFormData] = useState({
     first_name: user.first_name || '',
     last_name: user.last_name || '',
@@ -16,6 +18,13 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
     is_public: user.is_public,
   });
 
+  const showToast = (type, message) => {
+    const newToast = { id: Date.now(), type, message };
+    setToasts((prevToasts) => [...prevToasts, newToast]);
+  };
+  const removeToast = (id) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+  };
   useEffect(() => {
     const hasChanged = Object.keys(formData).some((key) => formData[key] !== (user[key] || ''));
     setIsChanged(hasChanged);
@@ -23,10 +32,14 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
+    const newFormData = {
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
-    });
+    };
+    setFormData(newFormData);
+
+    const validation = validateForm(newFormData);
+    setError(validation.isValid ? "" : validation.message);
   };
 
   const handleAvatarChange = (e) => {
@@ -46,11 +59,11 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
     formData.date_of_birth = formData.date_of_birth?.split('T')[0];
     if (formData?.avatar?.includes("default-avatar")) formData.avatar = null
 
-    const validation = validateForm(formData);
-    if (!validation.isValid) {
-      alert(validation.message);
-      return;
-    }
+    // const validation = validateForm(formData);
+    // if (!validation.isValid) {
+    //   setError(validation.message)
+    //   return;
+    // }
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-update-info`, {
@@ -64,19 +77,18 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
       });
 
       const data = await response.json();
-      if (data.message === 'success') {
-        if (!formData.avatar) formData.avatar = '/default-avatar.jpg'
-        formData.followers = user.followers;
-        formData.following = user.following;
-        formData.is_owner = user.is_owner;
-
-        setProfile(formData);
-        onClose();
-      } else {
-        alert(data.message);
+      if (data.status !== 200) {
+        throw new Error("An Error Occure, Try Later!!")
       }
+      if (!formData.avatar) formData.avatar = '/default-avatar.jpg'
+      formData.followers = user.followers;
+      formData.following = user.following;
+      formData.is_owner = user.is_owner;
+
+      setProfile(formData);
+      onClose();
     } catch (error) {
-      console.error('Error updating user info:', error);
+      showToast('error', "An Error Occure, Try Later!!");
     }
   };
 
@@ -111,12 +123,24 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
             </label>
           </div>
           <p>{formData.is_public ? 'Your profile will be visible to everyone' : 'Only approved followers can see your profile'}</p>
+          {error && <div className="error-message">{error}</div>}
           <div className='form-action'>
             <button type="button" onClick={onClose}>Cancel</button>
             <button type="submit" disabled={!isChanged}>Save</button>
           </div>
         </form>
+
       </div>
+      {
+        toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))
+      }
     </div>
   );
 }

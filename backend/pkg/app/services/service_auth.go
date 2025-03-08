@@ -60,12 +60,12 @@ func (a *AuthService) Register(info models.RegisterData) (int, string) {
 func (a *AuthService) Login(email, password string) (*models.User, string) {
 	userByEmail, err := a.UserRepo.FindUser(email, "byEmail")
 	if userByEmail == nil || err != nil {
-		return nil, "Invalid Email"
+		return nil, "No Account Found With This Email"
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userByEmail.Password), []byte(password))
 	if err != nil {
-		return nil, "incorrect password"
+		return nil, "Incorrect Password"
 	}
 
 	return userByEmail, ""

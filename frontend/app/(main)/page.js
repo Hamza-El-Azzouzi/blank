@@ -4,14 +4,21 @@ import Posts from '@/components/posts/posts';
 import { useState, useEffect } from 'react';
 import * as cookies from '@/lib/cookie';
 import { fetchBlob } from '@/lib/fetch_blob';
-
+import Toast from '@/components/toast/Toast';
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [endReached, setEndReached] = useState(false);
-
+  const [toasts, setToasts] = useState([]);
+  const showToast = (type, message) => {
+    const newToast = { id: Date.now(), type, message };
+    setToasts((prevToasts) => [...prevToasts, newToast]);
+  };
+  const removeToast = (id) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+  };
   const fetchPosts = async (pageNumber) => {
     if (endReached) return;
 
@@ -53,7 +60,7 @@ export default function Home() {
         setEndReached(true);
       }
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      showToast('error', "An Error Occure, Try Later!!");
     } finally {
       setLoading(false);
     }
@@ -75,12 +82,23 @@ export default function Home() {
 
   return (
     <div className="feed-container">
+      {
+        toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))
+      }
+
       <CreatePost onPostCreated={handleNewPost} />
-      <Posts 
-        posts={posts} 
-        loading={loading} 
-        endReached={endReached} 
-        onLoadMore={handleLoadMore} 
+      <Posts
+        posts={posts}
+        loading={loading}
+        endReached={endReached}
+        onLoadMore={handleLoadMore}
         target="Post"
       />
     </div>

@@ -5,13 +5,20 @@ import { FiHeart, FiMessageSquare, FiGlobe, FiUsers, FiLock } from 'react-icons/
 import * as cookies from '@/lib/cookie';
 import './posts.css';
 import Comments from '../comments/Comments';
-
-const Post = ({ post, target}) => {
+import Toast from '../toast/Toast';
+const Post = ({ post, target }) => {
   const [isLiked, setIsLiked] = useState(post.has_liked);
   const [likesCount, setLikesCount] = useState(post.like_count);
   const [commentsCount, setCommentsCount] = useState(post.comment_count || 0);
   const [showComments, setShowComments] = useState(false);
-
+  const [toasts, setToasts] = useState([]);
+  const showToast = (type, message) => {
+    const newToast = { id: Date.now(), type, message };
+    setToasts((prevToasts) => [...prevToasts, newToast]);
+  };
+  const removeToast = (id) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+  };
   const handleLike = async () => {
     const sessionId = cookies.GetCookie("sessionId");
     try {
@@ -23,7 +30,7 @@ const Post = ({ post, target}) => {
         },
         body: JSON.stringify({
           targetId: post.post_id,
-          targetType: target  
+          targetType: target
         })
       });
 
@@ -36,7 +43,7 @@ const Post = ({ post, target}) => {
       setLikesCount(data.like_count);
 
     } catch (error) {
-      console.error('Error liking post:', error);
+      showToast('error', "An Error Occure, Try Later!!");
     }
   };
 
@@ -57,7 +64,7 @@ const Post = ({ post, target}) => {
             <span className="post-author">{post.author}</span>
           </Link>
           <span className="post-time">
-            <div style={{fontSize: '13px'}}>
+            <div style={{ fontSize: '13px' }}>
               {post.privacy === 'public' && <FiGlobe className="privacy-icon" />}
               {post.privacy === 'almost private' && <FiUsers className="privacy-icon" />}
               {post.privacy === 'private' && <FiLock className="privacy-icon" />}
@@ -105,7 +112,17 @@ const Post = ({ post, target}) => {
       </div>
 
       {showComments &&
-      <Comments postID={post.post_id} setCommentsCount={setCommentsCount} onClose={() => setShowComments(false)} target={target} />
+        <Comments postID={post.post_id} setCommentsCount={setCommentsCount} onClose={() => setShowComments(false)} target={target} />
+      }
+      {
+        toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))
       }
     </div>
   );

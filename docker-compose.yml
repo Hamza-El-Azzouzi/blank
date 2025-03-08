@@ -1,7 +1,7 @@
 version: "3.8"
 
 networks:
-  blank-network: # Define the custom network
+  blank-network:
     driver: bridge
 
 services:

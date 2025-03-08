@@ -25,6 +25,10 @@ func (u *UserService) GetUserInfo(userID, authUserID uuid.UUID) (*models.UserInf
 	if err != nil {
 		return nil, err
 	}
+	has_requested, err := u.UserRepo.HasRequested(authUserID, userID)
+	if err != nil {
+		return nil, err
+	}
 
 	var userInfo *models.UserInfo
 
@@ -40,6 +44,7 @@ func (u *UserService) GetUserInfo(userID, authUserID uuid.UUID) (*models.UserInf
 		}
 	}
 	userInfo.IsFollowing = isFollowing
+	userInfo.Has_requested = has_requested
 	return userInfo, nil
 }
 

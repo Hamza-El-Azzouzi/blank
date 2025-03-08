@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -57,7 +56,6 @@ func (h *AuthMiddleware) Protect(next http.Handler) http.Handler {
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			fmt.Println(r.URL.Path)
 			utils.SendResponses(w, http.StatusUnauthorized, "Unauthorized: No session token provided", nil)
 			return
 		}

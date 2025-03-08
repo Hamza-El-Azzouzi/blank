@@ -38,20 +38,6 @@ const EventCard = ({ event, onResponseChange }) => {
                     </button>
                 </div>
             )}
-            {/* <div className="event-response-buttons">
-                <button
-                    className={`response-button ${event.is_going ? 'going' : ''}`}
-                    onClick={() => handleResponse('going')}
-                >
-                    Going
-                </button>
-                <button
-                    className={`response-button`}
-                    onClick={() => handleResponse('not-going')}
-                >
-                    Not Going
-                </button>
-            </div> */}
         </div>
     );
 };

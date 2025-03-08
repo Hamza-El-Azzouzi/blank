@@ -46,7 +46,9 @@ body {
 .loader {
   animation: rotate 3s linear infinite;
 }
-
+.error-message{
+  color: var(--error);
+}
 @keyframes rotate {
   0% {
     transform: rotate(0deg);
