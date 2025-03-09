@@ -1,102 +1,129 @@
-/* components/groups/groupHeader.css */
-.group-header {
+.gh-container {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 15px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 24px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
-.group-info {
+.gh-info-section {
     flex: 1;
+    padding-right: 10px;
 }
 
-.group-info h1 {
+.gh-title {
     color: var(--text-primary);
     font-size: 24px;
     margin-bottom: 12px;
     word-break: break-word;
     overflow-wrap: break-word;
+    line-height: 1.3;
 }
 
-.group-description {
+.gh-description {
     color: var(--text-secondary);
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.6;
     margin-bottom: 16px;
     word-break: break-word;
     overflow-wrap: break-word;
+    max-width: 650px;
 }
 
-.group-meta {
+.gh-metadata {
     display: flex;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.group-stat {
+.gh-stat-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: var(--text-tertiary);
     font-size: 14px;
-}
-
-.join-group-btn,
-.leave-group-btn,
-.accept-group-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
+    background-color: var(--bg-tertiary);
+    padding: 6px 12px;
+    border-radius: 20px;
     transition: all 0.2s ease;
 }
 
-.join-group-btn {
+.gh-stat-item:hover {
+    background-color: var(--border);
+    color: var(--text-primary);
+}
+
+.gh-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 150px;
+}
+
+.gh-button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.gh-join-btn {
     background-color: var(--primary);
     color: white;
     border: none;
 }
-.accept-group-btn {
-    background-color: var(--bg-tertiary);
-    color: var(--success);
-    border: 1px solid var(--success);
-}
-.join-group-btn:hover {
+
+.gh-join-btn:hover {
     background-color: var(--primary-hover);
+    transform: translateY(-2px);
 }
 
-.join-group-btn.pending {
+.gh-join-btn.pending {
     background-color: var(--primary);
+    position: relative;
+    overflow: hidden;
 }
 
-.join-group-btn.pending:hover {
-    background-color: var(--primary-hover);
-    color: white;
-    cursor: pointer;
+.gh-join-btn.pending:hover {
+    background-color: var(--error);
 }
 
-.leave-group-btn {
+.gh-leave-btn {
     background-color: var(--bg-tertiary);
     color: var(--error);
     border: 1px solid var(--error);
 }
 
-.leave-group-btn:hover {
+.gh-leave-btn:hover {
     background-color: var(--error);
     color: white;
+    transform: translateY(-2px);
 }
 
-.group-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.gh-accept-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--success);
+    border: 1px solid var(--success);
 }
 
-.invite-btn {
-    padding: 8px 16px;
+.gh-accept-btn:hover {
+    background-color: var(--success);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.gh-invite-btn {
+    padding: 10px 16px;
     border-radius: 8px;
     background-color: var(--primary);
     color: white;
@@ -104,20 +131,98 @@
     cursor: pointer;
     font-size: 14px;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.invite-btn:hover {
+.gh-invite-btn:hover {
     background-color: var(--primary-hover);
+    transform: translateY(-2px);
 }
 
-@media (max-width: 640px) {
-    .group-header {
+.gh-destroy-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.gh-destroy-btn:hover {
+    background-color: var(--error);
+    color: white;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+    .gh-container {
         flex-direction: column;
-        gap: 16px;
+        gap: 20px;
+        padding: 16px;
+        align-items: center;
     }
 
-    .group-meta {
+    .gh-info-section {
+        padding-right: 0;
+        text-align: center;
+        width: 100%;
+    }
+
+    .gh-title {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .gh-description {
+        margin-bottom: 12px;
+        padding: 0 5px;
+    }
+
+    .gh-metadata {
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .gh-stat-item {
+        font-size: 14px;
+    }
+
+    .gh-actions-container {
+        width: 100%;
         flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gh-container {
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    .gh-title {
+        font-size: 22px;
+    }
+
+    .gh-description {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .gh-metadata {
+        flex-direction: column;
+        align-items: center;
         gap: 8px;
+    }
+
+    .gh-stat-item {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .gh-button {
+        width: 100%;
+        padding: 10px;
     }
 }
