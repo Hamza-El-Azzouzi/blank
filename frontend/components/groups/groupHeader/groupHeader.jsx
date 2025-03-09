@@ -136,6 +136,7 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
             showToast('success', 'Success! Operation completed.')
             onJoinStateChange(true)
             group.IsInvited = false
+            group.Member_count += 1
         } catch (err) {
             showToast('error', "An Error Occure, Try Later!!");
         }

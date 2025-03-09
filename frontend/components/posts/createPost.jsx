@@ -364,8 +364,7 @@ const CreatePost = ({ onPostCreated }) => {
                                     </div>
                                     <Checkbox
                                         checked={selectedFollowers.includes(follower.user_id)}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
+                                        onClick={() => {
                                             handleFollowerSelect(follower.user_id);
                                         }}
                                     />
