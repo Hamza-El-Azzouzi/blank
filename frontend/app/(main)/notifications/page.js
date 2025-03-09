@@ -71,9 +71,11 @@ const NotificationsPage = () => {
             ) : notifications.length > 0 ? (
                 notifications.map((notif) => (
                     <Link key={notif.id} className="link" href={
-                        notif.type === "follow_request"
+                        notif.type === "follow_request" || notif.type === "follow"
                             ? "/profile/" + notif.user_id
-                            : "/groups/" + notif.group_id
+                            : notif.type === "join_request" || notif.type === "group_invitation" || notif.type === "event"
+                            ? "/groups/" + notif.group_id
+                            : "#"
                     }>
                         <Notifications notif={notif} />
                     </Link>
@@ -86,7 +88,7 @@ const NotificationsPage = () => {
                     <BiLoaderCircle className="loader" />
                 </span>
             )}
-        </div >
+        </div>
     );
 };
 

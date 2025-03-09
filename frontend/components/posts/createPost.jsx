@@ -318,8 +318,8 @@ const CreatePost = ({ onPostCreated }) => {
                             onChange={handlePrivacyChange}
                         >
                             <option value="public">Public</option>
-                            <option value="almost private">Followers Only</option>
-                            <option value="private">Selected Followers</option>
+                            <option value="almost private">Almost Private</option>
+                            <option value="private">Private</option>
                         </select>
 
                     </div>

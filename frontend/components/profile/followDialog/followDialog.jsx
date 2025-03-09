@@ -144,7 +144,6 @@ const FollowDialog = ({ type, onClose, cookieValue, setProfile, userID, isOwner 
                     setDisplayedUsers([]);
                 }
             }
-            showToast('success', 'Success! Operation completed.');
         } catch (error) {
             showToast('error', "An Error Occure, Try Later!!");
         } finally {
