@@ -119,7 +119,7 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
             if (data.status !== 200) {
                 throw new Error("An Error Occure, Try Later!!")
             }
-            profile.has_requested = false   
+            profile.has_requested = false
             setHasRequested(false);
         } catch (err) {
             showToast('error', "An Error Occure, Try Later!!");
@@ -155,7 +155,6 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                         <FaUserEdit />
                     </button>
                 ) : (
-
                     <button
                         className={`follow-btn ${followStatus.toLowerCase()}`}
                         onClick={followStatus === "Follow" ? handleFollow : handleDeleteFollow}
@@ -163,13 +162,15 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
                         {followStatus === "Following" ? "Unfollow" : followStatus === "Pending" ? "Cancel Request" : "Follow"}
                     </button>
                 )}
+
+                {hasRequested && (
+                    <>
+                        <button className="accept-group-btn" onClick={handleAcceptFollow}>Accept</button>
+                        <button className="leave-group-btn" onClick={handleRefuseFollow}>Refuse</button>
+                    </>
+                )}
             </div>
-            {hasRequested && (
-                <>
-                    <button className="leave-group-btn" onClick={handleRefuseFollow}>Refuse</button>
-                    <button className="accept-group-btn" onClick={handleAcceptFollow}>Accept</button>
-                </>
-            )}
+
             {showFollowDialog && (
                 <FollowDialog
                     type={dialogType}
