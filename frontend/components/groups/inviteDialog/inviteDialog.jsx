@@ -18,6 +18,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const [lastSearchId, setLastSearchId] = useState('');
     const [hasMoreSearch, setHasMoreSearch] = useState(true);
     const [initialized, setInitialized] = useState(false);
+    const [toasts, setToasts] = useState([]);
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
         setToasts((prevToasts) => [...prevToasts, newToast]);
