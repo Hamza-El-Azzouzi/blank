@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"blank/pkg/app"
 	"blank/pkg/app/middleware"
@@ -51,10 +52,11 @@ func main() {
 
 	mux := http.NewServeMux()
 	protectedMux := authMiddleware.Protect(mux)
+	rateLimiter := middleware.NewRateLimiter(100, 1*time.Minute)
 
 	routes.SetupRoutes(mux, authHandler, postHandler, likeHandler, authMiddleware, MessageHandler, userHandler, groupHandler, followHandler, commentHandler, webSocketHandler)
 
 	fmt.Println("Starting the forum server...\nWelcome http://127.0.0.1:1414/")
 
-	log.Fatal(http.ListenAndServe("0.0.0.0:1414", middleware.RateLimitMiddleware(middleware.CheckCORS(protectedMux))))
+	log.Fatal(http.ListenAndServe("0.0.0.0:1414",  middleware.Recovery(rateLimiter.Middleware(middleware.CheckCORS(protectedMux)))))
 }
