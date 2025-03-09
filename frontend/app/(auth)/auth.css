@@ -7,8 +7,8 @@
 }
 
 .auth-box {
-    color: var(--text-primary)  ;
-    background:var(--bg-secondary);
+    color: var(--text-primary);
+    background: var(--bg-secondary);
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
@@ -99,7 +99,7 @@
 
 .step-label {
     font-size: 0.75rem;
-    color:var(--text-secondary);
+    color: var(--text-secondary);
     text-align: center;
     display: none;
 }
@@ -129,6 +129,7 @@
     background: var(--error);
     color: white;
 }
+
 /* Form Styles */
 .form-step {
     display: none;
@@ -214,7 +215,7 @@
 
 .image-upload:hover {
     border-color: var(--border-color);
-    background:var(--bg-tertiary);
+    background: var(--bg-tertiary);
 }
 
 .image-upload input {
@@ -231,7 +232,8 @@
     background-color: var(--text-secondary);
     border: 2px solid var(--border-light);
 }
-.avatar-preview{
+
+.avatar-preview {
     width: 80px;
     height: 80px;
     border-radius: 50%;
@@ -242,7 +244,7 @@
     display: flex;
     gap: 1rem;
     margin-top: 2rem;
-  
+
 }
 
 .step-button {
@@ -348,13 +350,16 @@
     text-align: center;
     margin: 0;
 }
-.auth-footer,a{
-    text-decoration: none;
+
+.auth-footer {
     margin-top: 20px;
 }
-a{
+
+.auth-footer a {
+    text-decoration: none;
     color: var(--primary-light);
 }
-.error-message{
+
+.error-message {
     color: var(--error);
 }
