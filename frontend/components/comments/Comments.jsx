@@ -22,9 +22,9 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
     const [loading, setLoading] = useState(true)
     const [loadingMore, setLoadingMore] = useState(false)
     const [image, setImage] = useState(null);
-    
+    const [userId, setUserId] = useState();
     const commentsRef = useRef(null);
-
+    const session = cookies.GetCookie("sessionId")
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -101,6 +101,30 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
         if (commentContent.length >= 200 && e.nativeEvent.inputType !== "deleteContentBackward") return
         setCommentContent(e.target.value)
     }
+    useEffect(()=>{
+        fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`, {
+            method: "POST",
+            credentials: "include",
+            headers: { 'content-type': "application/json" },
+            body: JSON.stringify({
+                name: "token",
+                value: session
+            })
+        })
+            .then((res) => {
+                if (!res.ok){
+                    throw res
+                }
+                return res.json()
+
+            })
+            .then((data) => {
+                setUserId(data.data)
+            })
+            .catch(err => {
+                showToast('error', "An Error Occure, Try Later!!");
+            })
+    },[])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -133,9 +157,11 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
             })
         })
             .then(res => res.json())
-            .then(async (data) => {
+            .then((data) => {
+                console.log(data)
                 if (data.status) {
                     if (data.status == 200) {
+                        newComment.user.user_id = userId
                         newComment.comment_id = data.data;
                         setComments(data => [newComment, ...data])
                         setCommentContent("")

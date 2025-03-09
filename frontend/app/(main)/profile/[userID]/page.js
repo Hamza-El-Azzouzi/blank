@@ -75,6 +75,7 @@ export default function ProfilePage({ params }) {
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
+          console.log("profile",data.avatar)
         setProfile(data);
       })
       .catch(err => {

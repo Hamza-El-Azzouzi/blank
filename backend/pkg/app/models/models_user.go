@@ -42,18 +42,18 @@ type UserInfo struct {
 	UserID         uuid.UUID `json:"user_id"`
 	FirstName      string    `json:"first_name"`
 	LastName       string    `json:"last_name"`
-	Nickname       string    `json:"nickname,omitempty"`
-	Email          string    `json:"email,omitempty"`
-	About          string    `json:"about,omitempty"`
-	DateOfBirth    string    `json:"date_of_birth,omitempty"`
-	Avatar         string    `json:"avatar,omitempty"`
+	Nickname       string    `json:"nickname"`
+	Email          string    `json:"email"`
+	About          string    `json:"about"`
+	DateOfBirth    string    `json:"date_of_birth"`
+	Avatar         string    `json:"avatar"`
 	IsPublic       bool      `json:"is_public"`
 	IsOwner        bool      `json:"is_owner"`
 	Following      int       `json:"following"`
 	Followers      int       `json:"followers"`
 	FollowStatus   string    `json:"follow_status"`
 	IsFollowing    bool      `json:"is_following"`
-	CanSendMessage bool      `json:"can_send_message,omitempty"`
+	CanSendMessage bool      `json:"can_send_message"`
 	Has_requested  bool      `json:"has_requested"`
 }
 

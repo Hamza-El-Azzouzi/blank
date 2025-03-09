@@ -13,7 +13,6 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
     const [dialogType, setDialogType] = useState(null);
     const [toasts, setToasts] = useState([]);
     const [hasRequested, setHasRequested] = useState();
-    const [profileData, setProfileData] = useState()
     const handleOpenDialog = (type) => {
         if (!profile.is_public && !profile.is_owner && !profile.is_following) return;
         setDialogType(type);
@@ -27,7 +26,6 @@ const ProfileHeader = ({ profile, setProfile, cookieValue, userID }) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };
     useEffect(() => {
-        setProfileData(profile)
         setHasRequested(profile.has_requested)
         setFollowStatus(profile.follow_status);
     }, [profile.follow_status]);

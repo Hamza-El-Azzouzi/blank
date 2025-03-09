@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
@@ -159,14 +160,21 @@ export default function GroupChatPage() {
 
             if (data.data && data.data.length > 0) {
                 const processedMessages = await Promise.all(data.data.map(async (msg) => {
+                    console.log("Before",msg.sender_avatar)
                     if (msg.sender_avatar) {
-                        msg.sender_avatar = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + msg.sender_avatar);
+                        try {
+                            msg.sender_avatar = await fetchBlob('http://127.0.0.1:1414/' + msg.sender_avatar);
+                            console.log(msg.sender_avatar)
+                        } catch (error) {
+                            console.error('Error fetching avatar:', error);
+                            msg.sender_avatar = '/default-avatar.jpg';
+                        }
                     } else {
                         msg.sender_avatar = '/default-avatar.jpg';
                     }
+                    console.log(msg)
                     return msg;
                 }));
-
                 const reversedMessages = [...processedMessages].reverse();
 
                 const newMessages = reversedMessages.filter(msg => !messageIds.has(msg.message_id));
@@ -317,7 +325,8 @@ export default function GroupChatPage() {
                                         {msg.sender_id !== myUserId && (
                                             <div className="message-sender-info">
                                                 <div className="message-sender-avatar">
-                                                    <Image src={msg.sender_avatar} alt={`${msg.sender_first_name}`} width={24} height={24} />
+                                                    <img src={msg.sender_avatar} alt={`${msg.sender_first_name}`} style={{ width:'24px',height:'24px' }}/>
+                                                    {/* <Image src={msg.sender_avatar} alt={`${msg.sender_first_name}`} width={24} height={24} /> */}
                                                 </div>
                                                 <span className="message-sender-name">
                                                     {msg.sender_first_name} {msg.sender_last_name}

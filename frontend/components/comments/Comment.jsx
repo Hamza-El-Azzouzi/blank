@@ -1,14 +1,16 @@
 'use client'
 
 import { formatNumber } from '@/lib/formatting'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link';
 import { FiHeart } from 'react-icons/fi'
 import Toast from '../toast/Toast';
 export default function Comment({ comment, cookieValue, target }) {
+   
     const [likes, setLikes] = useState(comment?.like_count || 0)
     const [isLiked, setIsLiked] = useState(comment.has_liked || false)
     const [toasts, setToasts] = useState([]);
+    
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
         setToasts((prevToasts) => [...prevToasts, newToast]);
@@ -25,7 +27,7 @@ export default function Comment({ comment, cookieValue, target }) {
             }
         })
             .then(res => res.json())
-            .then(async (data) => {
+            .then((data) => {
                 if (data.status) {
                     if (data.status == 200) {
                         setIsLiked(!isLiked)

@@ -17,6 +17,7 @@ const Posts = ({ posts, loading, endReached, onLoadMore, target }) => {
   return (
     <div className="posts-list">
       {posts.map((post, index) => {
+        
         if (posts.length === index + 1) {
           return (
             <div ref={lastPostElementRef} key={post.post_id}>

@@ -40,6 +40,7 @@ export default function Home() {
             ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.avatar)
             : '/default-avatar.jpg';
           if (post.image) {
+
             post.image = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + post.image);
           }
           return post;
