@@ -7,8 +7,7 @@ import Toast from '@/components/toast/Toast';
 import { useParams, useRouter } from 'next/navigation';
 import InviteDialog from '../inviteDialog/inviteDialog';
 
-const GroupHeader = ({ group }) => {
-    console.log(group)
+const GroupHeader = ({ group, onJoinStateChange }) => {
     const { groupID } = useParams();
     const router = useRouter()
     const cookieValue = GetCookie("sessionId")
@@ -16,7 +15,7 @@ const GroupHeader = ({ group }) => {
     const [isDisabled, setIsDisabled] = useState(group.IsPending || group.IsJoined || group.IsOwner);
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [isPendingHovered, setIsPendingHovered] = useState(false);
-    
+
     const handleLeaveGroup = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/leave`, {
@@ -35,7 +34,7 @@ const GroupHeader = ({ group }) => {
             })
             .then(() => {
                 showToast('success', 'Success! Operation completed.');
-                router.push("/groups")
+                onJoinStateChange(false)
             }).catch((error) => {
                 showToast('error', "An Error Occure, Try Later!!");
             })
@@ -58,7 +57,7 @@ const GroupHeader = ({ group }) => {
             })
             .then(() => {
                 showToast('success', 'Request cancelled successfully.');
-                router.push("/groups")
+                onJoinStateChange(false);
             }).catch((error) => {
                 showToast('error', "An Error Occure, Try Later!!");
             })
@@ -90,6 +89,7 @@ const GroupHeader = ({ group }) => {
                 showToast('success', 'Success! Operation completed.');
                 setIsDisabled(true);
                 group.IsPending = true
+                onJoinStateChange(false);
             }).catch((error) => {
 
                 showToast('error', "An Error Occure, Try Later!!");
@@ -134,7 +134,8 @@ const GroupHeader = ({ group }) => {
                 throw new Error("An Error Occure, Try Later!!")
             }
             showToast('success', 'Success! Operation completed.')
-
+            onJoinStateChange(true)
+            group.IsInvited = false
         } catch (err) {
             showToast('error', "An Error Occure, Try Later!!");
         }
@@ -153,6 +154,7 @@ const GroupHeader = ({ group }) => {
                 throw new Error("An Error Occure, Try Later!!")
             }
             showToast('success', 'Success! Operation completed.')
+            onJoinStateChange(false)
 
         } catch (err) {
             showToast('error', "An Error Occure, Try Later!!");

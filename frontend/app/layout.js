@@ -1,10 +1,10 @@
 import "./globals.css";
 
 
-// export const metadata = {
-//   title: "Social Network",
-//   description: "Connect with friends and share your moments",
-// };
+export const metadata = {
+  title: "Social Network",
+  description: "Connect with friends and share your moments",
+};
 
 export default function RootLayout({ children }) {
   return (

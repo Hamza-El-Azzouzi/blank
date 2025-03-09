@@ -75,7 +75,6 @@ export default function ProfilePage({ params }) {
         data.avatar = data.avatar
           ? await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar)
           : '/default-avatar.jpg';
-
         setProfile(data);
       })
       .catch(err => {
@@ -150,6 +149,7 @@ export default function ProfilePage({ params }) {
   if (error) return <Error error={error} />
 
   return (
+    
     <div className="profile-container">
       {
         toasts.map((toast) => (
