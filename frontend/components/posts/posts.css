@@ -270,6 +270,10 @@
     fill: var(--error);
 }
 
+.post-privacy-icon {
+    font-size: 13px;
+}
+
 /* Comments Section */
 .comments-section {
     padding: 16px;

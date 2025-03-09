@@ -84,8 +84,8 @@
 }
 
 .group-textarea {
-    min-height: 120px;
-    resize: vertical;
+    min-height: 100px;
+    resize: none;
 }
 
 .privacy-selector {

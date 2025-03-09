@@ -102,8 +102,14 @@ export default function GroupChatPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [groupID]);
 
-    const handleNewMessage = useCallback((data) => {
+    const handleNewMessage = useCallback(async (data) => {
         if (data.message && (data.message.receiver_type !== 'to_group' || data.message.receiver_id !== groupID)) return;
+
+        if (data.avatar) {
+            data.avatar = await fetchBlob(process.env.NEXT_PUBLIC_BACK_END_DOMAIN + data.avatar);
+        } else {
+            data.avatar = '/default-avatar.jpg';
+        }
 
         const newMessage = {
             message_id: data.message.id,
@@ -114,7 +120,7 @@ export default function GroupChatPage() {
             created_at: data.message.created_at || new Date().toISOString(),
             sender_first_name: data.first_name || "User",
             sender_last_name: data.last_name || "",
-            sender_avatar: data.avatar || "/default-avatar.jpg"
+            sender_avatar: data.avatar
         };
 
         if (!messageIds.has(newMessage.message_id)) {

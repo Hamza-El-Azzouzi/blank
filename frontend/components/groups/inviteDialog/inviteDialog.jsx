@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { fetchBlob } from '@/lib/fetch_blob';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiX } from 'react-icons/fi';
 import './inviteDialog.css';
 import Toast from '@/components/toast/Toast';
+
 const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const [users, setUsers] = useState([]);
     const [lastUserId, setLastUserId] = useState('');
@@ -19,13 +20,16 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
     const [hasMoreSearch, setHasMoreSearch] = useState(true);
     const [initialized, setInitialized] = useState(false);
     const [toasts, setToasts] = useState([]);
+
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
         setToasts((prevToasts) => [...prevToasts, newToast]);
     };
+
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };
+
     const fetchUsers = async () => {
         if (loading || !hasMore) return;
         setLoading(true);
@@ -59,7 +63,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                 setHasMore(false);
             }
         } catch (error) {
-            showToast('error', "An Error Occure, Try Later!!");
+            showToast('error', "An Error Occurred, Try Later!!");
         } finally {
             setLoading(false);
         }
@@ -123,7 +127,7 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                 }
             }
         } catch (error) {
-            showToast('error', "An Error Occure, Try Later!!");
+            showToast('error', "An Error Occurred, Try Later!!");
         } finally {
             setIsSearchLoading(false);
         }
@@ -176,9 +180,10 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                         user.user_id === userId ? { ...user, invited: true } : user
                     )
                 );
+                showToast('success', 'Invitation sent successfully');
             }
         } catch (error) {
-            showToast('error', "An Error Occure, Try Later!!");
+            showToast('error', "An Error Occurred, Try Later!!");
         }
     };
 
@@ -213,10 +218,23 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
         };
     }, [lastUserId, hasMore, loading, searchQuery, lastSearchId, hasMoreSearch, isSearchLoading, initialized]);
 
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
+
     return (
         <div className="invite-dialog-overlay" onClick={onClose}>
             <div className="invite-dialog" onClick={e => e.stopPropagation()}>
-                <h3>Invite Members</h3>
+                <div className="invite-dialog-header">
+                    <h3 className="invite-dialog-title">Invite Members</h3>
+                    <button className="invite-dialog-close" onClick={onClose}>
+                        <FiX />
+                    </button>
+                </div>
 
                 <div className="invite-search">
                     <FiSearch className="search-icon" />
@@ -231,7 +249,10 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
 
                 <div className="invite-list">
                     {isSearchLoading && !displayedUsers.length ? (
-                        <div className="invite-loading">Loading...</div>
+                        <div className="invite-loading">
+                            <div className="invite-loading-spinner"></div>
+                            <span>Searching...</span>
+                        </div>
                     ) : searchQuery && displayedUsers.length === 0 ? (
                         <div className="invite-empty-message">No results found</div>
                     ) : (
@@ -253,9 +274,12 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
                                     </button>
                                 </div>
                             ))}
-                            <div ref={observerRef} style={{ height: '20px' }}></div>
+                            <div ref={observerRef} style={{ height: '10px' }}></div>
                             {(loading || (isSearchLoading && displayedUsers.length > 0)) && (
-                                <div className="invite-loading">Loading more...</div>
+                                <div className="invite-loading">
+                                    <div className="invite-loading-spinner"></div>
+                                    <span>Loading more...</span>
+                                </div>
                             )}
                         </>
                     )}
@@ -269,18 +293,16 @@ const InviteDialog = ({ onClose, cookieValue, groupID }) => {
 
                 <button className="invite-close-btn" onClick={onClose}>Close</button>
             </div>
-            {
-                toasts.map((toast) => (
-                    <Toast
-                        key={toast.id}
-                        message={toast.message}
-                        type={toast.type}
-                        onClose={() => removeToast(toast.id)}
-                    />
-                ))
-            }
-        </div>
 
+            {toasts.map((toast) => (
+                <Toast
+                    key={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => removeToast(toast.id)}
+                />
+            ))}
+        </div>
     );
 };
 

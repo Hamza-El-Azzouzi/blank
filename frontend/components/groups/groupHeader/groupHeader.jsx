@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react';
-import { FiUsers } from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiUser, FiPlus, FiTrash2 } from 'react-icons/fi';
 import './groupHeader.css';
 import { GetCookie } from '@/lib/cookie';
 import Toast from '@/components/toast/Toast';
@@ -39,6 +39,7 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
                 showToast('error', "An Error Occure, Try Later!!");
             })
     };
+
     const handleCancelRequest = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/cancel`, {
@@ -62,13 +63,16 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
                 showToast('error', "An Error Occure, Try Later!!");
             })
     };
+
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
         setToasts((prevToasts) => [...prevToasts, newToast]);
     };
+
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };
+
     const handleJoinGroup = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${groupID}/requested`, {
@@ -91,10 +95,10 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
                 group.IsPending = true
                 onJoinStateChange(false);
             }).catch((error) => {
-
                 showToast('error', "An Error Occure, Try Later!!");
             })
     };
+
     const handleDestoryCommunity = (e) => {
         e.preventDefault()
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/group/${groupID}/delete`, {
@@ -106,9 +110,7 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
             },
         })
             .then(response => {
-
                 if (!response.ok) {
-
                     return response.json().then(error => { throw error; });
                 }
                 return response.json();
@@ -116,11 +118,11 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
             .then(() => {
                 showToast('success', 'Success! Operation completed.');
                 router.push("/groups")
-
             }).catch((error) => {
                 showToast('error', "An Error Occure, Try Later!!");
             })
     };
+
     const handleAcceptGroupInvitation = async (e) => {
         e.preventDefault();
         try {
@@ -141,10 +143,10 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
             showToast('error', "An Error Occure, Try Later!!");
         }
     }
+
     const handleRefuseGroupInvitation = async (e) => {
         e.preventDefault();
         try {
-            //TODO: Will work when merge the notification
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/join/${group.GroupeId}/refuse-invite`, {
                 credentials: "include",
                 method: "DELETE",
@@ -156,11 +158,11 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
             }
             showToast('success', 'Success! Operation completed.')
             onJoinStateChange(false)
-
         } catch (err) {
             showToast('error', "An Error Occure, Try Later!!");
         }
     }
+
     return (
         <>
             {toasts.map((toast) => (
@@ -171,57 +173,56 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
                     onClose={() => removeToast(toast.id)}
                 />
             ))}
-            <div className="group-header">
-                <div className="group-info">
-                    <h1>{group.Name}</h1>
-                    <p className="group-description">{group.Description}</p>
-                    <div className="group-meta">
-                        <span className="group-stat">
+            <div className="gh-container">
+                <div className="gh-info-section">
+                    <h1 className="gh-title">{group.Name}</h1>
+                    <p className="gh-description">{group.Description}</p>
+                    <div className="gh-metadata">
+                        <span className="gh-stat-item">
                             <FiUsers /> {group.Member_count} members
                         </span>
-                        <span className="group-stat">
-                            Created: {group.FormatedDate}
+                        <span className="gh-stat-item">
+                            <FiCalendar /> Created: {group.FormatedDate}
                         </span>
-                        <span className="group-stat">
-                            Creator: {group.Last_Name} {group.First_Name}
+                        <span className="gh-stat-item">
+                            <FiUser /> Creator: {group.Last_Name} {group.First_Name}
                         </span>
                     </div>
                 </div>
-                <div className="group-actions">
+                <div className="gh-actions-container">
                     {group.IsOwner ? (
                         <>
                             <button
-                                className="leave-group-btn"
+                                className="gh-button gh-destroy-btn"
                                 onClick={(e) => { handleDestoryCommunity(e) }}
                             >
-                                Destroy the Community
+                                <FiTrash2 /> Destroy Community
                             </button>
                             <button
-                                className="invite-btn"
+                                className="gh-button gh-invite-btn"
                                 onClick={() => setShowInviteDialog(true)}
                             >
-                                Invite Members
+                                <FiPlus /> Invite Members
                             </button>
                         </>
                     ) : group.IsJoined ? (
                         <>
                             <button
-                                className="leave-group-btn"
+                                className="gh-button gh-leave-btn"
                                 onClick={(e) => { handleLeaveGroup(e) }}
                             >
                                 Leave Group
                             </button>
                             <button
-                                className="invite-btn"
+                                className="gh-button gh-invite-btn"
                                 onClick={() => setShowInviteDialog(true)}
                             >
-                                Invite Members
+                                <FiPlus /> Invite Members
                             </button>
-
                         </>
                     ) : group.IsPending ? (
                         <button
-                            className="join-group-btn pending"
+                            className={`gh-button gh-join-btn pending`}
                             onClick={(e) => handleCancelRequest(e)}
                             onMouseEnter={() => setIsPendingHovered(true)}
                             onMouseLeave={() => setIsPendingHovered(false)}
@@ -230,13 +231,12 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
                         </button>
                     ) : group.IsInvited ? (
                         <>
-                            <button className="accept-group-btn" onClick={handleAcceptGroupInvitation}> Accept</button>
-                            <button className="leave-group-btn" onClick={handleRefuseGroupInvitation}> Refuse</button>
+                            <button className="gh-button gh-accept-btn" onClick={handleAcceptGroupInvitation}>Accept</button>
+                            <button className="gh-button gh-leave-btn" onClick={handleRefuseGroupInvitation}>Refuse</button>
                         </>
-
                     ) : (
                         <button
-                            className="join-group-btn"
+                            className="gh-button gh-join-btn"
                             disabled={isDisabled}
                             onClick={(e) => { handleJoinGroup(e) }}
                         >
@@ -253,7 +253,6 @@ const GroupHeader = ({ group, onJoinStateChange }) => {
                 />
             )}
         </>
-
     );
 };
 
