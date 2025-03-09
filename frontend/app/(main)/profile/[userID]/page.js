@@ -149,7 +149,7 @@ export default function ProfilePage({ params }) {
   if (error) return <Error error={error} />
 
   return (
-    
+
     <div className="profile-container">
       {
         toasts.map((toast) => (
@@ -161,8 +161,12 @@ export default function ProfilePage({ params }) {
           />
         ))
       }
-
-      <ProfileHeader profile={profile} setProfile={setProfile} cookieValue={cookieValue} userID={userID} />
+      <ProfileHeader
+        profile={profile} 
+        setProfile={setProfile} 
+        cookieValue={cookieValue} 
+        userID={userID}
+      />
 
       {!profile.is_owner && !profile.is_public && !profile.is_following
         ? <PrivateAccount />

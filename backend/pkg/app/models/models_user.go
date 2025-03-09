@@ -48,11 +48,11 @@ type UserInfo struct {
 	DateOfBirth    string    `json:"date_of_birth,omitempty"`
 	Avatar         string    `json:"avatar,omitempty"`
 	IsPublic       bool      `json:"is_public"`
-	IsOwner        bool      `json:"is_owner,omitempty"`
-	Following      int       `json:"following,omitempty"`
-	Followers      int       `json:"followers,omitempty"`
-	FollowStatus   string    `json:"follow_status,omitempty"`
-	IsFollowing    bool      `json:"is_following,omitempty"`
+	IsOwner        bool      `json:"is_owner"`
+	Following      int       `json:"following"`
+	Followers      int       `json:"followers"`
+	FollowStatus   string    `json:"follow_status"`
+	IsFollowing    bool      `json:"is_following"`
 	CanSendMessage bool      `json:"can_send_message,omitempty"`
 	Has_requested  bool      `json:"has_requested"`
 }
