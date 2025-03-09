@@ -94,7 +94,7 @@ const GroupDetailPage = () => {
         fetchGroupData();
 
 
-    }, [cookieValue, groupID]);
+    }, [cookieValue, groupID, groupData.isJoined]);
     useEffect(() => {
         if ((isJoined || isOwner) && !endReached) {
             fetchPosts(groupID, page);
@@ -346,8 +346,18 @@ const GroupDetailPage = () => {
                     onClose={() => removeToast(toast.id)}
                 />
             ))}
-            <GroupHeader group={groupData} />
-
+            <GroupHeader
+                group={groupData}
+                onJoinStateChange={(newJoinState) => {
+                    setGroupData(prev => ({
+                        ...prev,
+                        IsJoined: newJoinState
+                    }));
+                    console.log(newJoinState)
+                    setIsJoined(newJoinState);
+                }}
+            />
+            {console.log("from page", groupData.IsJoined)}
             {(groupData.IsJoined || groupData.IsOwner) && (
                 <div className="group-content">
                     <div className="group-tabs">
