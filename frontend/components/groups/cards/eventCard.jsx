@@ -25,13 +25,13 @@ const EventCard = ({ event, onResponseChange }) => {
             {new Date(`${event.date} ${event.time}`).getTime() > new Date().getTime() && (
                 <div className="event-response-buttons">
                     <button
-                        className={`response-button ${event.is_going ? 'going' : ''}`}
+                        className={`response-button ${event.is_going ? 'selected' : ''}`}
                         onClick={() => handleResponse('going')}
                     >
                         Going
                     </button>
                     <button
-                        className={`response-button ${!event.is_going ? 'going' : ''}`}
+                        className={`response-button`}
                         onClick={() => handleResponse('not-going')}
                     >
                         Not Going

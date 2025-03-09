@@ -82,6 +82,13 @@
     color: white;
 }
 
+.actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 150px;
+}
+
 .follow-btn {
     padding: 8px 16px;
     min-width: 120px;
@@ -124,11 +131,6 @@
     color: var(--error);
 }
 
-.actions-container {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
 .leave-group-btn,
 .accept-group-btn {
     padding: 8px 16px;
@@ -136,17 +138,29 @@
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 100%;
 }
+
 .accept-group-btn {
     background-color: var(--bg-tertiary);
     color: var(--success);
     border: 1px solid var(--success);
 }
 
+.accept-group-btn:hover {
+    background-color: var(--success);
+    color: white;
+}
+
 .leave-group-btn {
     background-color: var(--bg-tertiary);
     color: var(--error);
     border: 1px solid var(--error);
+}
+
+.leave-group-btn:hover {
+    background-color: var(--error);
+    color: white;
 }
 
 @media (max-width: 768px) {
@@ -173,6 +187,9 @@
 
     .actions-container {
         margin-top: 10px;
+        align-items: center;
+        width: 100%;
+        max-width: 200px;
     }
 }
 

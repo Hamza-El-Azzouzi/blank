@@ -1,4 +1,3 @@
-/* components/groups/eventCard.css */
 .event-card {
     display: flex;
     justify-content: space-between;
@@ -53,25 +52,26 @@
     background: none;
     border: 1px solid var(--border);
     color: var(--text-primary);
+    background-color: var(--bg-tertiary);
 }
 
 .response-button:hover {
-    background-color: var(--bg-tertiary);
+    background-color: var(--primary);
     color: var(--text-primary);
 }
 
-.response-button.going {
-    background-color: var(--primary);
+.response-button.selected {
+    background-color: var(--bg-primary);
     border-color: var(--primary);
-    color: white;
+    color: var(--primary);
 }
 
-.response-button.not-going {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border);
-    color: var(--text-tertiary);
+.response-button.selected:hover {
+    border-color: var(--error);
+    color: var(--error);
 }
-.error-message{
+
+.error-message {
     color: var(--error);
 }
 
