@@ -5,6 +5,7 @@ import Link from 'next/link';
 import * as validator from '@/lib/form_validator';
 import Toast from '@/components/toast/Toast';
 import { useRouter } from 'next/navigation';
+import { FiMail, FiLock, FiUser, FiCalendar, FiInfo, FiUpload } from 'react-icons/fi';
 
 export default function SignUp() {
     const router = useRouter()
@@ -13,6 +14,7 @@ export default function SignUp() {
     const [avatarPreview, setAvatarPreview] = useState('');
     const [error, setError] = useState('');
     const [currentStep, setCurrentStep] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -24,6 +26,7 @@ export default function SignUp() {
         aboutMe: '',
         accountType: 'public'
     });
+
     const showToast = (type, message) => {
         const newToast = { id: Date.now(), type, message };
         setToasts((prevToasts) => [...prevToasts, newToast]);
@@ -32,8 +35,8 @@ export default function SignUp() {
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };
-    const handleChange = (e) => {
 
+    const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -45,7 +48,7 @@ export default function SignUp() {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 3 * 1024 * 1024) {
-                showToast('warning', 'image size should be less than 3MB');
+                showToast('warning', 'Image size should be less than 3MB');
                 return;
             }
 
@@ -67,12 +70,13 @@ export default function SignUp() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setIsLoading(true);
+
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/register`, {
             method: "POST",
             body: JSON.stringify({ ...formData, avatar }),
             headers: { 'content-type': 'application/json' },
-            credentials: "include", 
-
+            credentials: "include",
         }).then(response => {
             if (!response.ok) {
                 return response.json().then(error => { throw error; });
@@ -80,12 +84,18 @@ export default function SignUp() {
             return response.json();
         })
             .then(() => {
-                showToast('success', 'Success! Operation completed.');
-                router.push("/signin");
+                showToast('success', 'Registration successful!');
+                setTimeout(() => {
+                    router.push("/signin");
+                }, 1500);
             }).catch((error) => {
                 showToast('error', error.message);
             })
+            .finally(() => {
+                setIsLoading(false);
+            });
     };
+
     const isStepValid = (step) => {
         let isValid = true;
         let errorMessage = "";
@@ -97,7 +107,7 @@ export default function SignUp() {
                     errorMessage = "Invalid Email";
                 } else if (!validator.validatePassword(formData.password)) {
                     isValid = false;
-                    errorMessage = "Invalid Password";
+                    errorMessage = "Password must contain at least 8 characters, including uppercase, lowercase, number and special character";
                 } else if (
                     !validator.validatePasswordConfirmation(
                         formData.password,
@@ -112,13 +122,13 @@ export default function SignUp() {
             case 2:
                 if (!validator.validateFirstName(formData.firstName)) {
                     isValid = false;
-                    errorMessage = "Invalid First Name";
+                    errorMessage = "First name can only contain letters and must be 1-20 characters";
                 } else if (!validator.validateLastName(formData.lastName)) {
                     isValid = false;
-                    errorMessage = "Invalid Last Name";
+                    errorMessage = "Last name can only contain letters and must be 1-20 characters";
                 } else if (!validator.validateDateOfBirth(formData.dateOfBirth)) {
                     isValid = false;
-                    errorMessage = "Invalid Birth Date";
+                    errorMessage = "You must be at least 16 years old";
                 }
                 break;
 
@@ -127,12 +137,12 @@ export default function SignUp() {
                 break;
 
             case 4:
-                if (!validator.validateNickname(formData.nickname)) {
+                if (formData.nickname && !validator.validateNickname(formData.nickname)) {
                     isValid = false;
-                    errorMessage = "Invalid Nickname";
-                } else if (!validator.validateAboutMe(formData.aboutMe)) {
+                    errorMessage = "Nickname can only contain letters and must be 1-20 characters";
+                } else if (formData.aboutMe && !validator.validateAboutMe(formData.aboutMe)) {
                     isValid = false;
-                    errorMessage = "Invalid About Me";
+                    errorMessage = "About Me section cannot exceed 150 characters";
                 }
                 break;
 
@@ -143,6 +153,7 @@ export default function SignUp() {
 
         return { isValid, errorMessage };
     };
+
     const nextStep = () => {
         const { isValid, errorMessage } = isStepValid(currentStep);
         if (isValid) {
@@ -155,11 +166,10 @@ export default function SignUp() {
 
     const prevStep = () => {
         setCurrentStep(prev => Math.max(prev - 1, 1));
-        setError("")
+        setError("");
     };
 
     return (
-
         <div className="auth-container">
             {toasts.map((toast) => (
                 <Toast
@@ -207,7 +217,10 @@ export default function SignUp() {
                 <form>
                     <div className={`form-step ${currentStep === 1 ? 'active' : ''}`}>
                         <div className="form-group">
-                            <label htmlFor="email">Email</label>
+                            <label htmlFor="email">
+                                <FiMail style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
+                                Email
+                            </label>
                             <input
                                 id="email"
                                 name="email"
@@ -220,7 +233,10 @@ export default function SignUp() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="password">Password</label>
+                            <label htmlFor="password">
+                                <FiLock style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
+                                Password
+                            </label>
                             <input
                                 id="password"
                                 name="password"
@@ -232,7 +248,10 @@ export default function SignUp() {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="confirmPassword">Password Confirmation</label>
+                            <label htmlFor="confirmPassword">
+                                <FiLock style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
+                                Password Confirmation
+                            </label>
                             <input
                                 id="confirmPassword"
                                 name="confirmPassword"
@@ -240,7 +259,7 @@ export default function SignUp() {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
-                                placeholder="retype your password"
+                                placeholder="Retype your password"
                             />
                         </div>
                     </div>
@@ -248,7 +267,10 @@ export default function SignUp() {
                     <div className={`form-step ${currentStep === 2 ? 'active' : ''}`}>
                         <div className="form-grid">
                             <div className="form-group">
-                                <label htmlFor="firstName">First Name</label>
+                                <label htmlFor="firstName">
+                                    <FiUser style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
+                                    First Name
+                                </label>
                                 <input
                                     id="firstName"
                                     name="firstName"
@@ -261,7 +283,10 @@ export default function SignUp() {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="lastName">Last Name</label>
+                                <label htmlFor="lastName">
+                                    <FiUser style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
+                                    Last Name
+                                </label>
                                 <input
                                     id="lastName"
                                     name="lastName"
@@ -275,7 +300,10 @@ export default function SignUp() {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="dateOfBirth">Date of Birth</label>
+                            <label htmlFor="dateOfBirth">
+                                <FiCalendar style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
+                                Date of Birth
+                            </label>
                             <input
                                 id="dateOfBirth"
                                 name="dateOfBirth"
@@ -317,7 +345,6 @@ export default function SignUp() {
                                     id="private"
                                     name="accountType"
                                     value="private"
-                                    checked={formData.accountType === 'private'}
                                     onChange={handleChange}
                                 />
                                 <label htmlFor="private">
@@ -342,11 +369,11 @@ export default function SignUp() {
                             >
                                 <div
                                     className="image-preview"
-
                                     style={avatarPreview ? { backgroundImage: `url(${avatarPreview})` } : { backgroundImage: `url(./default-avatar.jpg)` }}
                                 />
 
                                 <label>
+                                    <FiUpload style={{ marginRight: '6px', fontSize: '0.9rem' }} />
                                     {avatarPreview ? 'Change Avatar' : 'Upload Avatar'}
                                     <span className="optional-label">(Optional)</span>
                                 </label>
@@ -354,7 +381,6 @@ export default function SignUp() {
                                     id="avatar"
                                     type="file"
                                     accept="image/*"
-
                                     onChange={handleImageChange}
                                 />
                             </div>
@@ -362,6 +388,7 @@ export default function SignUp() {
 
                         <div className="form-group">
                             <label htmlFor="nickname">
+                                <FiUser style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
                                 Nickname
                                 <span className="optional-label">(Optional)</span>
                             </label>
@@ -377,6 +404,7 @@ export default function SignUp() {
 
                         <div className="form-group">
                             <label htmlFor="aboutMe">
+                                <FiInfo style={{ display: 'inline', marginRight: '6px', fontSize: '0.9rem' }} />
                                 About Me
                                 <span className="optional-label">(Optional)</span>
                             </label>
@@ -385,6 +413,7 @@ export default function SignUp() {
                                 name="aboutMe"
                                 value={formData.aboutMe}
                                 onChange={handleChange}
+                                maxLength={150}
                                 placeholder="Tell us a bit about yourself..."
                             />
                         </div>
@@ -403,8 +432,13 @@ export default function SignUp() {
                                 Next
                             </button>
                         ) : (
-                            <button type='button' onClick={handleSubmit} className="step-button button-next">
-                                Create Account
+                            <button
+                                type='button'
+                                onClick={handleSubmit}
+                                className="step-button button-next"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Creating Account...' : 'Create Account'}
                             </button>
                         )}
                     </div>
