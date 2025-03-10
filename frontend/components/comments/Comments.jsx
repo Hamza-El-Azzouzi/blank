@@ -29,13 +29,13 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
         const file = e.target.files[0];
         if (!file) return;
 
-        // Check if file is an image
+      
         if (!file.type.startsWith('image/')) {
             showToast('error', 'Please upload an image file');
             return;
         }
 
-        // Check file size (3MB max)
+       
         if (file.size > 3 * 1024 * 1024) {
             showToast('error', 'Image size should be less than 3MB');
             return;
@@ -158,7 +158,6 @@ export default function Comments({ postID, setCommentsCount, onClose, target }) 
         })
             .then(res => res.json())
             .then((data) => {
-                console.log(data)
                 if (data.status) {
                     if (data.status == 200) {
                         newComment.user.user_id = userId

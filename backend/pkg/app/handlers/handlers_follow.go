@@ -124,7 +124,6 @@ func (f *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 
 	err = f.FollowService.AcceptFollow(followingID, followerID)
 	if err != nil {
-		fmt.Println(err)
 		utils.SendResponses(w, http.StatusBadRequest, "Bad request", nil)
 		return
 	}

@@ -24,11 +24,11 @@ type WebSocketService struct {
 func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, models.Notification) {
 	var (
 		notification models.Notification
-		dists        []uuid.UUID // distinations of the notification
+		dists        []uuid.UUID
 		err          error
 	)
 
-	// get the info of the sender
+	
 	sender, err := ws.UserRepo.GetPublicUserInfo(message.SenderID)
 	if err != nil {
 		return nil, models.Notification{
@@ -62,13 +62,12 @@ func (ws *WebSocketService) ReadMessage(message models.Message) ([]uuid.UUID, mo
 }
 
 func (ws *WebSocketService) SendMessageToUser(sender *models.UserInfo, message models.Message) ([]uuid.UUID, models.Notification, error) {
-	// check if the user receiver user exist
+
 	exist := ws.UserRepo.UserExist(message.ReceiverID)
 	if !exist {
 		return nil, models.Notification{}, fmt.Errorf("user not found")
 	}
 
-	// save the message in the database
 	err := ws.MessageRepo.SaveMessageToUser(message)
 	if err != nil {
 		return nil, models.Notification{}, fmt.Errorf("error saving message : %v", err)
@@ -103,7 +102,7 @@ func (ws *WebSocketService) SendMessageToUser(sender *models.UserInfo, message m
 }
 
 func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message models.Message) ([]uuid.UUID, models.Notification, error) {
-	// check if the group receiver user exist
+	
 	exist, err := ws.GroupRepo.GroupExist(message.ReceiverID)
 	if !exist {
 		if err != nil {
@@ -112,7 +111,6 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 		return nil, models.Notification{}, fmt.Errorf("group not found")
 	}
 
-	// check if the user is member of the group
 	isMember, err := ws.GroupRepo.IsGroupMember(message.ReceiverID.String(), message.SenderID.String())
 	if !isMember {
 		if err != nil {
@@ -121,7 +119,6 @@ func (ws *WebSocketService) SendMessageToGroup(sender *models.UserInfo, message 
 		return nil, models.Notification{}, fmt.Errorf("you are not member of the group")
 	}
 
-	// save the message in the database
 	err = ws.MessageRepo.SaveMessageToGroup(message)
 	if err != nil {
 		return nil, models.Notification{}, fmt.Errorf("error saving message : %v", err)
@@ -155,10 +152,9 @@ func (ws *WebSocketService) SendNotification(dists []uuid.UUID, notification mod
 	ws.Mutex.Lock()
 	defer ws.Mutex.Unlock()
 
-	// save the notification in the database for each receiver
 	if notification.Type != "message" {
-		notification.ID = uuid.Must(uuid.NewV4())
 		for _, receiver := range dists {
+			notification.ID = uuid.Must(uuid.NewV4())
 			notification.ReceiverID = receiver
 			if notification.Type == "event" ||
 				notification.Type == "group_invitation" ||
@@ -194,7 +190,6 @@ func (ws *WebSocketService) ConnectUser(conn *websocket.Conn, userID uuid.UUID) 
 	ws.Mutex.Lock()
 	defer ws.Mutex.Unlock()
 
-	// Check if the user already has connections
 	if user, exists := ws.ConnectedUsers[userID]; exists {
 		user.Connections = append(user.Connections, conn)
 	} else {

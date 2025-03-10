@@ -353,11 +353,9 @@ const GroupDetailPage = () => {
                         ...prev,
                         IsJoined: newJoinState
                     }));
-                    console.log(newJoinState)
                     setIsJoined(newJoinState);
                 }}
             />
-            {console.log("from page", groupData.IsJoined)}
             {(groupData.IsJoined || groupData.IsOwner) && (
                 <div className="group-content">
                     <div className="group-tabs">

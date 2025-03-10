@@ -23,10 +23,6 @@ export default function Notification({ notif }) {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${cookieValue}` },
             });
-            let data = await res.json();
-            if (data.message !== "") {
-                console.log(data.message)
-            }
 
         } catch (err) {
             console.error("Error fetching notifications:", err);
@@ -48,8 +44,6 @@ export default function Notification({ notif }) {
             if (data.message == "success") {
                 setAllowActions(false)
                 notif.seen = true
-            } else {
-                console.log(data.message)
             }
 
         } catch (err) {
@@ -71,10 +65,7 @@ export default function Notification({ notif }) {
             if (data.message == "success") {
                 setAllowActions(false)
                 notif.seen = true
-            } else {
-                console.log(data.message)
             }
-
         } catch (err) {
             console.error("Error fetching:", err);
         }
@@ -92,8 +83,6 @@ export default function Notification({ notif }) {
             if (data.message == "success") {
                 setAllowActions(false)
                 notif.seen = true
-            } else {
-                console.log(data.message)
             }
 
         } catch (err) {
@@ -113,8 +102,6 @@ export default function Notification({ notif }) {
             if (data.message == "success") {
                 setAllowActions(false)
                 notif.seen = true
-            } else {
-                console.log(data.message)
             }
 
         } catch (err) {

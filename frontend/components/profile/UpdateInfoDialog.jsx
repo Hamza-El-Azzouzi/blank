@@ -59,11 +59,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
     formData.date_of_birth = formData.date_of_birth?.split('T')[0];
     if (formData?.avatar?.includes("default-avatar")) formData.avatar = null
 
-    // const validation = validateForm(formData);
-    // if (!validation.isValid) {
-    //   setError(validation.message)
-    //   return;
-    // }
+
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}/api/user-update-info`, {

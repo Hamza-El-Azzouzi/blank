@@ -616,7 +616,7 @@ func (g *GroupRepository) Event(group_id, user_id string, page int) ([]models.Ev
 }
 
 func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response string) (models.Event, error) {
-	// First check if user already has a response
+	
 	checkQuery := "SELECT response FROM `Event_Response` WHERE event_id = ? AND user_id = ?"
 	var existingResponse string
 	err := g.DB.QueryRow(checkQuery, event_id, user_id).Scan(&existingResponse)
@@ -625,20 +625,19 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 		return models.Event{}, err
 	}
 
-	// If user has same response, delete it
 	if err == nil && existingResponse == response {
 		deleteQuery := "DELETE FROM `Event_Response` WHERE event_id = ? AND user_id = ?"
 		_, err = g.DB.Exec(deleteQuery, event_id, user_id)
 		if err != nil {
 			return models.Event{}, err
 		}
-	} else if err == nil { // If user has different response, update it
+	} else if err == nil {
 		updateQuery := "UPDATE `Event_Response` SET response = ?, response_id = ? WHERE event_id = ? AND user_id = ?"
 		_, err = g.DB.Exec(updateQuery, response, response_id, event_id, user_id)
 		if err != nil {
 			return models.Event{}, err
 		}
-	} else { // If no existing response, insert new one
+	} else {
 		insertQuery := "INSERT INTO `Event_Response` (response_id, event_id, user_id, response) VALUES (?, ?, ?, ?)"
 		_, err = g.DB.Exec(insertQuery, response_id, event_id, user_id, response)
 		if err != nil {
@@ -646,7 +645,6 @@ func (g *GroupRepository) EventResponse(response_id, event_id, user_id, response
 		}
 	}
 
-	// Get updated counts
 	countQuery := `
 	SELECT 
 		e.event_id,

@@ -20,38 +20,34 @@ func SetupRoutes(mux *http.ServeMux,
 	commentHandler *handlers.CommentHandler,
 	webSocketHandler *handlers.WebSocketHandler,
 ) {
-	// serve files routes
+
 	mux.HandleFunc("/static/", utils.SetupStaticFilesHandlers)
 	mux.HandleFunc("/storage/avatars/{avatar}", handlers.ServeImages)
 
-	// auth routes
 	mux.HandleFunc("/api/register", authHandler.HandleRegister)
 	mux.HandleFunc("/api/login", authHandler.HandleLogin)
 	mux.HandleFunc("/api/logout", authHandler.HandleLogout)
 	mux.HandleFunc("/api/integrity", authHandler.UserIntegrity)
 
-	// user routes
+
 	mux.HandleFunc("/api/user-info/{id}", userHandler.InfoGetter)
 	mux.HandleFunc("/api/authenticated-user", userHandler.AuthenticatedUser)
 	mux.HandleFunc("/api/user-update-info", userHandler.UpdateUserInfo)
 	mux.HandleFunc("/api/searchusers", userHandler.SearchUsers)
 
-	// notifications routes
 	mux.HandleFunc("/api/notifications/", userHandler.NotificationsGetter)
 	mux.HandleFunc("/api/notifications/{id}/see", userHandler.SeeNotification)
 
-	// comments routes
+
 	mux.HandleFunc("/api/comment/{post_id}/", commentHandler.CommentsGetter)
 	mux.HandleFunc("/api/comment/create", commentHandler.CommentSaver)
 	mux.HandleFunc("/api/comment/{comment_id}/like/", commentHandler.CommentLiker)
 
-	// posts routes
 	mux.HandleFunc("/api/posts/", postHandler.Posts)
 	mux.HandleFunc("/api/createpost", postHandler.PostSaver)
 	mux.HandleFunc("/api/user-posts/{id}/", postHandler.PostsByUser)
 	mux.HandleFunc("/api/reacts", reactHandler.React)
 
-	// follow system routes
 	mux.HandleFunc("/api/requestfollow", followHandler.RequestFollow)
 	mux.HandleFunc("/api/acceptfollow", followHandler.AcceptFollow)
 	mux.HandleFunc("/api/refusefollow", followHandler.RefuseFollow)
@@ -62,7 +58,6 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/searchfollowers/{userId}", followHandler.SearchFollowers)
 	mux.HandleFunc("/api/searchfollowing/{userId}", followHandler.SearchFollowing)
 
-	// group routes
 	mux.HandleFunc("/api/createGroup", groupHandler.CreateGroup)
 	mux.HandleFunc("/api/groups/", groupHandler.Groups)
 	mux.HandleFunc("/api/groups/search", groupHandler.GroupSearch)
@@ -85,7 +80,6 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/group/{group_id}/event/", groupHandler.Event)
 	mux.HandleFunc("/api/group/{group_id}/event/response", groupHandler.EventResponse)
 
-	// message handler
 	mux.HandleFunc("/api/chat/contacts", messageHnadler.GetContactUsers)
 	mux.HandleFunc("/api/chat/{user_id}", messageHnadler.GetUserMessages)
 	mux.HandleFunc("/api/chat/markAsRead/{user_id}", messageHnadler.MarkMessagesAsSeen)
@@ -93,7 +87,6 @@ func SetupRoutes(mux *http.ServeMux,
 	mux.HandleFunc("/api/chat/group/{group_id}", messageHnadler.GetGroupMessages)
 	mux.HandleFunc("/api/chat/group/markAsRead/{group_id}", messageHnadler.MarkGroupMessagesAsSeen)
 
-	// WebSocket handler
 	mux.HandleFunc("/ws", webSocketHandler.Connect)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

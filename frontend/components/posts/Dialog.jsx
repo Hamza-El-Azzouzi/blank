@@ -50,10 +50,10 @@ export function Button({ variant = 'primary', children, ...props }) {
     </button>
   );
 }
-export function Checkbox({ checked, onChange }) {
+export function Checkbox({ checked, onClick }) {
   const handleClick = (e) => {
     e.stopPropagation();
-    onChange(!checked);
+    onClick(!checked);
   };
 
   return (

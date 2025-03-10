@@ -139,7 +139,6 @@ const GroupsPage = () => {
                 })
         };
     const handleCreateGroup = (groupData) => {
-        console.log(groupData)
         fetch(`${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/createGroup`, {
             method: "POST",
             credentials: "include",

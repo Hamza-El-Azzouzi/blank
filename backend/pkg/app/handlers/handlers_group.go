@@ -318,14 +318,12 @@ func (g *GroupHandler) GroupAcceptInvitation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// check if the group exist
 	_, err = g.GroupService.GroupDetails(authUserID.String(), groupID.String())
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
-	// check if the request is pending
 	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
 	if !isPending || err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)
@@ -365,14 +363,12 @@ func (g *GroupHandler) GroupRefuseInvitation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// check if the group exist
 	_, err = g.GroupService.GroupDetails(authUserID.String(), groupID.String())
 	if err != nil {
 		utils.SendResponses(w, http.StatusInternalServerError, "Internal Server Error", nil)
 		return
 	}
 
-	// check if the request is pending
 	isPending, err := g.GroupService.CheckInvitePending(groupID, authUserID)
 	if !isPending || err != nil {
 		utils.SendResponses(w, http.StatusBadRequest, "The Invite is not pending", nil)

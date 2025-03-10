@@ -166,11 +166,9 @@ export default function GroupChatPage() {
 
             if (data.data && data.data.length > 0) {
                 const processedMessages = await Promise.all(data.data.map(async (msg) => {
-                    console.log("Before",msg.sender_avatar)
                     if (msg.sender_avatar) {
                         try {
                             msg.sender_avatar = await fetchBlob('http://127.0.0.1:1414/' + msg.sender_avatar);
-                            console.log(msg.sender_avatar)
                         } catch (error) {
                             console.error('Error fetching avatar:', error);
                             msg.sender_avatar = '/default-avatar.jpg';
@@ -178,7 +176,6 @@ export default function GroupChatPage() {
                     } else {
                         msg.sender_avatar = '/default-avatar.jpg';
                     }
-                    console.log(msg)
                     return msg;
                 }));
                 const reversedMessages = [...processedMessages].reverse();

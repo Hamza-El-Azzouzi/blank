@@ -4,7 +4,7 @@ export default async function Middleware(request) {
     const { pathname } = request.nextUrl;
     const session = request.cookies.get("sessionId");
     
-    // Allow Next.js internal routes
+
     if (pathname.startsWith("/_next")) {
         return NextResponse.next();
     }
@@ -12,19 +12,17 @@ export default async function Middleware(request) {
     const restrictedRoutesForLoggedInUsers = ["/signin", "/signup"];
     const isRestrictedRoute = restrictedRoutesForLoggedInUsers.includes(pathname);
 
-    // Handle non-authenticated users
+ 
     if (!session) {
         return isRestrictedRoute 
             ? NextResponse.next()
             : NextResponse.redirect(new URL('/signin', request.url));
     }
 
-    // Handle authenticated users trying to access login/signup pages
     if (isRestrictedRoute) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 
-    // Verify session integrity
     try {
         const link = process.env.ENVIREMENT === "Developpement"
             ? `${process.env.NEXT_PUBLIC_BACK_END_DOMAIN}api/integrity`
