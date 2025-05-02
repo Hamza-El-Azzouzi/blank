@@ -68,7 +68,7 @@ func InitServices(userRepo *repositories.UserRepository,
 			MessageRepo:      messageRepo,
 			GroupRepo:        groupRepo,
 			NotificationRepo: notificationRepo,
-			ConnectedUsers:   make(map[uuid.UUID]*models.ConnectedUser),
+			ConnectedUsers:   map[uuid.UUID]*models.ConnectedUser{},
 		}
 }
 

@@ -138,6 +138,7 @@ export default function ProfilePage({ params }) {
       .finally(() => {
         setLoading(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile, postsPage, userID, cookieValue]);
 
   const handleLoadMore = () => {
@@ -184,7 +185,6 @@ export default function ProfilePage({ params }) {
           }
 
           {activeTab === 'posts' && profile.first_name &&
-            <>
               <Posts
                 posts={posts}
                 loading={loading}
@@ -192,7 +192,6 @@ export default function ProfilePage({ params }) {
                 onLoadMore={handleLoadMore}
                 target="Post"
               />
-            </>
           }
         </>
       }

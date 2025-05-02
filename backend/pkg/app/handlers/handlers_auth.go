@@ -19,7 +19,7 @@ type AuthHandler struct {
 	SessionService *services.SessionService
 	MessageHandler *MessageHandler
 }
-
+const InvalidJson = "invalid JSON data"
 func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.SendResponses(w, http.StatusMethodNotAllowed, "method not allowed", nil)
@@ -33,7 +33,7 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	var user models.RegisterData
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		utils.SendResponses(w, http.StatusBadRequest, InvalidJson, nil)
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	var userInfo models.LoginData
 	if err := json.NewDecoder(r.Body).Decode(&userInfo); err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		utils.SendResponses(w, http.StatusBadRequest, InvalidJson, nil)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (h *AuthHandler) UserIntegrity(w http.ResponseWriter, r *http.Request) {
 
 	var session SessionData
 	if err := json.NewDecoder(r.Body).Decode(&session); err != nil {
-		utils.SendResponses(w, http.StatusBadRequest, "invalid JSON data", nil)
+		utils.SendResponses(w, http.StatusBadRequest, InvalidJson, nil)
 		return
 	}
 	userID, exist := h.SessionService.CheckSession(session.Value)
