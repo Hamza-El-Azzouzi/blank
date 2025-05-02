@@ -1,6 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+function sanitizeAvatar(avatar) {
+  const dataUrlPattern = /^data:image\/(png|jpeg|jpg|gif|webp);base64,/;
+  const safeUrlPattern = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+  if (dataUrlPattern.test(avatar) || safeUrlPattern.test(avatar)) {
+    return avatar;
+ }
+ return null;
+}
 import { validateForm } from '@/lib/validateUserInfo';
 import Toast from '../toast/Toast';
 export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValue }) {
@@ -92,7 +101,7 @@ export default function UpdateInfoDialog({ user, onClose, setProfile, cookieValu
     <div className="dialog-overlay">
       <div className="profile-dialog-content">
         <label htmlFor="avatar-upload" className="avatar-container">
-          <img src={formData.avatar || '/default-avatar.jpg'} alt="Avatar" className="avatar-update" />
+          <img src={sanitizeAvatar(formData.avatar) || '/default-avatar.jpg'} alt="Avatar" className="avatar-update" />
         </label>
         <input type="file" id="avatar-upload" accept="image/*" onChange={handleAvatarChange} />
 
