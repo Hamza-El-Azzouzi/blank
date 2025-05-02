@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 
 function sanitizeAvatar(avatar) {
   const dataUrlPattern = /^data:image\/(png|jpeg|jpg|gif|webp);base64,/;
-  const safeUrlPattern = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+  const safeUrlPattern = /^http?:\/\/[^\s/$.?#].[^\s]*$/i;
   if (dataUrlPattern.test(avatar) || safeUrlPattern.test(avatar)) {
     return avatar;
  }
