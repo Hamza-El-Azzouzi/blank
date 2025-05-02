@@ -3,6 +3,8 @@ package utils
 import (
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -30,9 +32,20 @@ func SetupStaticFilesHandlers(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	fileinfo, err := os.Stat("../" + r.URL.Path)
+	baseDir := "../"
+	absBaseDir, err := filepath.Abs(baseDir)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	absPath, err := filepath.Abs(filepath.Join(baseDir, r.URL.Path))
+	if err != nil || !strings.HasPrefix(absPath, absBaseDir) {
+		OpenHtml("index.html", w, "404")
+		return
+	}
+	fileinfo, err := os.Stat(absPath)
 	if !os.IsNotExist(err) && !fileinfo.IsDir() {
-		http.FileServer(http.Dir("../")).ServeHTTP(w, r)
+		http.FileServer(http.Dir(baseDir)).ServeHTTP(w, r)
 	} else {
 		OpenHtml("index.html", w, "404")
 	}
